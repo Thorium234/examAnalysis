@@ -64,13 +64,18 @@ def student_detail(request, admission_number):
 def merit_list(request, exam_id):
     exam = get_object_or_404(Exam, id=exam_id)
     
-    # Get student summaries for this exam, ordered by total marks (descending)
-    summaries = StudentExamSummary.objects.filter(exam=exam).order_by('-total_marks')
-    
     # Filter by stream if provided
     stream = request.GET.get('stream')
+    
     if stream:
-        summaries = summaries.filter(student__stream=stream)
+        # Get summaries for specific stream, ordered by pre-computed stream position
+        summaries = StudentExamSummary.objects.filter(
+            exam=exam, 
+            student__stream=stream
+        ).order_by('stream_position')
+    else:
+        # Get all summaries ordered by pre-computed overall position
+        summaries = StudentExamSummary.objects.filter(exam=exam).order_by('overall_position')
     
     context = {
         'exam': exam,

@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}Exams - Exam System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Examination Management</h1>
+    <div>
+        <a href="{% url 'admin:exams_exam_add' %}" class="btn btn-primary">Create Exam</a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="form-inline">
+            <div class="form-group mr-3">
+                <label for="form_level" class="mr-2">Form:</label>
+                <select name="form_level" id="form_level" class="form-control">
+                    <option value="">All Forms</option>
+                    {% for form in form_levels %}
+                        <option value="{{ form }}" {% if form|stringformat:"s" == selected_form %}selected{% endif %}>
+                            Form {{ form }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-secondary">Filter</button>
+            <a href="{% url 'exams:exam_list' %}" class="btn btn-outline-secondary ml-2">Clear</a>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    {% for exam in exams %}
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>{{ exam.name }}</h5>
+                <small class="text-muted">{{ exam.get_exam_type_display }}</small>
+            </div>
+            <div class="card-body">
+                <p><strong>Form:</strong> {{ exam.form_level }}</p>
+                <p><strong>Year:</strong> {{ exam.year }} Term {{ exam.term }}</p>
+                <p><strong>Created:</strong> {{ exam.date_created|date:"M d, Y" }}</p>
+                
+                <div class="btn-group" role="group">
+                    <a href="{% url 'exams:exam_detail' exam.id %}" class="btn btn-outline-primary btn-sm">
+                        View Details
+                    </a>
+                    <a href="{% url 'exams:exam_results' exam.id %}" class="btn btn-outline-info btn-sm">
+                        View Results
+                    </a>
+                    <a href="{% url 'students:merit_list' exam.id %}" class="btn btn-outline-success btn-sm">
+                        Merit List
+                    </a>
+                    <a href="{% url 'exams:enter_results' exam.id %}" class="btn btn-outline-warning btn-sm">
+                        Enter Results
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="text-center text-muted">
+            <p>No exams found. <a href="{% url 'admin:exams_exam_add' %}">Create your first exam</a></p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

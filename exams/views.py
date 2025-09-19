@@ -30,8 +30,8 @@ def exam_detail(request, exam_id):
     total_subjects = ExamResult.objects.filter(exam=exam).values('subject').distinct().count()
     average_marks = ExamResult.objects.filter(exam=exam).aggregate(avg_marks=Avg('marks'))
     
-    # Get top performers
-    top_performers = StudentExamSummary.objects.filter(exam=exam).order_by('-total_marks')[:10]
+    # Get top performers using pre-computed overall position
+    top_performers = StudentExamSummary.objects.filter(exam=exam).order_by('overall_position')[:10]
     
     context = {
         'exam': exam,
@@ -80,6 +80,8 @@ def enter_results(request, exam_id):
         marks = request.POST.get('marks')
         
         if student_id and subject_id and marks:
+            from .services import ExamResultsService
+            
             student = get_object_or_404(Student, id=student_id)
             subject = get_object_or_404(Subject, id=subject_id)
             
@@ -96,7 +98,10 @@ def enter_results(request, exam_id):
                 result.entered_by = request.user
                 result.save()
             
-            messages.success(request, f'Result entered for {student.name} in {subject.name}')
+            # Automatically recalculate rankings for this exam
+            ExamResultsService.recalculate_exam_rankings(exam.id)
+            
+            messages.success(request, f'Result entered for {student.name} in {subject.name}. Rankings updated.')
             return redirect('exams:enter_results', exam_id=exam.id)
     
     # Get students for this form level
