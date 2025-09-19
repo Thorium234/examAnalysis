@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}Dashboard - Exam System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1>Friends Kikai Boys High School</h1>
+        <h2>Examination Management System</h2>
+        <p class="lead">Professional examination analysis system similar to Zeraki</p>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h4>{{ total_students }}</h4>
+                <p>Total Students</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h4>{{ form_counts|length }}</h4>
+                <p>Active Forms</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h4>{{ recent_exams|length }}</h4>
+                <p>Recent Exams</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h4>12</h4>
+                <p>Active Subjects</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Students by Form</h5>
+            </div>
+            <div class="card-body">
+                {% for form in form_counts %}
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Form {{ form.form_level }}</span>
+                    <span class="badge badge-primary">{{ form.count }} students</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Recent Exams</h5>
+            </div>
+            <div class="card-body">
+                {% for exam in recent_exams %}
+                <div class="d-flex justify-content-between mb-2">
+                    <div>
+                        <strong>{{ exam.name }}</strong><br>
+                        <small class="text-muted">Form {{ exam.form_level }} - {{ exam.get_exam_type_display }}</small>
+                    </div>
+                    <a href="{% url 'exams:exam_detail' exam.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                </div>
+                {% empty %}
+                <p class="text-muted">No recent exams found.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="{% url 'students:student_list' %}" class="btn btn-block btn-outline-primary">
+                            <i class="fa fa-users"></i> View Students
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'exams:exam_list' %}" class="btn btn-block btn-outline-success">
+                            <i class="fa fa-file-text"></i> View Exams
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'admin:index' %}" class="btn btn-block btn-outline-info">
+                            <i class="fa fa-cog"></i> Admin Panel
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        {% if recent_exams %}
+                        <a href="{% url 'students:merit_list' recent_exams.0.id %}" class="btn btn-block btn-outline-warning">
+                            <i class="fa fa-trophy"></i> Merit Lists
+                        </a>
+                        {% else %}
+                        <button class="btn btn-block btn-outline-secondary" disabled>
+                            <i class="fa fa-trophy"></i> Merit Lists
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
