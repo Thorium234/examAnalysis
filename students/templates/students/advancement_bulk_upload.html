@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bulk Upload Student Advancement Records{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Bulk Upload Student Advancement Records</h2>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'student-advancement-list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+            <a href="{% url 'student-advancement-template' %}" class="btn btn-outline-primary">
+                <i class="fas fa-download"></i> Download Template
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            <div class="alert alert-info">
+                <h5><i class="fas fa-info-circle"></i> Instructions</h5>
+                <ol>
+                    <li>Download the template Excel file using the button above</li>
+                    <li>Fill in the student advancement data following the format</li>
+                    <li>Save the file and upload it using the form below</li>
+                    <li>Make sure to enter the correct academic year</li>
+                </ol>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" class="row g-3">
+                {% csrf_token %}
+                
+                {% for field in form %}
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}" class="form-label">
+                            {{ field.label }}
+                        </label>
+                        {{ field }}
+                        {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% if field.errors %}
+                        <div class="alert alert-danger mt-2">
+                            {{ field.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload"></i> Upload and Process
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Add Bootstrap classes to form fields
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('input[type="text"]').forEach(function(input) {
+            input.classList.add('form-control');
+        });
+        
+        document.querySelectorAll('input[type="file"]').forEach(function(input) {
+            input.classList.add('form-control');
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

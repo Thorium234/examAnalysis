@@ -1,9 +1,16 @@
 from django.core.management.base import BaseCommand
-from django.contrib.auth import get_user_model
-from students.models import Student, Subject, ClassSubject, StudentSubject
-from exams.models import Exam, ExamResult, StudentExamSummary
+from django.contrib.auth import get_user_model 
+from students.models import (
+    Student, Subject, ClassSubjectAvailability, 
+    StudentSubjectEnrollment, SubjectPaper, SubjectPaperRatio
+)
+from exams.models import (
+    Exam, ExamResult, StudentExamSummary,
+    SubjectCategory, GradingSystem, GradingRange,
+    FormLevel
+)
 from accounts.models import TeacherSubject, TeacherClass
-from datetime import date
+from datetime import date, datetime
 import random
 
 User = get_user_model()
@@ -14,8 +21,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('Starting to populate sample data...'))
         
+        # Create subject categories and grading systems
+        self.create_subject_categories()
+        
         # Create subjects
         self.create_subjects()
+        
+        # Create subject papers
+        self.create_subject_papers()
         
         # Create teachers and users
         self.create_users()
@@ -37,26 +50,135 @@ class Command(BaseCommand):
         
         self.stdout.write(self.style.SUCCESS('Sample data population completed!'))
 
-    def create_subjects(self):
-        subjects_data = [
-            ('English', 'ENG'),
-            ('Kiswahili', 'KIS'),
-            ('Mathematics', 'MAT'),
-            ('Biology', 'BIO'),
-            ('Physics', 'PHY'),
-            ('Chemistry', 'CHE'),
-            ('History and Government', 'HIS'),
-            ('Geography', 'GEO'),
-            ('Christian Religious Education', 'CRE'),
-            ('Agriculture', 'AGR'),
-            ('Business Studies', 'BST'),
-            ('Computer Studies', 'COM'),
+    def create_subject_categories(self):
+        categories_data = [
+            ('Languages', 'Language subjects including English and Kiswahili'),
+            ('Sciences', 'Science subjects including Biology, Chemistry and Physics'),
+            ('Mathematics', 'Mathematics subject'),
+            ('Humanities', 'Humanities subjects including History, Geography and CRE'),
+            ('Technical', 'Technical subjects including Agriculture and Business Studies'),
         ]
         
-        for name, code in subjects_data:
-            subject, created = Subject.objects.get_or_create(name=name, code=code)
+        # Create categories
+        for name, description in categories_data:
+            category, created = SubjectCategory.objects.get_or_create(
+                name=name,
+                defaults={'description': description}
+            )
+            if created:
+                # Create default grading system for this category
+                grading = GradingSystem.objects.create(
+                    name=f'Standard {name} Grading',
+                    category=category,
+                    is_active=True,
+                    is_default=True,
+                    created_by=None  # No user yet
+                )
+                
+                # Create grading ranges
+                ranges_data = [
+                    (80, 100, 'A', 12),
+                    (75, 79, 'A-', 11),
+                    (70, 74, 'B+', 10),
+                    (65, 69, 'B', 9),
+                    (60, 64, 'B-', 8),
+                    (55, 59, 'C+', 7),
+                    (50, 54, 'C', 6),
+                    (45, 49, 'C-', 5),
+                    (40, 44, 'D+', 4),
+                    (35, 39, 'D', 3),
+                    (30, 34, 'D-', 2),
+                    (0, 29, 'E', 1),
+                ]
+                
+                for low, high, grade, points in ranges_data:
+                    GradingRange.objects.create(
+                        grading_system=grading,
+                        low_mark=low,
+                        high_mark=high,
+                        grade=grade,
+                        points=points
+                    )
+            
+            self.stdout.write(f'Created category: {name}')
+    
+    def create_subjects(self):
+        subjects_data = [
+            ('English', 'ENG', 'Languages', 3),
+            ('Kiswahili', 'KIS', 'Languages', 3),
+            ('Mathematics', 'MAT', 'Mathematics', 2),
+            ('Biology', 'BIO', 'Sciences', 3),
+            ('Physics', 'PHY', 'Sciences', 3),
+            ('Chemistry', 'CHE', 'Sciences', 3),
+            ('History and Government', 'HIS', 'Humanities', 2),
+            ('Geography', 'GEO', 'Humanities', 2),
+            ('Christian Religious Education', 'CRE', 'Humanities', 2),
+            ('Agriculture', 'AGR', 'Technical', 2),
+            ('Business Studies', 'BST', 'Technical', 2),
+            ('Computer Studies', 'COM', 'Technical', 2),
+        ]
+        
+        for name, code, category_name, num_papers in subjects_data:
+            category = SubjectCategory.objects.get(name=category_name)
+            subject, created = Subject.objects.get_or_create(
+                name=name,
+                defaults={
+                    'code': code,
+                    'category': category,
+                    'grading_system': category.grading_systems.get(is_default=True)
+                }
+            )
             if created:
                 self.stdout.write(f'Created subject: {name}')
+                
+    def create_subject_papers(self):
+        subjects = Subject.objects.all()
+        for subject in subjects:
+            # Get number of papers for this subject
+            num_papers = len(subject.papers.all())
+            if num_papers == 0:
+                # Create papers based on subject
+                if subject.name in ['English', 'Kiswahili']:
+                    papers = [
+                        ('Paper 1', 1, 60),  # Language paper
+                        ('Paper 2', 2, 80),  # Literature paper
+                        ('Paper 3', 3, 60),  # Oral/Creative paper
+                    ]
+                elif subject.name in ['Biology', 'Physics', 'Chemistry']:
+                    papers = [
+                        ('Paper 1', 1, 80),  # Theory paper
+                        ('Paper 2', 2, 80),  # Theory paper
+                        ('Paper 3', 3, 40),  # Practical paper
+                    ]
+                elif subject.name == 'Mathematics':
+                    papers = [
+                        ('Paper 1', 1, 100),
+                        ('Paper 2', 2, 100),
+                    ]
+                else:
+                    papers = [
+                        ('Paper 1', 1, 100),
+                        ('Paper 2', 2, 100) if subject.name not in ['Agriculture', 'Business Studies', 'Computer Studies'] else None
+                    ]
+                    papers = [p for p in papers if p]  # Remove None values
+                
+                # Create the papers
+                for paper_name, paper_number, max_marks in papers:
+                    paper = SubjectPaper.objects.create(
+                        name=paper_name,
+                        paper_number=paper_number,
+                        max_marks=max_marks
+                    )
+                    
+                    # Create paper ratio (contribution to final mark)
+                    ratio = 100.0 / len(papers)  # Equal weight distribution
+                    SubjectPaperRatio.objects.create(
+                        subject=subject,
+                        paper=paper,
+                        contribution_percentage=ratio
+                    )
+                
+                self.stdout.write(f'Created papers for: {subject.name}')
 
     def create_users(self):
         # Create school administrators
@@ -202,42 +324,50 @@ class Command(BaseCommand):
         subjects = Subject.objects.all()
         
         for form_level in [2, 3]:
-            for stream in ['East', 'West']:
+            for stream in ['East', 'West', 'North', 'South']:
                 for subject in subjects:
-                    max_marks = 100  # Default maximum marks
-                    ClassSubject.objects.get_or_create(
+                    ClassSubjectAvailability.objects.get_or_create(
                         form_level=form_level,
                         stream=stream,
                         subject=subject,
-                        defaults={'maximum_marks': max_marks}
+                        defaults={'is_available': True}
                     )
         
         self.stdout.write('Created class subjects for all forms and streams')
 
     def create_exams(self):
+        # First ensure we have form levels
+        forms = []
+        for level in [2, 3]:
+            form, _ = FormLevel.objects.get_or_create(number=level)
+            forms.append(form)
+
         # Create sample exams
         exams_data = [
-            ('AVERAGE EXAM', 'AVERAGE', 2025, 2, 2),
-            ('MID YEAR EXAM', 'MID_YEAR', 2025, 2, 3),
-            ('END TERM EXAM', 'END_TERM', 2025, 2, 2),
+            ('AVERAGE EXAM', 'is_year_average', 2025, 2),
+            ('MID YEAR EXAM', 'is_ordinary_exam', 2025, 2),
+            ('END TERM EXAM', 'is_ordinary_exam', 2025, 2),
         ]
         
-        for name, exam_type, year, term, form_level in exams_data:
+        for name, exam_type, year, term in exams_data:
             exam, created = Exam.objects.get_or_create(
                 name=name,
-                exam_type=exam_type,
                 year=year,
                 term=term,
-                form_level=form_level
+                defaults={
+                    exam_type: True,
+                    'is_active': True
+                }
             )
             if created:
-                self.stdout.write(f'Created exam: {name} - Form {form_level}')
+                exam.participating_forms.set(forms)
+                self.stdout.write(f'Created exam: {name}')
 
     def create_exam_results(self):
         # Create sample exam results based on the documents
         
         # Form 2 Average Exam results (from the report documents)
-        form2_exam = Exam.objects.get(name='AVERAGE EXAM', form_level=2)
+        form2_exam = Exam.objects.get(name='AVERAGE EXAM')
         
         # Sample results for Tobias Juma (4467)
         tobias = Student.objects.get(admission_number='4467')
@@ -254,17 +384,20 @@ class Command(BaseCommand):
         
         for subject_name, marks in tobias_results:
             subject = Subject.objects.get(name=subject_name)
+            # Get paper ratios for the subject
+            paper_ratios = SubjectPaperRatio.objects.filter(subject=subject)
             ExamResult.objects.get_or_create(
                 exam=form2_exam,
                 student=tobias,
                 subject=subject,
-                defaults={'marks': marks}
+                status='P',
+                defaults={'total_marks': marks}
             )
         
-        # Sample results for Kibet Morgan (4456)
-        kibet = Student.objects.get(admission_number='4456')
-        kibet_results = [
-            ('English', 37),
+        # Sample results for Gospel Chemuku Walukana (4473)
+        gospel = Student.objects.get(admission_number='4473')
+        gospel_results = [
+            ('English', 68),
             ('Kiswahili', 44),
             ('Mathematics', 7),
             ('Biology', 22),
@@ -275,21 +408,21 @@ class Command(BaseCommand):
             ('Business Studies', 25),
         ]
         
-        for subject_name, marks in kibet_results:
+        for subject_name, marks in gospel_results:
             subject = Subject.objects.get(name=subject_name)
             ExamResult.objects.get_or_create(
                 exam=form2_exam,
-                student=kibet,
+                student=gospel,
                 subject=subject,
-                defaults={'marks': marks}
+                status='P',
+                defaults={'total_marks': marks}
             )
         
         # Form 3 Mid Year Exam results (sample from merit list)
-        form3_exam = Exam.objects.get(name='MID YEAR EXAM', form_level=3)
+        form3_exam = Exam.objects.get(name='MID YEAR EXAM')
         
         # Top performer: Gospel Chemuku Walukana (4473)
-        gospel = Student.objects.get(admission_number='4473')
-        gospel_results = [
+        gospel_mid_results = [
             ('English', 18),
             ('Kiswahili', 41),
             ('Mathematics', 9),
@@ -300,13 +433,14 @@ class Command(BaseCommand):
             ('Business Studies', 16),
         ]
         
-        for subject_name, marks in gospel_results:
+        for subject_name, marks in gospel_mid_results:
             subject = Subject.objects.get(name=subject_name)
             ExamResult.objects.get_or_create(
                 exam=form3_exam,
                 student=gospel,
                 subject=subject,
-                defaults={'marks': marks}
+                status='P',
+                defaults={'total_marks': marks}
             )
         
         # Create random results for other students
@@ -315,21 +449,28 @@ class Command(BaseCommand):
         exams = Exam.objects.all()
         
         for exam in exams:
-            form_students = Student.objects.filter(form_level=exam.form_level)
-            for student in form_students:
-                # Skip if already has results
+            for student in students:
+                # Skip if student already has results for this exam
                 if ExamResult.objects.filter(exam=exam, student=student).exists():
                     continue
                 
                 # Create random results for 5-8 subjects per student
                 random_subjects = random.sample(list(subjects), random.randint(5, 8))
                 for subject in random_subjects:
-                    marks = random.randint(15, 85)  # Random marks between 15-85
+                    # 85% chance of present, 10% absent, 5% disqualified
+                    status = random.choices(['P', 'A', 'D'], weights=[85, 10, 5])[0]
+                    
+                    if status == 'P':
+                        marks = random.randint(15, 85)  # Random marks between 15-85
+                    else:
+                        marks = -1 if status == 'A' else -2  # -1 for absent, -2 for disqualified
+                    
                     ExamResult.objects.get_or_create(
                         exam=exam,
                         student=student,
                         subject=subject,
-                        defaults={'marks': marks}
+                        status=status,
+                        defaults={'total_marks': marks}
                     )
         
         self.stdout.write('Created exam results for students')

@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Student Advancement Records{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Student Advancement Records</h2>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'student-advancement-create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Record
+            </a>
+            <a href="{% url 'student-advancement-bulk-upload' %}" class="btn btn-success">
+                <i class="fas fa-file-excel"></i> Bulk Upload
+            </a>
+            <a href="{% url 'student-advancement-template' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-download"></i> Download Template
+            </a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-auto">
+                    <select name="academic_year" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Academic Years</option>
+                        {% for year in academic_years %}
+                        <option value="{{ year }}" {% if request.GET.academic_year == year %}selected{% endif %}>
+                            {{ year }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Admission No.</th>
+                    <th>Name</th>
+                    <th>Current Class</th>
+                    <th>Next Class</th>
+                    <th>Status</th>
+                    <th>Academic Year</th>
+                    <th>Decision Date</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for advancement in advancements %}
+                <tr>
+                    <td>{{ advancement.student.admission_number }}</td>
+                    <td>{{ advancement.student.name }}</td>
+                    <td>Form {{ advancement.current_form }} {{ advancement.current_stream }}</td>
+                    <td>Form {{ advancement.next_form }} {{ advancement.next_stream }}</td>
+                    <td>
+                        <span class="badge {% if advancement.status == 'promoted' %}bg-success
+                                         {% elif advancement.status == 'retained' %}bg-warning
+                                         {% elif advancement.status == 'graduated' %}bg-info
+                                         {% else %}bg-secondary{% endif %}">
+                            {{ advancement.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ advancement.academic_year }}</td>
+                    <td>{{ advancement.decision_date }}</td>
+                    <td>{{ advancement.remarks|truncatechars:30 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center">No advancement records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

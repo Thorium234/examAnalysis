@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Student, Subject, ClassSubject, StudentSubject
+from .models import Student, StudentAdvancement, ClassSubjectAvailability, SubjectPaper
+from .forms import SubjectPaperForm
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
@@ -8,20 +9,22 @@ class StudentAdmin(admin.ModelAdmin):
     search_fields = ('admission_number', 'name', 'phone_contact')
     ordering = ('form_level', 'stream', 'name')
 
-@admin.register(Subject)
-class SubjectAdmin(admin.ModelAdmin):
-    list_display = ('name', 'code', 'is_active')
+@admin.register(SubjectPaper)
+class SubjectPaperAdmin(admin.ModelAdmin):
+    form = SubjectPaperForm
+    list_display = ('name', 'paper_number', 'max_marks', 'is_active')
     list_filter = ('is_active',)
-    search_fields = ('name', 'code')
+    search_fields = ('name',)
+    ordering = ('paper_number',)
 
-@admin.register(ClassSubject)
-class ClassSubjectAdmin(admin.ModelAdmin):
-    list_display = ('form_level', 'stream', 'subject', 'maximum_marks', 'is_active')
-    list_filter = ('form_level', 'stream', 'subject', 'is_active')
-    ordering = ('form_level', 'stream', 'subject')
+@admin.register(StudentAdvancement)
+class StudentAdvancementAdmin(admin.ModelAdmin):
+    list_display = ('student', 'academic_year', 'current_form', 'next_form', 'status')
+    list_filter = ('status', 'academic_year', 'current_form')
+    search_fields = ('student__name', 'student__admission_number')
 
-@admin.register(StudentSubject)
-class StudentSubjectAdmin(admin.ModelAdmin):
-    list_display = ('student', 'subject', 'is_enrolled')
-    list_filter = ('subject', 'is_enrolled', 'student__form_level', 'student__stream')
-    search_fields = ('student__name', 'student__admission_number', 'subject__name')
+@admin.register(ClassSubjectAvailability)
+class ClassSubjectAvailabilityAdmin(admin.ModelAdmin):
+    list_display = ('subject', 'form_level', 'stream', 'is_available')
+    list_filter = ('form_level', 'stream', 'is_available')
+    search_fields = ('subject__name',)

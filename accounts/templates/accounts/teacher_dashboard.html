@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Teacher Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Teacher Dashboard</h1>
+            <p class="text-muted">Welcome, {{ user.get_full_name }}</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body">
+                    <h4>{{ total_students }}</h4>
+                    <p>Total Students</p>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text white" href="{% url 'students:student_list' %}">View Details</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white mb-4">
+                <div class="card-body">
+                    <h4>{{ total_subjects }}</h4>
+                    <p>Subjects Taught</p>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text white" href="{% url 'subjects:subject_list' %}">View Subjects</a>
+                </div>
+            </div>  
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white mb-4">
+                <div class="card-body">
+                    <h4>{{ recent_exams|length }}</h4>
+                    <p>Recent Exams</p>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text white" href="#exam-list">View Exams</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" id="exam-list">
+        <div class="col-12">
+            <h3>Recent Exams</h3>
+            <div class="list-group">
+                {% for exam in recent_exams %}
+                <a href="{% url 'exams:exam_detail' exam.id %}" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ exam.name }}</h5>
+                        <small>{{ exam.date_conducted|date:"M d, Y" }}</small>
+                    </div>
+                    <p class="mb-1">Form: {{ exam.form_level }} | Subject: {{ exam.subject.name }}</p>
+                </a>
+                {% empty %}
+                <p class="text-muted">No recent exams available.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>  
+</div>
+{% endblock %}

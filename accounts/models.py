@@ -56,4 +56,4 @@ class TeacherClass(models.Model):
     
     @property
     def class_name(self):
-        return f"Form {self.form_level} {self.stream}"
+        return f"Form {self.form_level} {self.stream}" 

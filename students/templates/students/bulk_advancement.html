@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}Bulk Student Advancement{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Bulk Student Management</h2>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="form-inline">
+                        <select name="form_level" class="form-control mr-2">
+                            <option value="">All Forms</option>
+                            {% for form in form_levels %}
+                            <option value="{{ form }}" {% if form == selected_form %}selected{% endif %}>Form {{ form }}</option>
+                            {% endfor %}
+                        </select>
+                        <select name="stream" class="form-control mr-2">
+                            <option value="">All Streams</option>
+                            {% for stream in streams %}
+                            <option value="{{ stream }}" {% if stream == selected_stream %}selected{% endif %}>{{ stream }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary">Filter</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll"></th>
+                                <th>Admission No</th>
+                                <th>Name</th>
+                                <th>Form</th>
+                                <th>Stream</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td><input type="checkbox" name="selected_students" value="{{ student.admission_number }}"></td>
+                                <td>{{ student.admission_number }}</td>
+                                <td>{{ student.full_name }}</td>
+                                <td>{{ student.form_level }}</td>
+                                <td>{{ student.stream }}</td>
+                                <td>{% if student.active %}Active{% else %}Graduated{% endif %}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">No students found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col-md-4">
+                        <button type="submit" name="action" value="advance_form" class="btn btn-success">
+                            <i class="fas fa-arrow-up"></i> Advance Form Level
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <select name="new_stream" class="form-control">
+                                {% for stream in streams %}
+                                <option value="{{ stream }}">{{ stream }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="input-group-append">
+                                <button type="submit" name="action" value="change_stream" class="btn btn-info">
+                                    Change Stream
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" name="action" value="graduate" class="btn btn-warning">
+                            <i class="fas fa-graduation-cap"></i> Mark as Graduated
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.getElementsByName('selected_students');
+    checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+});
+</script>
+{% endblock %}

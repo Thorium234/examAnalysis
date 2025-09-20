@@ -14,7 +14,7 @@ class ReportTemplate(models.Model):
         ('TEACHER_REPORT', 'Teacher Performance Report'),
     )
     
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200) 
     report_type = models.CharField(max_length=20, choices=REPORT_TYPES)
     is_active = models.BooleanField(default=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)

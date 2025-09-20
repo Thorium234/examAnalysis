@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}Delete Exam - {{ object.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h3>Delete Exam</h3>
+        </div>
+        <div class="card-body">
+            <p class="lead">Are you sure you want to delete "{{ object.name }}"?</p>
+            <p>This will permanently delete:</p>
+            <ul>
+                <li>All exam results</li>
+                <li>Student performance records</li>
+                <li>Merit lists and rankings</li>
+            </ul>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                <a href="{% url 'exams:exam_detail' object.id %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

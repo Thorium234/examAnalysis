@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}Student Performance - {{ student.full_name }}{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Performance Analysis - {{ student.full_name }}</h2>
+            <p class="text-muted">Form {{ student.form_level }} {{ student.stream }}</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <canvas id="performanceChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+const ctx = document.getElementById('performanceChart').getContext('2d');
+const examsData = {{ exams_data|safe }};
+
+const datasets = [];
+const labels = Object.keys(examsData);
+const subjects = new Set();
+
+// Get all unique subjects
+Object.values(examsData).forEach(examResults => {
+    Object.keys(examResults).forEach(subject => subjects.add(subject));
+});
+
+// Create datasets for each subject
+subjects.forEach(subject => {
+    const data = labels.map(exam => examsData[exam][subject] || null);
+    datasets.push({
+        label: subject,
+        data: data,
+        fill: false,
+        tension: 0.1
+    });
+});
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: datasets
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100
+            }
+        },
+        plugins: {
+            title: {
+                display: true,
+                text: 'Subject Performance Over Time'
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

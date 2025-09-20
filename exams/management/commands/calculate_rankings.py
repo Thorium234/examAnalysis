@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from exams.models import Exam
+from exams.models import Exam 
 from exams.services import ExamResultsService
 
 class Command(BaseCommand):

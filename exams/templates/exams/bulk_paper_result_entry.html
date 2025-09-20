@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h2>Bulk Paper Result Entry</h2>
+    
+    <!-- Entry Mode Selection Form -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="post" id="entryModeForm">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        {{ entry_form.exam.label_tag }}
+                        {{ entry_form.exam }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ entry_form.subject.label_tag }}
+                        {{ entry_form.subject }}
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <label>Entry Mode:</label>
+                        <div class="btn-group" role="group">
+                            {% for value, label in entry_form.entry_mode.field.choices %}
+                            <input type="radio" class="btn-check" name="{{ entry_form.entry_mode.name }}"
+                                   id="mode_{{ value }}" value="{{ value }}"
+                                   {% if entry_form.entry_mode.value == value %}checked{% endif %}>
+                            <label class="btn btn-outline-primary" for="mode_{{ value }}">{{ label }}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Dynamic Fields based on Mode -->
+                <div id="normalModeFields" class="mt-3" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-4">
+                            {{ entry_form.max_marks.label_tag }}
+                            {{ entry_form.max_marks }}
+                            <small class="form-text text-muted">{{ entry_form.max_marks.help_text }}</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="standardModeFields" class="mt-3" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-4">
+                            {{ entry_form.paper.label_tag }}
+                            {{ entry_form.paper }}
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary mt-3">Load Students</button>
+            </form>
+        </div>
+    </div>
+    
+    {% if formset %}
+    <!-- Result Entry Form -->
+    <div class="card">
+        <div class="card-body">
+            <h4>Enter Results</h4>
+            <div class="table-responsive">
+                <form method="post" action="{% url 'save_paper_results' %}">
+                    {% csrf_token %}
+                    {{ formset.management_form }}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Admission No.</th>
+                                <th>Name</th>
+                                <th>Marks (out of {{ max_marks }})</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for form in formset %}
+                            <tr>
+                                {{ form.student }}
+                                <td>{{ form.admission_number }}</td>
+                                <td>{{ form.name }}</td>
+                                <td>{{ form.marks }}</td>
+                                <td>{{ form.status }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <button type="submit" class="btn btn-success">Save Results</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Spreadsheet Section -->
+    <div class="card mt-4">
+        <div class="card-body">
+            <h4>Spreadsheet Entry</h4>
+            
+            <!-- Template Download -->
+            <div class="mb-4">
+                <h5>1. Download Template</h5>
+                <p>Download a pre-formatted spreadsheet template with student information.</p>
+                <button type="button" class="btn btn-primary" id="downloadTemplate">
+                    <i class="fas fa-download"></i> Download Template
+                </button>
+            </div>
+            
+            <div class="mb-4">
+                <h5>2. Fill in the Template</h5>
+                <ul>
+                    <li>Enter marks in the 'Marks' column</li>
+                    <li>Use P (Present), A (Absent), or D (Disqualified) in the 'Status' column</li>
+                    <li>Do not modify locked cells or sheet structure</li>
+                    <li>Save the file when done</li>
+                </ul>
+            </div>
+            
+            <!-- File Upload -->
+            <div>
+                <h5>3. Upload Completed Spreadsheet</h5>
+                <form method="post" action="{% url 'upload_spreadsheet' %}" 
+                      enctype="multipart/form-data" id="spreadsheetUploadForm">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <input type="file" class="form-control" name="file" 
+                                   accept=".xlsx" required>
+                            <small class="form-text text-muted">
+                                Upload the filled template without modifying its structure
+                            </small>
+                        </div>
+                        <div class="col-md-6">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-upload"></i> Upload & Process
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Spreadsheet template download
+    $('#downloadTemplate').click(function() {
+        var exam = $('#id_exam').val();
+        var subject = $('#id_subject').val();
+        var paper = $('#id_paper').val();
+        var mode = $('input[name="entry_mode"]:checked').val();
+        
+        if (!exam || !subject) {
+            alert('Please select exam and subject first');
+            return;
+        }
+        
+        var url = `/exams/spreadsheet/template/${exam}/${subject}/`;
+        if (mode === 'standard' && paper) {
+            url += `${paper}/`;
+        }
+        
+        window.location.href = url;
+    });
+    
+    // Spreadsheet upload handling
+    $('#spreadsheetUploadForm').submit(function(e) {
+        e.preventDefault();
+        var formData = new FormData(this);
+        
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    alert('Successfully processed ' + response.count + ' results');
+                    location.reload();
+                } else {
+                    alert('Error: ' + response.error);
+                }
+            },
+            error: function(xhr) {
+                alert('Error: ' + xhr.responseJSON.error);
+            }
+        });
+    });
+    function updateModeFields() {
+        var mode = $('input[name="entry_mode"]:checked').val();
+        $('#normalModeFields').toggle(mode === 'normal');
+        $('#standardModeFields').toggle(mode === 'standard');
+    }
+    
+    // Initial state
+    updateModeFields();
+    
+    // Mode change handler
+    $('input[name="entry_mode"]').change(updateModeFields);
+    
+    // Subject change handler - update papers
+    $('#id_subject').change(function() {
+        var subjectId = $(this).val();
+        if (subjectId) {
+            $.get('/api/subject/' + subjectId + '/papers/', function(data) {
+                var paperSelect = $('#id_paper');
+                paperSelect.empty();
+                data.forEach(function(paper) {
+                    paperSelect.append(new Option(paper.name, paper.id));
+                });
+            });
+        }
+    });
+    
+    // Status change handler
+    $('.status-select').change(function() {
+        var row = $(this).closest('tr');
+        var marksInput = row.find('input[type="number"]');
+        if ($(this).val() !== 'P') {
+            marksInput.prop('disabled', true).val('');
+        } else {
+            marksInput.prop('disabled', false);
+        }
+    });
+});
+</script>
+{% endblock %}
