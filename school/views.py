@@ -8,8 +8,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db.models import Q
-from .models import School
-from .forms import UserCreationForm
+from .models import School, FormLevel, Stream
+from .forms import UserCreationForm, FormLevelForm
 import logging
 
 # Set up logging
@@ -52,53 +52,35 @@ class SchoolDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         return self.request.user.is_superuser
 
-# --- Function-Based Views for Dashboards & Roles ---
+# --- Function-Based Views for School-Related Dashboards ---
 
 @login_required
 def school_dashboard(request):
     """
-    Renders the main school dashboard homepage (the one with the cards).
-    This is the central navigation hub for the system.
+    Main dashboard for the school.
     """
-    return render(request, 'school/school_dashboard.html')
+    school = request.user.profile.school
+    context = {
+        'school': school,
+    }
+    return render(request, 'school/school_dashboard.html', context)
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def principal_control(request):
     """
-    Handles the Principal's control panel. Displays a form for creating new users
-    and processes the form submission.
+    Principal's control panel to manage user accounts.
     """
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            username = form.cleaned_data['username']
-            email = form.cleaned_data['email']
-            password = form.cleaned_data['password']
-            role = form.cleaned_data['role']
-            try:
-                user = User.objects.create_user(username=username, email=email, password=password)
-                # For now, we'll assign roles using is_staff, and add a custom profile model later.
-                if role == 'teacher':
-                    user.is_staff = True
-                    user.save()
-                    messages.success(request, f"Successfully created new teacher account for: {username}.")
-                elif role == 'student':
-                    messages.success(request, f"Successfully created new student account for: {username}.")
-                return redirect('school:principal_control')
-            except Exception as e:
-                messages.error(request, f"An error occurred: {e}")
-                logging.error(f"Error creating user: {e}")
-        else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"{field.capitalize()}: {error}")
+            form.save()
+            messages.success(request, 'User created successfully!')
+            return redirect('school:principal_control')
     else:
         form = UserCreationForm()
-
-    context = {
-        'form': form
-    }
+    
+    context = {'form': form}
     return render(request, 'school/principal_control.html', context)
 
 @login_required
@@ -132,7 +114,7 @@ def student_list(request):
 @login_required
 def forms_dashboard(request):
     """
-    Placeholder view for the forms dashboard (Form 1, Form 2, etc.).
+    Renders the dashboard for managing forms and classes.
     """
     return render(request, 'school/forms_dashboard.html')
 
@@ -146,6 +128,35 @@ def exam_management(request):
 @login_required
 def reports_and_analysis(request):
     """
-    Placeholder view for generating reports and analyzing data.
+    Placeholder view for reports and analysis.
     """
     return render(request, 'school/reports_and_analysis.html')
+
+# --- FormLevel Views (New) ---
+
+class FormLevelListView(LoginRequiredMixin, ListView):
+    """
+    Displays a list of all existing form levels.
+    """
+    model = FormLevel
+    template_name = 'school/form_level_list.html'
+    context_object_name = 'form_levels'
+
+    def get_queryset(self):
+        # Filter form levels by the user's school
+        return FormLevel.objects.filter(school=self.request.user.profile.school)
+
+
+class FormLevelCreateView(LoginRequiredMixin, CreateView):
+    """
+    View to create a new form level.
+    """
+    model = FormLevel
+    form_class = FormLevelForm
+    template_name = 'school/form_level_form.html'
+    success_url = reverse_lazy('school:forms_dashboard')
+
+    def form_valid(self, form):
+        # Automatically set the school to the current user's school
+        form.instance.school = self.request.user.profile.school
+        return super().form_valid(form)

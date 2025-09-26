@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Reports and Analysis{% endblock %}
+{% block content %}
+  <div class="container py-5 text-center">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card shadow-sm rounded-lg border-0 p-5">
+          <div class="card-body">
+            <i class="fas fa-chart-line fa-5x text-info mb-4"></i>
+            <h1 class="display-4 font-weight-bold text-dark mb-3">Reports and Analysis</h1>
+            <p class="lead text-muted">
+              This section is currently under construction.
+            </p>
+            <p class="text-muted">
+              We're working hard to bring you comprehensive reports and detailed statistical analysis. Please check back later for updates.
+            </p>
+            <a href="{% url 'school:school_dashboard' %}" class="btn btn-primary mt-4">
+              <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

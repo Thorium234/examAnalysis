@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}
+  Delete School - Friends
+{% endblock %}
+{% block content %}
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg mt-5 border-0 rounded-lg">
+          <div class="card-header bg-danger text-white text-center rounded-top-lg">
+            <h4 class="mb-0">Confirm Deletion</h4>
+          </div>
+          <div class="card-body p-4">
+            <p class="lead text-center">Are you sure you want to delete the school "{{ object.name }}"?</p>
+            <p class="text-center text-muted">This action is irreversible.</p>
+            <form method="post" class="mt-4 text-center">
+              {% csrf_token %}<button type="submit" class="btn btn-danger btn-lg me-2">Yes, Delete</button><a href="{% url 'school:school_dashboard' %}" class="btn btn-secondary btn-lg">Cancel</a>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

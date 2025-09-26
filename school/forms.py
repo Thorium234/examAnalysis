@@ -2,33 +2,39 @@
 
 from django import forms
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
+from .models import School, FormLevel, Stream
 
 class UserCreationForm(forms.Form):
     """
-    A form for creating a new user account with a designated role.
-    Roles are set as a simple choice field for now.
+    A simple form to create a new user account with a specific role.
     """
+    username = forms.CharField(max_length=150)
+    email = forms.EmailField()
+    password = forms.CharField(widget=forms.PasswordInput)
     ROLE_CHOICES = (
-        ('teacher', 'Teacher'),
         ('student', 'Student'),
+        ('teacher', 'Teacher'),
+        ('principal', 'Principal'),
     )
-
-    username = forms.CharField(max_length=150, help_text="Required. 150 characters or fewer.")
-    email = forms.EmailField(help_text="Required. A valid email address.")
-    password = forms.CharField(widget=forms.PasswordInput, help_text="Enter a strong password.")
     role = forms.ChoiceField(choices=ROLE_CHOICES)
 
-    def clean_username(self):
-        """Ensures the username is not already taken."""
-        username = self.cleaned_data['username']
-        if User.objects.filter(username=username).exists():
-            raise ValidationError("This username is already in use.")
-        return username
+class SchoolForm(forms.ModelForm):
+    class Meta:
+        model = School
+        fields = ['name', 'location', 'logo', 'address', 'phone_number', 'email']
 
-    def clean_email(self):
-        """Ensures the email is not already taken."""
-        email = self.cleaned_data['email']
-        if User.objects.filter(email=email).exists():
-            raise ValidationError("This email is already registered.")
-        return email
+class FormLevelForm(forms.ModelForm):
+    """
+    Form for creating and updating a FormLevel model.
+    """
+    class Meta:
+        model = FormLevel
+        fields = ['name']
+
+class StreamForm(forms.ModelForm):
+    """
+    Form for creating and updating a Stream model.
+    """
+    class Meta:
+        model = Stream
+        fields = ['name', 'form_level']

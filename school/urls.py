@@ -4,7 +4,7 @@ from django.urls import path
 from . import views
 
 app_name = 'school'
-
+ 
 urlpatterns = [
     # Main dashboard view. This will be the landing page for authenticated users.
     # It is a function-based view, separate from the SchoolDashboardView class.

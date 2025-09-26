@@ -1,3 +1,4 @@
+# exams/models.py
 from django.db import models
 from django.conf import settings  # Import settings to reference AUTH_USER_MODEL
 from django.core.validators import MinValueValidator, MaxValueValidator
