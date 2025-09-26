@@ -1,0 +1,47 @@
+{% extends 'base.html' %}{% load static %}{% load bootstrap4 %}{% block title %}Manage Ranges for {{ grading_system.name }}{% endblock %}{% block content %}<div class="container-fluid"><div class="d-sm-flex align-items-center justify-content-between mb-4"><h1 class="h3 mb-0 text-gray-800">Manage Ranges for "{{ grading_system.name }}"</h1></div><div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Grading Ranges</h6>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Low Mark (%)</th>
+                            <th>High Mark (%)</th>
+                            <th>Grade</th>
+                            <th>Points</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{ formset.management_form }}
+                        {% for form in formset %}
+                        <tr>
+                            <td>{{ form.low_mark }}</td>
+                            <td>{{ form.high_mark }}</td>
+                            <td>{{ form.grade }}</td>
+                            <td>{{ form.points }}</td>
+                            <td>
+                                {% if form.instance.pk %}
+                                    <button type="submit" name="delete_range_{{ form.instance.pk }}" class="btn btn-sm btn-danger">Delete</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    {{ formset.non_field_errors }}
+                    <button type="submit" class="btn btn-success">Save Ranges</button>
+                    <a href="{% url 'exams:grading_system_list' %}" class="btn btn-secondary">Done</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</div>{% endblock %}

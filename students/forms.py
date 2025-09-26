@@ -1,44 +1,46 @@
+# students/forms.py
 from django import forms
-from .models import SubjectPaper, SubjectPaperRatio, StudentAdvancement, Student
+from django.core.exceptions import ValidationError
+from django.db import transaction
+from .models import Student, StudentAdvancement
 
-class SubjectPaperForm(forms.ModelForm):
+class StudentForm(forms.ModelForm):
     class Meta:
-        model = SubjectPaper
-        fields = ['name', 'paper_number', 'max_marks', 'is_active']
-        widgets = {
-            'max_marks': forms.NumberInput(attrs={'step': '0.01', 'min': '0', 'max': '100'}),
-        }
-
-class SubjectPaperRatioForm(forms.ModelForm):
-    class Meta:
-        model = SubjectPaperRatio
-        fields = ['paper', 'contribution_percentage', 'is_active']
-        widgets = {
-            'contribution_percentage': forms.NumberInput(
-                attrs={'step': '0.01', 'min': '0', 'max': '100'}
-            ),
-        }
-        
-    def clean_contribution_percentage(self):
-        percentage = self.cleaned_data['contribution_percentage']
-        if percentage < 0 or percentage > 100:
-            raise forms.ValidationError('Percentage must be between 0 and 100')
-        return percentage
+        model = Student
+        fields = [
+            'name',
+            'admission_number',
+            'form_level',
+            'stream',
+            'kcpe_marks',
+            'phone_contact',
+            'is_active',
+        ]
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'form-control'
 
 class StudentAdvancementForm(forms.ModelForm):
     class Meta:
         model = StudentAdvancement
-        fields = ['student', 'academic_year', 'current_form', 'current_stream',
-                 'next_form', 'next_stream', 'status', 'remarks']
+        fields = [
+            'academic_year',
+            'student',
+            'current_form',
+            'current_stream',
+            'next_form',
+            'next_stream',
+            'status',
+            'remarks',
+        ]
         widgets = {
-            'academic_year': forms.TextInput(attrs={'placeholder': 'YYYY'}),
-            'remarks': forms.Textarea(attrs={'rows': 3}),
+            'student': forms.HiddenInput(),
+            'current_form': forms.HiddenInput(),
+            'current_stream': forms.HiddenInput(),
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['student'].queryset = Student.objects.filter(is_active=True)
-        
     def clean(self):
         cleaned_data = super().clean()
         current_form = cleaned_data.get('current_form')
@@ -63,9 +65,10 @@ class StudentAdvancementForm(forms.ModelForm):
 class StudentAdvancementBulkUploadForm(forms.Form):
     excel_file = forms.FileField(
         label='Excel File',
-        help_text='Upload an Excel file (.xlsx) with student advancement data'
+        help_text='Upload an Excel file (.xlsx) with student advancement data',
+        widget=forms.ClearableFileInput(attrs={'class': 'form-control-file'})
     )
     academic_year = forms.CharField(
         max_length=4,
-        widget=forms.TextInput(attrs={'placeholder': 'YYYY'})
+        widget=forms.TextInput(attrs={'placeholder': 'YYYY', 'class': 'form-control'})
     )

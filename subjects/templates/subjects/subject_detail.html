@@ -1,0 +1,73 @@
+{% extends 'base.html' %}{% load static %}{% block title %}{{ subject.name }} Details{% endblock %}{% block content %}<div class="container-fluid"><div class="d-sm-flex align-items-center justify-content-between mb-4"><h1 class="h3 mb-0 text-gray-800">{{ subject.name }} Details</h1><div><a href="{% url 'subjects:subject_update' subject.id %}" class="btn btn-info shadow-sm"><i class="fas fa-edit fa-sm text-white-50"></i> Edit Subject</a><a href="{% url 'subjects:subject_delete' subject.id %}" class="btn btn-danger shadow-sm"><i class="fas fa-trash fa-sm text-white-50"></i> Delete Subject</a></div></div><div class="row">
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Subject Information</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>Name:</strong> {{ subject.name }}</p>
+                <p><strong>Code:</strong> {{ subject.code }}</p>
+                <p><strong>Category:</strong> {{ subject.category.name }}</p>
+                <p><strong>Head of Department:</strong> {{ subject.hod.get_full_name|default:subject.hod.username }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Assigned Teachers</h6>
+            </div>
+            <div class="card-body">
+                {% if teachers %}
+                <ul class="list-group list-group-flush">
+                    {% for teacher in teachers %}
+                    <li class="list-group-item">{{ teacher.get_full_name|default:teacher.username }}</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">No teachers are currently assigned to this subject.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Subject Papers</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Paper Name</th>
+                                <th>Paper Code</th>
+                                <th>Maximum Marks</th>
+                                <th>Contribution (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for paper in subject_papers %}
+                            <tr>
+                                <td>{{ paper.name }}</td>
+                                <td>{{ paper.code }}</td>
+                                <td>{{ paper.max_marks }}</td>
+                                <td>{{ paper.contribution }}%</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">No papers defined for this subject.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>{% endblock %}

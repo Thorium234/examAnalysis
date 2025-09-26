@@ -1,0 +1,19 @@
+{% extends 'base.html' %}{% load static %}{% load bootstrap4 %}{% block title %}Assign Subjects to {{ teacher.get_full_name }}{% endblock %}{% block content %}<div class="row justify-content-center"><div class="col-md-8 col-lg-6"><div class="card shadow-lg mt-5"><div class="card-header text-center"><h4 class="text-white mb-0">Assign Subjects to {{ teacher.get_full_name }}</h4></div><div class="card-body"><form method="post">{% csrf_token %}                <div class="form-group">
+                    <label for="id_subjects">Select Subjects:</label>
+                    <select id="id_subjects" name="subjects" class="form-control" multiple>
+                        {% for subject in all_subjects %}
+                        <option value="{{ subject.pk }}" {% if subject in assigned_subjects %}selected{% endif %}>
+                            {{ subject.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <small class="form-text text-muted">Hold down the Ctrl (Windows) or Cmd (Mac) key to select multiple subjects.</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-3">Save Assignment</button>
+                <a href="{% url 'accounts:teacher_dashboard' %}" class="btn btn-secondary mt-3">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+</div>{% endblock %}

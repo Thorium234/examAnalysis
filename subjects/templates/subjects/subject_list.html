@@ -1,0 +1,39 @@
+{% extends 'base.html' %}{% load static %}{% block title %}Subjects List{% endblock %}{% block content %}<div class="container-fluid"><div class="d-sm-flex align-items-center justify-content-between mb-4"><h1 class="h3 mb-0 text-gray-800">Subjects</h1>{% if perms.subjects.add_subject %}<a href="{% url 'subjects:subject_create' %}" class="d-none d-sm-inline-block btn btn-primary shadow-sm"><i class="fas fa-plus fa-sm text-white-50"></i> Add New Subject</a>{% endif %}</div><div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">All Subjects</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Subject Name</th>
+                        <th>Subject Code</th>
+                        <th>Category</th>
+                        <th>HoD</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for subject in subjects %}
+                    <tr>
+                        <td><a href="{% url 'subjects:subject_detail' subject.id %}">{{ subject.name }}</a></td>
+                        <td>{{ subject.code }}</td>
+                        <td>{{ subject.category.name }}</td>
+                        <td>{{ subject.hod.get_full_name|default:subject.hod.username }}</td>
+                        <td>
+                            <a href="{% url 'subjects:subject_update' subject.id %}" class="btn btn-sm btn-info">Edit</a>
+                            <a href="{% url 'subjects:subject_delete' subject.id %}" class="btn btn-sm btn-danger">Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No subjects found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>{% endblock %}

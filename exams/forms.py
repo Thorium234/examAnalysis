@@ -1,5 +1,9 @@
+# exams/forms.py
 from django import forms
-from .models import Exam, FormLevel
+from .models import (
+    Exam, ExamResult, SubjectCategory, 
+    GradingSystem, GradingRange, FormLevel, PaperResult
+)
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
@@ -47,3 +51,33 @@ class ExamForm(forms.ModelForm):
             
         if sum(bool(x) for x in exam_types) > 1:
             raise ValidationError(_("Please select only one exam type."))
+
+class ExamResultForm(forms.ModelForm):
+    class Meta:
+        model = ExamResult
+        fields = ['student', 'subject', 'total_marks']
+
+class SubjectCategoryForm(forms.ModelForm):
+    class Meta:
+        model = SubjectCategory
+        fields = ['name']
+
+class GradingSystemForm(forms.ModelForm):
+    class Meta:
+        model = GradingSystem
+        fields = ['name', 'category']
+
+class GradingRangeForm(forms.ModelForm):
+    class Meta:
+        model = GradingRange
+        fields = ['grade', 'low_mark', 'high_mark', 'points', 'grading_system']
+
+class FormLevelForm(forms.ModelForm):
+    class Meta:
+        model = FormLevel
+        fields = ['number']
+        
+class PaperResultForm(forms.ModelForm):
+    class Meta:
+        model = PaperResult
+        fields = ['exam', 'student', 'subject', 'paper', 'marks', 'status']

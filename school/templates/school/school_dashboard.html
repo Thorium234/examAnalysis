@@ -1,0 +1,120 @@
+<!--
+This is the main school dashboard, serving as the homepage and navigation hub.
+It uses Tailwind CSS for a responsive, modern design.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="min-h-screen flex flex-col items-center p-4 md:p-8">
+    <!-- Header -->
+    <header class="w-full max-w-7xl flex justify-between items-center py-4 px-6 bg-white rounded-xl shadow-md mb-8">
+        <h1 class="text-xl md:text-2xl font-bold text-gray-800">School Management System</h1>
+        <!--
+            This is where you would place the user's profile and logout link.
+            For example, using Django template language:
+            <span class="text-sm font-medium text-gray-600">
+                Welcome, {% if user.is_authenticated %}{{ user.username }}{% else %}Guest{% endif %}!
+            </span>
+            <a href="{% url 'logout' %}" class="ml-4 text-sm font-medium text-blue-600 hover:text-blue-800">Logout</a>
+        -->
+        <div class="flex items-center">
+            <span class="text-sm md:text-base font-medium text-gray-600">Welcome, Principal!</span>
+            <a href="#" class="ml-4 text-sm md:text-base font-medium text-blue-600 hover:text-blue-800">Logout</a>
+        </div>
+    </header>
+
+    <!-- Dashboard Content -->
+    <main class="w-full max-w-7xl">
+        <h2 class="text-2xl md:text-3xl font-semibold text-center mb-6">Main Dashboard</h2>
+
+        <!-- Navigation Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <!-- Principal Controls Card -->
+            <a href="#" class="card p-6 flex flex-col items-center justify-center text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2a5 5 0 1 0 5 5 5 5 0 0 0-5-5zM12 14c-3.3 0-6 2.7-6 6v1H18v-1c0-3.3-2.7-6-6-6z"/>
+                </svg>
+                <h3 class="text-xl font-bold mb-2">Principal's Control Panel</h3>
+                <p class="text-gray-600 text-sm">Manage users, school settings, and overall system access.</p>
+                <!-- This card will lead to a page where the Principal can add/edit teachers and students -->
+            </a>
+
+            <!-- Teachers Card -->
+            <a href="#" class="card p-6 flex flex-col items-center justify-center text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2a5 5 0 1 0 5 5 5 5 0 0 0-5-5zM12 14c-3.3 0-6 2.7-6 6v1H18v-1c0-3.3-2.7-6-6-6z"/>
+                    <path d="M19 12a7 7 0 1 0 0-14 7 7 0 0 0 0 14z"/>
+                </svg>
+                <h3 class="text-xl font-bold mb-2">Teachers Dashboard</h3>
+                <p class="text-gray-600 text-sm">View teachers' subjects and assigned classes.</p>
+            </a>
+
+            <!-- Students Card -->
+            <a href="#" class="card p-6 flex flex-col items-center justify-center text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                <h3 class="text-xl font-bold mb-2">Students Dashboard</h3>
+                <p class="text-gray-600 text-sm">View student lists, profiles, and advancement status.</p>
+            </a>
+
+            <!-- Forms Card -->
+            <a href="#" class="card p-6 flex flex-col items-center justify-center text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+                </svg>
+                <h3 class="text-xl font-bold mb-2">Forms & Classes</h3>
+                <p class="text-gray-600 text-sm">Navigate to form-level dashboards (Form 1, 2, 3, 4).</p>
+            </a>
+
+            <!-- Exams Card -->
+            <a href="#" class="card p-6 flex flex-col items-center justify-center text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4 text-yellow-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M13 2v7h7"/><path d="M16 13H8m8 4H8m4-4V8"/>
+                </svg>
+                <h3 class="text-xl font-bold mb-2">Exam Management</h3>
+                <p class="text-gray-600 text-sm">Create, publish, and manage school exams.</p>
+            </a>
+
+            <!-- Reports & Analysis Card -->
+            <a href="#" class="card p-6 flex flex-col items-center justify-center text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4 text-teal-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15V4H3v11H2a1 1 0 0 0 0 2h1a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2h1a1 1 0 0 0 0-2zm-12 2h6M8 8v4M12 8v8M16 8v6"/>
+                </svg>
+                <h3 class="text-xl font-bold mb-2">Reports & Analysis</h3>
+                <p class="text-gray-600 text-sm">Generate and analyze reports for different exams and classes.</p>
+            </a>
+
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

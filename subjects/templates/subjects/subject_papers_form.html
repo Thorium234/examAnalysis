@@ -1,0 +1,43 @@
+{% extends 'base.html' %}{% load static %}{% load bootstrap4 %}{% block title %}Manage Papers for {{ subject.name }}{% endblock %}{% block content %}<div class="container-fluid"><div class="d-sm-flex align-items-center justify-content-between mb-4"><h1 class="h3 mb-0 text-gray-800">Manage Papers for "{{ subject.name }}"</h1></div><div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Subject Papers</h6>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Paper Name</th>
+                            <th>Maximum Marks</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{ formset.management_form }}
+                        {% for form in formset %}
+                        <tr>
+                            <td>{{ form.name }}</td>
+                            <td>{{ form.max_marks }}</td>
+                            <td>
+                                {% if form.instance.pk %}
+                                    <button type="submit" name="delete_paper_{{ form.instance.pk }}" class="btn btn-sm btn-danger">Delete</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    {{ formset.non_field_errors }}
+                    <button type="submit" class="btn btn-success">Save Papers</button>
+                    <a href="{% url 'subjects:subject_list' %}" class="btn btn-secondary">Done</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</div>{% endblock %}

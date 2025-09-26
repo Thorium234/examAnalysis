@@ -1,339 +1,304 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin, PermissionRequiredMixin
 from django.contrib import messages
-from django.db.models import Count, Avg, Min, Max, F
-from django.views.generic import CreateView, UpdateView, DeleteView
+from django.db.models import Count, Avg, Min, Max, F, Prefetch
+from django.views.generic import CreateView, UpdateView, DeleteView, ListView, TemplateView
 from django.urls import reverse_lazy
-from django.http import JsonResponse
-from .models import Exam, ExamResult, StudentExamSummary
-from students.models import Student, Subject
-from .services import calculate_exam_statistics, process_results_upload
+from django.http import HttpResponse, JsonResponse
 from django.db import transaction
+
 import csv
 from io import TextIOWrapper
 
-class ExamCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
-    model = Exam
-    fields = ['name', 'year', 'term', 'form_level', 'exam_type']
-    template_name = 'exams/exam_form.html'
-    permission_required = 'exams.add_exam'
-    success_url = reverse_lazy('exams:exam_list')
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER
 
-    def form_valid(self, form):
-        form.instance.created_by = self.request.user
-        messages.success(self.request, 'Exam created successfully.')
-        return super().form_valid(form)
+from students.models import Student
+from subjects.models import Subject, SubjectPaper
+from school.models import School # This is the corrected import
+from .models import (
+    Exam,
+    ExamResult,
+    StudentExamSummary,
+    SubjectCategory,
+    GradingSystem,
+    GradingRange,
+    PaperResult
+)
 
-class ExamUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+# Mixins for permissions
+class TeacherRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.profile.roles.filter(name='Teacher').exists()
+
+class HODRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.profile.roles.filter(name='HOD').exists()
+
+
+# Exam CRUD Views
+#----------------------------------------------------------------------
+class ExamCreateView(TeacherRequiredMixin, CreateView):
     model = Exam
-    fields = ['name', 'year', 'term', 'form_level', 'exam_type', 'is_active']
+    fields = ['name', 'year', 'term', 'participating_forms', 'is_ordinary_exam', 'is_consolidated_exam', 'is_kcse', 'is_year_average', 'is_active']
     template_name = 'exams/exam_form.html'
-    permission_required = 'exams.change_exam'
+    success_url = reverse_lazy('exam_list')
     
-    def get_success_url(self):
-        return reverse_lazy('exams:exam_detail', kwargs={'exam_id': self.object.id})
-
     def form_valid(self, form):
-        messages.success(self.request, 'Exam updated successfully.') 
+        form.instance.school = self.request.user.school
         return super().form_valid(form)
 
-class ExamDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
+class ExamUpdateView(TeacherRequiredMixin, UpdateView):
+    model = Exam
+    fields = ['name', 'year', 'term', 'participating_forms', 'is_ordinary_exam', 'is_consolidated_exam', 'is_kcse', 'is_year_average', 'is_active']
+    template_name = 'exams/exam_form.html'
+    success_url = reverse_lazy('exam_list')
+
+class ExamDeleteView(TeacherRequiredMixin, DeleteView):
     model = Exam
     template_name = 'exams/exam_confirm_delete.html'
-    permission_required = 'exams.delete_exam'
-    success_url = reverse_lazy('exams:exam_list')
+    success_url = reverse_lazy('exam_list')
 
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, 'Exam deleted successfully.')
-        return super().delete(request, *args, **kwargs)
+class ExamListView(TeacherRequiredMixin, ListView):
+    model = Exam
+    template_name = 'exams/exam_list.html'
+    context_object_name = 'exams'
 
+    def get_queryset(self):
+        return Exam.objects.filter(school=self.request.user.school).order_by('-year', '-term')
+
+
+# Exam Results Entry and Management
+#----------------------------------------------------------------------
 @login_required
-def exam_list(request):
-    exams = Exam.objects.filter(is_active=True).order_by('-year', '-term', '-date_created')
+@permission_required('exams.add_examresult', raise_exception=True)
+def exam_results_entry(request, pk):
+    exam = get_object_or_404(Exam, pk=pk, school=request.user.school)
+    students = Student.objects.filter(
+        school=request.user.school,
+        form_level__in=exam.participating_forms.all()
+    ).order_by('stream', 'admission_number')
     
-    # Filter by form level and year if provided
-    form_level = request.GET.get('form_level')
-    year = request.GET.get('year')
-    term = request.GET.get('term')
-    
-    if form_level:
-        exams = exams.filter(form_level=form_level)
-    if year:
-        exams = exams.filter(year=year)
-    if term:
-        exams = exams.filter(term=term)
-    
-    # Get unique years for filter
-    years = Exam.objects.values_list('year', flat=True).distinct().order_by('-year')
-    
-    context = {
-        'exams': exams,
-        'form_levels': [1, 2, 3, 4],
-        'years': years,
-        'terms': [1, 2, 3],
-        'selected_form': form_level,
-        'selected_year': year,
-        'selected_term': term,
-    }
-    return render(request, 'exams/exam_list.html', context)
+    subjects = Subject.objects.filter(
+        form_level__in=exam.participating_forms.all(),
+        school=request.user.school
+    ).prefetch_related('papers')
 
-@login_required
-def exam_detail(request, exam_id):
-    exam = get_object_or_404(Exam, id=exam_id)
-    
-    # Get exam statistics
-    stats = calculate_exam_statistics(exam)
-    
-    # Get performance by stream
-    stream_stats = StudentExamSummary.objects.filter(
-        exam=exam
-    ).values('student__stream').annotate(
-        avg_total=Avg('total_marks'),
-        min_total=Min('total_marks'),
-        max_total=Max('total_marks'),
-        student_count=Count('id')
-    ).order_by('-avg_total')
-    
-    # Get subject performance
-    subject_stats = ExamResult.objects.filter(
-        exam=exam
-    ).values('subject__name').annotate(
-        avg_marks=Avg('total_marks'),
-        min_marks=Min('total_marks'),
-        max_marks=Max('total_marks'),
-        student_count=Count('id')
-    ).order_by('-avg_marks')
-    
-    # Get top performers using pre-computed overall position
-    top_performers = StudentExamSummary.objects.filter(exam=exam).order_by('overall_position')[:10]
-    
     context = {
         'exam': exam,
-        'stats': stats,
-        'stream_stats': stream_stats,
-        'subject_stats': subject_stats,
-        'top_performers': top_performers,
-        'results': results,
+        'students': students,
         'subjects': subjects,
-        'streams': streams,
-        'selected_student': student_id,
-        'selected_subject': subject_id,
-        'selected_stream': stream,
     }
-    return render(request, 'exams/exam_results.html', context)
 
-@login_required
-@permission_required('exams.change_examresult')
-def edit_result(request, exam_id, result_id):
-    result = get_object_or_404(ExamResult, id=result_id, exam_id=exam_id)
-    
     if request.method == 'POST':
-        try:
-            new_marks = float(request.POST.get('marks', 0))
-            if 0 <= new_marks <= 100:
-                result.total_marks = new_marks
-                result.calculate_grade()
-                result.save()
-                messages.success(request, 'Result updated successfully.')
-            else:
-                messages.error(request, 'Marks must be between 0 and 100.')
-        except ValueError:
-            messages.error(request, 'Invalid marks value.')
-        
-    return redirect('exams:exam_results', exam_id=exam_id)
+        with transaction.atomic():
+            try:
+                for student in students:
+                    for subject in subjects:
+                        for paper in subject.papers.all():
+                            field_name = f'score_{student.pk}_{subject.pk}_{paper.paper_number}'
+                            score_str = request.POST.get(field_name, '')
+                            score = int(score_str) if score_str else 0
+                            
+                            ExamResult.objects.update_or_create(
+                                exam=exam,
+                                student=student,
+                                subject_paper=paper,
+                                defaults={'score': score}
+                            )
+                messages.success(request, "Exam results saved successfully.")
+                return redirect('exam_results_entry', pk=pk)
+            except Exception as e:
+                messages.error(request, f"An error occurred: {e}")
+                
+    return render(request, 'exams/exam_results_entry.html', context)
 
 @login_required
-@permission_required('exams.add_examresult')
-def add_result(request, exam_id):
-    exam = get_object_or_404(Exam, id=exam_id)
+@permission_required('exams.add_examresult', raise_exception=True)
+def upload_results(request, pk):
+    exam = get_object_or_404(Exam, pk=pk, school=request.user.school)
     
-    if request.method == 'POST':
-        student_id = request.POST.get('student')
-        subject_id = request.POST.get('subject')
-        marks = request.POST.get('marks')
+    if request.method == 'POST' and request.FILES.get('csv_file'):
+        csv_file = TextIOWrapper(request.FILES['csv_file'].file, encoding='utf-8')
+        reader = csv.reader(csv_file)
         
-        try:
-            marks = float(marks)
-            if 0 <= marks <= 100:
-                result, created = ExamResult.objects.update_or_create(
-                    exam=exam,
-                    student_id=student_id,
-                    subject_id=subject_id,
-                    defaults={'total_marks': marks}
-                )
-                result.calculate_grade()
-                result.save()
-                messages.success(request, 'Result added successfully.')
-            else:
-                messages.error(request, 'Marks must be between 0 and 100.')
-        except ValueError:
-            messages.error(request, 'Invalid marks value.')
-            
-    return redirect('exams:exam_results', exam_id=exam_id)
+        header = next(reader)
+        # Expected format: ['Admission Number', 'Subject Name', 'Paper Number', 'Score']
+        
+        with transaction.atomic():
+            for row in reader:
+                if len(row) != 4:
+                    messages.error(request, f"Skipping invalid row: {row}")
+                    continue
+                
+                try:
+                    admission_number, subject_name, paper_number_str, score_str = row
+                    
+                    student = Student.objects.get(admission_number=admission_number)
+                    subject = Subject.objects.get(name__iexact=subject_name)
+                    paper = subject.papers.get(paper_number=int(paper_number_str))
+                    score = int(score_str)
+                    
+                    ExamResult.objects.update_or_create(
+                        exam=exam,
+                        student=student,
+                        subject_paper=paper,
+                        defaults={'score': score}
+                    )
+                except Exception as e:
+                    messages.error(request, f"Error processing row {row}: {e}")
+                    # Rollback transaction on error
+                    return redirect('exam_results_entry', pk=pk)
+        
+        messages.success(request, "CSV file uploaded and results saved successfully.")
+        return redirect('exam_results_entry', pk=pk)
+    
+    messages.error(request, "Please upload a valid CSV file.")
+    return redirect('exam_results_entry', pk=pk)
 
 @login_required
-def download_results(request, exam_id):
-    exam = get_object_or_404(Exam, id=exam_id)
+def download_exam_results_template(request, pk):
+    exam = get_object_or_404(Exam, pk=pk, school=request.user.school)
+    students = Student.objects.filter(
+        school=request.user.school,
+        form_level__in=exam.participating_forms.all()
+    ).order_by('admission_number')
+    subjects = Subject.objects.filter(
+        school=request.user.school,
+        form_level__in=exam.participating_forms.all()
+    ).prefetch_related('papers')
+
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = f'attachment; filename="{exam.name}_results.csv"'
+    response['Content-Disposition'] = f'attachment; filename="exam_template_{exam.name}.csv"'
     
     writer = csv.writer(response)
-    writer.writerow(['Admission Number', 'Student Name', 'Subject', 'Marks', 'Grade', 'Class Position', 'Stream Position'])
+    writer.writerow(['Admission Number', 'Subject Name', 'Paper Number', 'Score'])
     
-    results = ExamResult.objects.filter(exam=exam).select_related(
-        'student', 'subject'
-    ).order_by('student__admission_number', 'subject__name')
-    
-    for result in results:
-        summary = StudentExamSummary.objects.filter(
-            exam=exam, 
-            student=result.student
-        ).first()
-        
-        writer.writerow([
-            result.student.admission_number,
-            result.student.full_name,
-            result.subject.name,
-            result.total_marks,
-            result.get_grade(),
-            summary.overall_position if summary else 'N/A',
-            summary.stream_position if summary else 'N/A'
-        ])
-    
+    for student in students:
+        for subject in subjects:
+            for paper in subject.papers.all():
+                writer.writerow([student.admission_number, subject.name, paper.paper_number, ''])
+                
     return response
 
-@login_required
-def subject_analysis(request, exam_id):
-    exam = get_object_or_404(Exam, id=exam_id)
-    
-    # Get detailed subject statistics
-    subject_stats = ExamResult.objects.filter(
-        exam=exam
-    ).values(
-        'subject__name'
-    ).annotate(
-        avg_marks=Avg('total_marks'),
-        max_marks=Max('total_marks'),
-        min_marks=Min('total_marks'),
-        total_students=Count('id'),
-        distinctions=Count('id', filter=F('total_marks') >= 80),
-        credits=Count('id', filter=F('total_marks').range(65, 79.99)),
-        passes=Count('id', filter=F('total_marks').range(40, 64.99)),
-        fails=Count('id', filter=F('total_marks') < 40)
-    ).order_by('-avg_marks')
-    
-    context = {
-        'exam': exam,
-        'subject_stats': subject_stats
-    }
-    return render(request, 'exams/subject_analysis.html', context)
+# Exam Analysis and Reports
+#----------------------------------------------------------------------
+class ExamResultsSummaryView(TeacherRequiredMixin, TemplateView):
+    template_name = 'exams/exam_summary.html'
 
-@login_required
-@permission_required('exams.add_examresult')
-def upload_results(request, exam_id):
-    exam = get_object_or_404(Exam, id=exam_id)
-    
-    if request.method == 'POST':
-        if 'results_file' not in request.FILES:
-            messages.error(request, 'Please select a file to upload.')
-            return redirect('exams:exam_detail', exam_id=exam_id)
-            
-        csv_file = TextIOWrapper(request.FILES['results_file'].file, encoding='utf-8')
-        try:
-            with transaction.atomic():
-                processed = process_results_upload(exam, csv_file)
-                messages.success(request, f'Successfully processed {processed} results.')
-            return redirect('exams:exam_detail', exam_id=exam_id)
-        except Exception as e:
-            messages.error(request, f'Error processing file: {str(e)}')
-            return redirect('exams:exam_detail', exam_id=exam_id)
-            
-    return render(request, 'exams/upload_results.html', {'exam': exam})
-
-@login_required
-def exam_results(request, exam_id):
-    exam = get_object_or_404(Exam, id=exam_id)
-    results = ExamResult.objects.filter(exam=exam).select_related('student', 'subject')
-    
-    # Filter by student, subject, or stream if provided
-    student_id = request.GET.get('student')
-    subject_id = request.GET.get('subject')
-    stream = request.GET.get('stream')
-    
-    if student_id:
-        results = results.filter(student_id=student_id)
-    if subject_id:
-        results = results.filter(subject_id=subject_id)
-    if stream:
-        results = results.filter(student__stream=stream)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        exam = get_object_or_404(Exam, pk=self.kwargs['pk'], school=self.request.user.school)
         
-    # Get unique subjects and streams for filtering
-    subjects = Subject.objects.filter(examresult__exam=exam).distinct()
-    streams = Student.objects.filter(examresult__exam=exam).values_list('stream', flat=True).distinct()
-    student_id = request.GET.get('student')
-    subject_id = request.GET.get('subject')
-    
-    if student_id:
-        results = results.filter(student__id=student_id)
-    if subject_id:
-        results = results.filter(subject__id=subject_id)
-    
-    students = Student.objects.filter(form_level=exam.form_level, is_active=True)
-    subjects = Subject.objects.filter(is_active=True)
-    
-    context = {
-        'exam': exam,
-        'results': results,
-        'students': students,
-        'subjects': subjects,
-        'selected_student': student_id,
-        'selected_subject': subject_id,
-    }
-    return render(request, 'exams/exam_results.html', context)
+        summary_data = StudentExamSummary.objects.filter(exam=exam).select_related('student')
+        
+        context['exam'] = exam
+        context['summary_data'] = summary_data
+        return context
 
 @login_required
-def enter_results(request, exam_id):
-    exam = get_object_or_404(Exam, id=exam_id)
-    
-    if request.method == 'POST':
-        # Process form submission for entering results
-        student_id = request.POST.get('student')
-        subject_id = request.POST.get('subject')
-        marks = request.POST.get('marks')
+def get_exam_summary_data(request, pk):
+    try:
+        exam = Exam.objects.get(pk=pk, school=request.user.school)
+        summary_data = StudentExamSummary.objects.filter(exam=exam).values('student__admission_number', 'student__full_name', 'total_score', 'total_points')
+        return JsonResponse(list(summary_data), safe=False)
+    except Exam.DoesNotExist:
+        return JsonResponse({'error': 'Exam not found'}, status=404)
+
+
+class StudentReportCardView(TeacherRequiredMixin, TemplateView):
+    template_name = 'exams/report_card.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        student = get_object_or_404(Student, pk=self.kwargs['student_pk'], school=self.request.user.school)
+        exam = get_object_or_404(Exam, pk=self.kwargs['exam_pk'], school=self.request.user.school)
+
+        # Get results for the specific student and exam
+        results = ExamResult.objects.filter(
+            exam=exam,
+            student=student
+        ).order_by('subject_paper__subject__name', 'subject_paper__paper_number')
         
-        if student_id and subject_id and marks:
-            from .services import ExamResultsService
-            
-            student = get_object_or_404(Student, id=student_id)
-            subject = get_object_or_404(Subject, id=subject_id)
-            
-            # Create or update exam result
-            result, created = ExamResult.objects.get_or_create(
-                exam=exam,
-                student=student,
-                subject=subject,
-                defaults={'marks': int(marks), 'entered_by': request.user}
-            )
-            
-            if not created:
-                result.marks = int(marks)
-                result.entered_by = request.user
-                result.save()
-            
-            # Automatically recalculate rankings for this exam
-            ExamResultsService.recalculate_exam_rankings(exam.id)
-            
-            messages.success(request, f'Result entered for {student.name} in {subject.name}. Rankings updated.')
-            return redirect('exams:enter_results', exam_id=exam.id)
+        context['student'] = student
+        context['exam'] = exam
+        context['results'] = results
+        
+        # Calculate totals and grades (requires grading system logic)
+        total_score = sum(r.score for r in results)
+        total_papers = results.count()
+        context['total_score'] = total_score
+        
+        return context
+
+# Grading System CRUD
+#----------------------------------------------------------------------
+class GradingSystemListView(HODRequiredMixin, ListView):
+    model = GradingSystem
+    template_name = 'exams/grading_system_list.html'
+    context_object_name = 'grading_systems'
+
+    def get_queryset(self):
+        return GradingSystem.objects.filter(school=self.request.user.school)
+
+class GradingSystemCreateView(HODRequiredMixin, CreateView):
+    model = GradingSystem
+    fields = ['name', 'description', 'is_active']
+    template_name = 'exams/grading_system_form.html'
+    success_url = reverse_lazy('grading_system_list')
+
+    def form_valid(self, form):
+        form.instance.school = self.request.user.school
+        return super().form_valid(form)
+
+class GradingSystemUpdateView(HODRequiredMixin, UpdateView):
+    model = GradingSystem
+    fields = ['name', 'description', 'is_active']
+    template_name = 'exams/grading_system_form.html'
+    success_url = reverse_lazy('grading_system_list')
+
+class GradingSystemDeleteView(HODRequiredMixin, DeleteView):
+    model = GradingSystem
+    template_name = 'exams/grading_system_confirm_delete.html'
+    success_url = reverse_lazy('grading_system_list')
+
+# Grading Range CRUD
+#----------------------------------------------------------------------
+class GradingRangeCreateView(HODRequiredMixin, CreateView):
+    model = GradingRange
+    fields = ['grading_system', 'grade', 'min_score', 'max_score', 'points']
+    template_name = 'exams/grading_range_form.html'
     
-    # Get students for this form level
-    students = Student.objects.filter(form_level=exam.form_level, is_active=True)
-    subjects = Subject.objects.filter(is_active=True)
-    
-    context = {
-        'exam': exam,
-        'students': students,
-        'subjects': subjects,
-    }
-    return render(request, 'exams/enter_results.html', context)
+    def get_success_url(self):
+        return reverse_lazy('grading_system_detail', kwargs={'pk': self.object.grading_system.pk})
+
+class GradingRangeUpdateView(HODRequiredMixin, UpdateView):
+    model = GradingRange
+    fields = ['grade', 'min_score', 'max_score', 'points']
+    template_name = 'exams/grading_range_form.html'
+
+    def get_success_url(self):
+        return reverse_lazy('grading_system_detail', kwargs={'pk': self.object.grading_system.pk})
+
+class GradingRangeDeleteView(HODRequiredMixin, DeleteView):
+    model = GradingRange
+    template_name = 'exams/grading_range_confirm_delete.html'
+
+    def get_success_url(self):
+        return reverse_lazy('grading_system_detail', kwargs={'pk': self.object.grading_system.pk})
+
+class GradingSystemDetailView(HODRequiredMixin, TemplateView):
+    template_name = 'exams/grading_system_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        grading_system = get_object_or_404(GradingSystem, pk=self.kwargs['pk'], school=self.request.user.school)
+        grading_ranges = grading_system.grading_ranges.all().order_by('-min_score')
+        
+        context['grading_system'] = grading_system
+        context['grading_ranges'] = grading_ranges
+        return context

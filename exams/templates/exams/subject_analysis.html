@@ -1,98 +1,44 @@
-{% extends 'base.html' %}
-{% load bootstrap4 %}
-
-{% block title %}Subject Analysis - {{ exam.name }}{% endblock %}
-
-{% block extra_head %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-{% endblock %}
-
-{% block content %}
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col">
-            <h2>Subject Analysis - {{ exam.name }}</h2>
-            <p class="text-muted">Form {{ exam.form_level }} - {{ exam.get_exam_type_display }}</p>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-body">
-                    <canvas id="subjectPerformanceChart"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5>Performance Statistics</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Subject</th>
-                                    <th>Mean</th>
-                                    <th>D</th>
-                                    <th>C</th>
-                                    <th>P</th>
-                                    <th>F</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for stat in subject_stats %}
-                                <tr>
-                                    <td>{{ stat.subject__name }}</td>
-                                    <td>{{ stat.avg_marks|floatformat:1 }}</td>
-                                    <td>{{ stat.distinctions }}</td>
-                                    <td>{{ stat.credits }}</td>
-                                    <td>{{ stat.passes }}</td>
-                                    <td>{{ stat.fails }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+exams/templates/exams/subject_analysis.html
+{% extends 'base.html' %}{% block title %}Subject Analysis - {{ exam.name }}{% endblock %}{% block content %}<div class="container mx-auto p-4"><h1 class="text-3xl font-bold mb-6 text-center text-blue-800">Subject Performance Analysis for {{ exam.name }}</h1><div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto">
+    {% if subject_stats %}
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Students</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Marks</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Min Marks</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Max Marks</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Distinctions</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Credits</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Passes</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Fails</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for stat in subject_stats %}
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ stat.subject__name }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ stat.total_students }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ stat.avg_marks|floatformat:"2" }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ stat.min_marks }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ stat.max_marks }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold text-center">{{ stat.distinctions }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-yellow-600 font-semibold text-center">{{ stat.credits }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-semibold text-center">{{ stat.passes }}</td>
+                <td class="px-6 py-4 whitespace-now-wrap text-sm text-red-600 font-semibold text-center">{{ stat.fails }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-center text-gray-500">No subject analysis data available for this exam.</p>
+    {% endif %}
 </div>
 
-<script>
-const ctx = document.getElementById('subjectPerformanceChart').getContext('2d');
-const stats = {{ subject_stats|safe }};
-
-new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: stats.map(s => s.subject__name),
-        datasets: [{
-            label: 'Mean Score',
-            data: stats.map(s => s.avg_marks),
-            backgroundColor: 'rgba(54, 162, 235, 0.5)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            y: {
-                beginAtZero: true,
-                max: 100
-            }
-        },
-        plugins: {
-            title: {
-                display: true,
-                text: 'Subject Performance Comparison'
-            }
-        }
-    }
-});
-</script>
-{% endblock %}
+<div class="mt-8 text-center">
+    <a href="{% url 'exams:exam_detail' exam.id %}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full shadow-md transition-colors duration-300">
+        Back to Exam Report
+    </a>
+</div>
+</div>{% endblock %}

@@ -1,0 +1,1299 @@
+as i can see the only desion we can make here is to make another app for school  becouse we have the following apps  'accounts' 'students',
+
+    'exams',
+
+    'reports',
+
+    'subjects',    here exams/models.py  from django.db import models
+
+from django.contrib.auth import get_user_model
+
+from students.models import Student, Subject, SubjectPaper
+
+from django.utils import timezone
+
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+import json
+
+
+User = get_user_model()
+
+
+class SubjectCategory(models.Model):
+
+    name = models.CharField(max_length=100)
+
+    description = models.TextField(blank=True)
+
+    
+
+    def __str__(self):
+
+        return self.name
+
+    
+
+    class Meta:
+
+        verbose_name_plural = "Subject Categories"
+
+
+class GradingSystem(models.Model):
+
+    name = models.CharField(max_length=100)
+
+    category = models.ForeignKey(SubjectCategory, on_delete=models.CASCADE, related_name='grading_systems')
+
+    is_active = models.BooleanField(default=True)
+
+    is_default = models.BooleanField(default=False)
+
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    
+
+    def __str__(self):
+
+        return f"{self.category.name} - {self.name} Grading System"
+
+    
+
+    def get_grade_and_points(self, marks):
+
+        """Calculate grade and points based on the defined ranges"""
+
+        if marks == -1:  # Special case for absent
+
+            return 'X', 0
+
+        elif marks == -2:  # Special case for disqualified
+
+            return 'Y', 0
+
+            
+
+        ranges = self.ranges.all().order_by('-high_mark')
+
+        for grade_range in ranges:
+
+            if marks >= grade_range.low_mark and marks <= grade_range.high_mark:
+
+                return grade_range.grade, grade_range.points
+
+        return 'E', 1  # Default fallback
+
+    
+
+    @classmethod
+
+    def get_default_ranges(cls):
+
+        """Returns default grading ranges"""
+
+        return [
+
+            {'low': 80, 'high': 100, 'grade': 'A', 'points': 12},
+
+            {'low': 75, 'high': 79, 'grade': 'A-', 'points': 11},
+
+            {'low': 70, 'high': 74, 'grade': 'B+', 'points': 10},
+
+            {'low': 65, 'high': 69, 'grade': 'B', 'points': 9},
+
+            {'low': 60, 'high': 64, 'grade': 'B-', 'points': 8},
+
+            {'low': 55, 'high': 59, 'grade': 'C+', 'points': 7},
+
+            {'low': 50, 'high': 54, 'grade': 'C', 'points': 6},
+
+            {'low': 45, 'high': 49, 'grade': 'C-', 'points': 5},
+
+            {'low': 40, 'high': 44, 'grade': 'D+', 'points': 4},
+
+            {'low': 35, 'high': 39, 'grade': 'D', 'points': 3},
+
+            {'low': 30, 'high': 34, 'grade': 'D-', 'points': 2},
+
+            {'low': 0, 'high': 29, 'grade': 'E', 'points': 1},
+
+        ]
+
+    
+
+    class Meta:
+
+        unique_together = ('category', 'name')
+
+
+class GradingRange(models.Model):
+
+    grading_system = models.ForeignKey(GradingSystem, on_delete=models.CASCADE, related_name='ranges')
+
+    low_mark = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)])
+
+    high_mark = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)])
+
+    grade = models.CharField(max_length=2)
+
+    points = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(12)])
+
+    
+
+    class Meta:
+
+        ordering = ['-high_mark']
+
+        unique_together = ('grading_system', 'grade')
+
+        
+
+    def __str__(self):
+
+        return f"{self.grade} ({self.low_mark}-{self.high_mark})"
+
+        
+
+    def clean(self):
+
+        from django.core.exceptions import ValidationError
+
+        if self.low_mark >= self.high_mark:
+
+            raise ValidationError('Low mark must be less than high mark')
+
+
+class FormLevel(models.Model):
+
+    number = models.IntegerField(choices=[(1, 'Form 1'), (2, 'Form 2'), (3, 'Form 3'), (4, 'Form 4')])
+
+    
+
+    def __str__(self):
+
+        return f"Form {self.number}"
+
+        
+
+    class Meta:
+
+        ordering = ['number']
+
+
+class Exam(models.Model):
+
+    TERM_CHOICES = (
+
+        (1, 'Term 1'),
+
+        (2, 'Term 2'),
+
+        (3, 'Term 3'),
+
+    )
+
+    
+
+    name = models.CharField(max_length=200, help_text="Enter the name of the exam")
+
+    year = models.IntegerField()
+
+    term = models.IntegerField(choices=TERM_CHOICES)
+
+    
+
+    # Exam type boolean fields
+
+    is_ordinary_exam = models.BooleanField(default=False, verbose_name="Ordinary Exam")
+
+    is_consolidated_exam = models.BooleanField(default=False, verbose_name="Consolidated Exam")
+
+    is_kcse = models.BooleanField(default=False, verbose_name="KCSE")
+
+    is_year_average = models.BooleanField(default=False, verbose_name="Year Average")
+
+    
+
+    # Many-to-many relationship with form levels
+
+    participating_forms = models.ManyToManyField(
+
+        FormLevel,
+
+        related_name='exams',
+
+        help_text="Select which forms will participate in this exam"
+
+    )
+
+    
+
+    date_created = models.DateTimeField(default=timezone.now)
+
+    is_active = models.BooleanField(default=True)
+
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+
+    
+
+    class Meta:
+
+        ordering = ['-year', '-term']
+
+        
+
+    def clean(self):
+
+        from django.core.exceptions import ValidationError
+
+        # Ensure at least one exam type is selected
+
+        if not any([
+
+            self.is_ordinary_exam,
+
+            self.is_consolidated_exam,
+
+            self.is_kcse,
+
+            self.is_year_average
+
+        ]):
+
+            raise ValidationError("At least one exam type must be selected.")
+
+            
+
+        # Ensure only one type is selected
+
+        exam_types_selected = sum([
+
+            self.is_ordinary_exam,
+
+            self.is_consolidated_exam,
+
+            self.is_kcse,
+
+            self.is_year_average
+
+        ])
+
+        if exam_types_selected > 1:
+
+            raise ValidationError("Only one exam type can be selected.")
+
+            
+
+    def get_exam_type_display(self):
+
+        if self.is_ordinary_exam:
+
+            return "Ordinary Exam"
+
+        elif self.is_consolidated_exam:
+
+            return "Consolidated Exam"
+
+        elif self.is_kcse:
+
+            return "KCSE"
+
+        elif self.is_year_average:
+
+            return "Year Average"
+
+        return "Unknown"
+
+    
+
+    def __str__(self):
+
+        return f"{self.name} - Form {self.form_level} ({self.year} Term {self.term})"
+
+
+class PaperResult(models.Model):
+
+    STATUS_CHOICES = (
+
+        ('P', 'Present'),
+
+        ('A', 'Absent'),
+
+        ('D', 'Disqualified')
+
+    )
+
+    
+
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+
+    paper = models.ForeignKey(SubjectPaper, on_delete=models.CASCADE)
+
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
+
+    marks = models.DecimalField(
+
+        max_digits=5,
+
+        decimal_places=2,
+
+        validators=[MinValueValidator(-2), MaxValueValidator(100)]
+
+    )
+
+    date_entered = models.DateTimeField(default=timezone.now)
+
+    entered_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    
+
+    class Meta:
+
+        unique_together = ('exam', 'student', 'subject', 'paper')
+
+        ordering = ['exam', 'student', 'subject', 'paper__paper_number']
+
+
+class ExamResult(models.Model):
+
+    STATUS_CHOICES = (
+
+        ('P', 'Present'),
+
+        ('A', 'Absent'),
+
+        ('D', 'Disqualified')
+
+    )
+
+    
+
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='results')
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='exam_results')
+
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
+
+    total_marks = models.DecimalField(
+
+        max_digits=5,
+
+        decimal_places=2,
+
+        validators=[MinValueValidator(-2), MaxValueValidator(100)]
+
+    )
+
+    grade = models.CharField(max_length=2, blank=True)
+
+    points = models.IntegerField(blank=True, null=True)
+
+    deviation = models.IntegerField(blank=True, null=True)
+
+    rank_in_subject = models.IntegerField(blank=True, null=True)
+
+    total_students_in_subject = models.IntegerField(blank=True, null=True)
+
+    date_entered = models.DateTimeField(default=timezone.now)
+
+    entered_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    
+
+    class Meta:
+
+        unique_together = ('exam', 'student', 'subject')
+
+        ordering = ['exam', 'student', 'subject']
+
+    
+
+    def save(self, *args, **kwargs):
+
+        # No need to set total_marks for absent/disqualified as it's already set
+
+        # during creation (-1 for absent, -2 for disqualified)
+
+            
+
+        # Get the active grading system for this subject
+
+        grading_system = GradingSystem.objects.filter(
+
+            subject=self.subject,
+
+            is_active=True
+
+        ).first()
+
+        
+
+        if grading_system:
+
+            self.grade, self.points = grading_system.get_grade_and_points(self.total_marks)
+
+        else:
+
+            # Fallback to default grading if no custom system is defined
+
+            self.grade = 'E'
+
+            self.points = 1
+
+            
+
+        super().save(*args, **kwargs)
+
+    
+
+    def __str__(self):
+
+        status_map = {'P': '', 'A': '(Absent)', 'D': '(Disqualified)'}
+
+        if self.status in ['A', 'D']:
+
+            return f"{self.student.name} - {self.subject.name} {status_map[self.status]}"
+
+        return f"{self.student.name} - {self.subject.name} - {self.total_marks}% ({self.grade})"
+
+
+class StudentExamSummary(models.Model):
+
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='student_summaries')
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='exam_summaries')
+
+    total_marks = models.IntegerField(default=0)
+
+    total_points = models.IntegerField(default=0)
+
+    mean_marks = models.FloatField(default=0.0)
+
+    mean_grade = models.CharField(max_length=2, blank=True)
+
+    stream_position = models.IntegerField(blank=True, null=True)
+
+    overall_position = models.IntegerField(blank=True, null=True)
+
+    total_students_in_stream = models.IntegerField(blank=True, null=True)
+
+    total_students_overall = models.IntegerField(blank=True, null=True)
+
+    subjects_count = models.IntegerField(default=0)
+
+    attempted_subjects = models.IntegerField(default=0)  # New field for actual subjects attempted
+
+    mean_points = models.FloatField(default=0.0)
+
+    
+
+    class Meta:
+
+        unique_together = ('exam', 'student')
+
+        ordering = ['exam', '-total_marks']
+
+    
+
+
+    def calculate_mean_grade(self):
+
+        """Calculate mean grade based on attempted subjects only"""
+
+        if self.attempted_subjects > 0:
+
+            self.mean_points = self.total_points / self.attempted_subjects
+
+            # Find the most common grading system used across subjects
+
+            results = ExamResult.objects.filter(exam=self.exam, student=self.student)
+
+
+            for result in results:
+
+                grading_system = GradingSystem.objects.filter(
+
+                    subject=result.subject,
+
+                    is_active=True
+
+                ).first()
+
+
+                if grading_system:
+
+                    # Use the first valid grading system to determine mean grade
+
+                    self.mean_grade, _ = grading_system.get_grade_and_points(
+
+                        self.mean_points * (100 / grading_system.grading_rules['points'])  # Scale points to marks
+
+                    )
+
+                    return self.mean_grade
+
+
+        self.mean_grade = 'E'  # Default grade if no subjects attempted
+
+        return self.mean_grade
+
+    
+
+    def __str__(self):
+
+        return f"{self.student.name} - {self.exam.name} Summary"
+
+reports/models.py from django.db import models
+
+from django.contrib.auth import get_user_model
+
+from students.models import Student
+
+from exams.models import Exam
+
+from django.utils import timezone
+
+
+User = get_user_model()
+
+
+class ReportTemplate(models.Model):
+
+    REPORT_TYPES = (
+
+        ('STUDENT_REPORT', 'Individual Student Report'),
+
+        ('CLASS_MERIT_LIST', 'Class Merit List'),
+
+        ('SUBJECT_ANALYSIS', 'Subject Analysis Report'),
+
+        ('TEACHER_REPORT', 'Teacher Performance Report'),
+
+    )
+
+    
+
+    name = models.CharField(max_length=200) 
+
+    report_type = models.CharField(max_length=20, choices=REPORT_TYPES)
+
+    is_active = models.BooleanField(default=True)
+
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+
+    date_created = models.DateTimeField(default=timezone.now)
+
+    
+
+    def __str__(self):
+
+        return f"{self.name} ({self.get_report_type_display()})"
+
+
+class GeneratedReport(models.Model):
+
+    template = models.ForeignKey(ReportTemplate, on_delete=models.CASCADE, related_name='generated_reports')
+
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, blank=True, null=True)
+
+    form_level = models.IntegerField(choices=[(1, 'Form 1'), (2, 'Form 2'), (3, 'Form 3'), (4, 'Form 4')], blank=True, null=True)
+
+    stream = models.CharField(max_length=20, blank=True, null=True)
+
+    file_path = models.CharField(max_length=500, blank=True, null=True)
+
+    generated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+
+    date_generated = models.DateTimeField(default=timezone.now)
+
+    
+
+    class Meta:
+
+        ordering = ['-date_generated']
+
+    
+
+    def __str__(self):
+
+        if self.student:
+
+            return f"{self.template.name} - {self.student.name} - {self.exam.name}"
+
+        else:
+
+            return f"{self.template.name} - Form {self.form_level} {self.stream} - {self.exam.name}"
+
+
+class Comment(models.Model):
+
+    COMMENT_TYPES = (
+
+        ('EXCELLENT', 'Excellent performance. Keep it up!'),
+
+        ('GOOD', 'Good work. You can do better.'),
+
+        ('AVERAGE', 'Average performance. Put more effort.'),
+
+        ('BELOW_AVERAGE', 'Below average performance. You have the potential to do better.'),
+
+        ('WEAK', 'Weak but has potential'),
+
+        ('VERY_WEAK', 'Very weak. Needs serious improvement.'),
+
+    )
+
+    
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='comments')
+
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='comments')
+
+    subject = models.ForeignKey('students.Subject', on_delete=models.CASCADE, blank=True, null=True)
+
+    comment_type = models.CharField(max_length=20, choices=COMMENT_TYPES)
+
+    custom_comment = models.TextField(blank=True, null=True)
+
+    teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    date_created = models.DateTimeField(default=timezone.now)
+
+    
+
+    class Meta:
+
+        unique_together = ('student', 'exam', 'subject')
+
+    
+
+    def __str__(self):
+
+        if self.subject:
+
+            return f"{self.student.name} - {self.subject.name} - {self.exam.name}"
+
+        else:
+
+            return f"{self.student.name} - General Comment - {self.exam.name}"
+
+    
+
+    @property
+
+    def final_comment(self):
+
+        if self.custom_comment:
+
+            return self.custom_comment
+
+        return dict(self.COMMENT_TYPES).get(self.comment_type, 'No comment') students/models.py # students/models.py
+
+from django.db import models
+
+from django.contrib.auth import get_user_model
+
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+from subjects.models import Subject, StudentSubjectEnrollment
+
+
+User = get_user_model()
+
+
+class Student(models.Model):
+
+    STREAM_CHOICES = (
+
+        ('East', 'East'),
+
+        ('West', 'West'),
+
+        ('North', 'North'),
+
+        ('South', 'South'),
+
+    )
+
+    
+
+    FORM_CHOICES = (
+
+        (1, 'Form 1'),
+
+        (2, 'Form 2'),
+
+        (3, 'Form 3'),
+
+        (4, 'Form 4'),
+
+    )
+
+    
+
+    enrolled_subjects = models.ManyToManyField(
+
+        'subjects.Subject',
+
+        related_name='enrolled_students',
+
+        through='subjects.StudentSubjectEnrollment'
+
+    )
+
+    
+
+    admission_number = models.CharField(max_length=20, unique=True)
+
+    name = models.CharField(max_length=200)
+
+    form_level = models.IntegerField(choices=FORM_CHOICES)
+
+    stream = models.CharField(max_length=20, choices=STREAM_CHOICES)
+
+    kcpe_marks = models.IntegerField(blank=True, null=True)
+
+    phone_contact = models.CharField(max_length=20, blank=True, null=True)
+
+    date_enrolled = models.DateField(auto_now_add=True)
+
+    is_active = models.BooleanField(default=True)
+
+    
+
+    class Meta:
+
+        ordering = ['form_level', 'stream', 'name']
+
+        unique_together = ('form_level', 'stream', 'admission_number')
+
+    
+
+    def __str__(self):
+
+        return f"{self.admission_number} - {self.name} (Form {self.form_level} {self.stream})"
+
+    
+
+    @property
+
+    def class_name(self):
+
+        return f"Form {self.form_level} {self.stream}"
+
+    
+
+    @property
+
+    def full_name(self):
+
+        return self.name
+
+
+class SubjectPaper(models.Model):
+
+    name = models.CharField(max_length=50, help_text="e.g., Paper 1, Paper 2")
+
+    paper_number = models.IntegerField(help_text="e.g., 1 for Paper 1")
+
+    max_marks = models.DecimalField(
+
+        max_digits=5, 
+
+        decimal_places=2,
+
+        help_text="Maximum marks for this paper"
+
+    )
+
+    is_active = models.BooleanField(default=True)
+
+    
+
+class StudentAdvancement(models.Model):
+
+    ADVANCEMENT_STATUS = [
+
+        ('promoted', 'Promoted'),
+
+        ('retained', 'Retained'),
+
+        ('conditional', 'Conditional Promotion'),
+
+        ('graduated', 'Graduated'),
+
+        ('discontinued', 'Discontinued'),
+
+    ]
+
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='advancements')
+
+    academic_year = models.CharField(max_length=10)  # e.g., "2025"
+
+    current_form = models.IntegerField(choices=Student.FORM_CHOICES)
+
+    current_stream = models.CharField(max_length=20, choices=Student.STREAM_CHOICES)
+
+    next_form = models.IntegerField(choices=Student.FORM_CHOICES)
+
+    next_stream = models.CharField(max_length=20, choices=Student.STREAM_CHOICES)
+
+    status = models.CharField(max_length=20, choices=ADVANCEMENT_STATUS)
+
+    decision_date = models.DateField(auto_now_add=True)
+
+    remarks = models.TextField(blank=True)
+
+    
+
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+    class Meta:
+
+        unique_together = ['student', 'academic_year']
+
+        ordering = ['-academic_year', 'current_form', 'current_stream', 'student__admission_number']
+
+        verbose_name = 'Student Advancement Record'
+
+        verbose_name_plural = 'Student Advancement Records'
+
+
+    def __str__(self):
+
+        return f"{self.student.admission_number} - {self.academic_year} ({self.status})"
+
+
+class Subject(models.Model):
+
+    name = models.CharField(max_length=100, unique=True)
+
+    code = models.CharField(max_length=10, unique=True)
+
+    category = models.ForeignKey('exams.SubjectCategory', on_delete=models.SET_NULL, null=True, blank=True)
+
+    grading_system = models.ForeignKey('exams.GradingSystem', on_delete=models.SET_NULL, null=True, blank=True)
+
+    papers = models.ManyToManyField(SubjectPaper, through='SubjectPaperRatio')
+
+    is_active = models.BooleanField(default=True)
+
+    
+
+    def __str__(self):
+
+        return self.name
+
+        
+
+    def save(self, *args, **kwargs):
+
+        # If category exists but no grading system is set, use the default one for the category
+
+        if self.category and not self.grading_system:
+
+            default_grading = self.category.grading_systems.filter(is_default=True).first()
+
+            if default_grading:
+
+                self.grading_system = default_grading
+
+        super().save(*args, **kwargs)
+
+
+class SubjectPaperRatio(models.Model):
+
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+
+    paper = models.ForeignKey(SubjectPaper, on_delete=models.CASCADE)
+
+    contribution_percentage = models.DecimalField(
+
+        max_digits=5,
+
+        decimal_places=2,
+
+        help_text="Percentage contribution to final mark (e.g., 50 for 50%)",
+
+        validators=[
+
+            MinValueValidator(0),
+
+            MaxValueValidator(100)
+
+        ]
+
+    )
+
+    is_active = models.BooleanField(default=True)
+
+    
+
+    def clean(self):
+
+        from django.core.exceptions import ValidationError
+
+        # Check if total contribution for the subject doesn't exceed 100%
+
+        total = SubjectPaperRatio.objects.filter(
+
+            subject=self.subject,
+
+            is_active=True
+
+        ).exclude(pk=self.pk).aggregate(
+
+            total=models.Sum('contribution_percentage')
+
+        )['total'] or 0
+
+        
+
+        if total + self.contribution_percentage > 100:
+
+            raise ValidationError(
+
+                'Total contribution percentage cannot exceed 100%. '
+
+                f'Current total: {total}%, Attempting to add: {self.contribution_percentage}%'
+
+            )
+
+    
+
+    def __str__(self):
+
+        return f"{self.subject.name} - {self.paper.name} ({self.contribution_percentage}%)"
+
+    
+
+    class Meta:
+
+        unique_together = ('subject', 'paper')
+
+        ordering = ['subject', 'paper__paper_number']
+
+
+class ClassSubjectAvailability(models.Model):
+
+    form_level = models.IntegerField(choices=[(1, 'Form 1'), (2, 'Form 2'), (3, 'Form 3'), (4, 'Form 4')])
+
+    stream = models.CharField(max_length=20, choices=Student.STREAM_CHOICES)
+
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+
+    is_available = models.BooleanField(default=True)
+
+    
+
+    class Meta:
+
+        unique_together = ('form_level', 'stream', 'subject')
+
+        verbose_name_plural = 'Class Subject Availabilities'
+
+        
+
+    def __str__(self):
+
+        return f"Form {self.form_level} {self.stream} - {self.subject.name}"
+
+subjects/models.py # subjects/models.py
+
+from django.db import models
+
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
+
+
+class SubjectCategory(models.Model):
+
+    name = models.CharField(max_length=50)
+
+    description = models.TextField(blank=True)
+
+    order = models.IntegerField(default=0)
+
+
+    class Meta:
+
+        ordering = ['order', 'name']
+
+        verbose_name_plural = 'Subject Categories'
+
+
+    def __str__(self):
+
+        return self.name
+
+
+class Subject(models.Model):
+
+    name = models.CharField(max_length=100)
+
+    code = models.CharField(max_length=10, unique=True)
+
+    category = models.ForeignKey(SubjectCategory, on_delete=models.SET_NULL, null=True, blank=True)
+
+    is_mandatory = models.BooleanField(default=False)
+
+    description = models.TextField(blank=True)
+
+    min_form_level = models.IntegerField(
+
+        choices=[(i, f'Form {i}') for i in range(1, 5)],
+
+        default=1,
+
+        help_text="Minimum form level where this subject can be taken"
+
+    )
+
+    order = models.IntegerField(default=0, help_text="Display order within category")
+
+
+    class Meta:
+
+        ordering = ['category__order', 'order', 'name']
+
+
+    def __str__(self):
+
+        return self.name
+
+
+    @property
+
+    def category_name(self): 
+
+        return self.category.name if self.category else "Uncategorized"
+
+
+class StudentSubjectEnrollment(models.Model):
+
+    student = models.ForeignKey('students.Student', on_delete=models.CASCADE, related_name='subject_enrollments')
+
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='student_enrollments')
+
+    date_enrolled = models.DateTimeField(auto_now_add=True)
+
+    is_active = models.BooleanField(default=True)
+
+    date_modified = models.DateTimeField(auto_now=True)
+
+    modified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+
+
+    class Meta:
+
+        db_table = 'students_subject_enrollment'
+
+        unique_together = ['student', 'subject']
+
+        ordering = ['subject__category__order', 'subject__order']
+
+
+    def __str__(self):
+
+        return f"{self.student.name} - {self.subject.name}"
+
+
+    @classmethod
+
+    def get_available_subjects(cls, student):
+
+        """Get subjects available for this student based on class and individual enrollment"""
+
+        from students.models import ClassSubjectAvailability
+
+        available_subjects = ClassSubjectAvailability.objects.filter(
+
+            form_level=student.form_level,
+
+            stream=student.stream,
+
+            is_available=True
+
+        ).values_list('subject_id', flat=True)
+
+        
+
+        # Use the related_name 'student_enrollments' to filter
+
+        return Subject.objects.filter(
+
+            id__in=available_subjects
+
+        ).exclude(
+
+            # Corrected query: use the related_name 'student_enrollments'
+
+            student_enrollments__student=student,
+
+            student_enrollments__is_active=False
+
+        )
+
+accounts/models.py  from django.contrib.auth.models import AbstractUser
+
+from django.db import models
+
+
+class User(AbstractUser):
+
+    USER_ROLES = (
+
+        ('super_user', 'Super User'),
+
+        ('principal', 'Principal'),
+
+        ('deputy', 'Deputy Principal'),
+
+        ('dos', 'Director of Studies'),
+
+        ('teacher', 'Teacher'),
+
+    )
+
+    
+
+    role = models.CharField(max_length=20, choices=USER_ROLES, default='teacher')
+
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+
+    employee_id = models.CharField(max_length=20, unique=True, blank=True, null=True)
+
+    
+
+    def __str__(self):
+
+        full_name = self.get_full_name() or self.username
+
+        return f"{full_name} ({dict(self.USER_ROLES).get(self.role, self.role)})"
+
+    
+
+    @property
+
+    def is_admin_user(self):
+
+        return self.role in ['super_user', 'principal', 'deputy', 'dos']
+
+    
+
+    @property
+
+    def can_manage_students(self):
+
+        return self.role in ['super_user', 'principal', 'deputy', 'dos']
+
+    
+
+    @property
+
+    def can_view_all_results(self):
+
+        return self.role in ['super_user', 'principal', 'deputy', 'dos']
+
+
+class TeacherSubject(models.Model):
+
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='teacher_subjects')
+
+    subject_name = models.CharField(max_length=100)
+
+    
+
+    class Meta:
+
+        unique_together = ('teacher', 'subject_name')
+
+    
+
+    def __str__(self):
+
+        teacher_name = self.teacher.get_full_name() or self.teacher.username
+
+        return f"{teacher_name} - {self.subject_name}"
+
+
+class TeacherClass(models.Model):
+
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='teacher_classes')
+
+    form_level = models.IntegerField(choices=[(1, 'Form 1'), (2, 'Form 2'), (3, 'Form 3'), (4, 'Form 4')])
+
+    stream = models.CharField(max_length=20)
+
+    is_class_teacher = models.BooleanField(default=False)
+
+    
+
+    class Meta:
+
+        unique_together = ('teacher', 'form_level', 'stream')
+
+    
+
+    def __str__(self):
+
+        teacher_name = self.teacher.get_full_name() or self.teacher.username
+
+        return f"{teacher_name} - Form {self.form_level} {self.stream}"
+
+    
+
+    @property
+
+    def class_name(self):
+
+        return f"Form {self.form_level} {self.stream}" 
+
+
+
+
+
+school/models.py 
+from django.db import models
+from django.core.validators import RegexValidator, EmailValidator
+
+class School(models.Model):
+    name = models.CharField(max_length=100)
+    location = models.CharField(max_length=100)
+    logo = models.ImageField(upload_to='school_logos/', blank=True, null=True)
+    address = models.CharField(max_length=200, blank=True, null=True)
+    phone_number = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        validators=[
+            RegexValidator(
+                regex=r'^\+?1?\d{9,15}$',
+                message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed."
+            )
+        ]
+    )
+    email = models.EmailField(blank=True, null=True, validators=[EmailValidator()])
+
+    def __str__(self):
+        return self.name

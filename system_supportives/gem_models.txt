@@ -1,0 +1,360 @@
+# accounts/models.py
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+from school.models import School
+from django.core.validators import RegexValidator
+from django.utils.text import slugify
+from django.db.models.signals import post_save
+from django.dispatch import receiver 
+
+# Helper function for Kenyan phone number formatting
+def format_kenyan_phone_number(phone_number):
+    if phone_number:
+        phone_number = phone_number.strip().replace(' ', '')
+        if phone_number.startswith('07') and len(phone_number) == 10:
+            return '+254' + phone_number[1:]
+        if phone_number.startswith('01') and len(phone_number) == 10:
+            return '+254' + phone_number[1:]
+    return phone_number
+
+# A custom User model to allow for school multi-tenancy.
+# We inherit from Django's AbstractUser to keep built-in functionality.
+class CustomUser(AbstractUser):
+    # Link a user to a specific school. This is the core of our multi-tenancy.
+    school = models.ForeignKey(School, on_delete=models.CASCADE, null=True, blank=True, related_name='users')
+    
+    # We will use the username field for a user's email address
+    # For a teacher, we can set it to their email. For a student, we can make it a combination of their admission number and school code.
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+    
+class Role(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+class Profile(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='profile')
+    roles = models.ManyToManyField(Role, related_name='profiles')
+    phone_number = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        validators=[
+            RegexValidator(
+                regex=r'^\+?254\d{9}$|^0\d{9}$',
+                message="Phone number must be entered in the format: '+2547XXXXXXXX' or '07XXXXXXXX'."
+            )
+        ]
+    )
+    
+    def save(self, *args, **kwargs):
+        # Auto-format the phone number to the international Kenyan format
+        self.phone_number = format_kenyan_phone_number(self.phone_number)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.user.username
+
+@receiver(post_save, sender=CustomUser)
+def create_or_update_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+    instance.profile.save()
+
+class TeacherClass(models.Model):
+    teacher = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='teacher_classes')
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='teacher_classes')
+
+    FORM_LEVEL_CHOICES = [
+        (1, 'Form 1'),
+        (2, 'Form 2'),
+        (3, 'Form 3'),
+        (4, 'Form 4')
+    ]
+    
+    form_level = models.IntegerField(choices=FORM_LEVEL_CHOICES)
+    stream = models.CharField(max_length=20)
+    is_class_teacher = models.BooleanField(default=False)
+    
+    class Meta:
+        unique_together = ('teacher', 'school', 'form_level', 'stream')
+    
+    def __str__(self):
+        teacher_name = self.teacher.get_full_name() or self.teacher.username
+        return f"{teacher_name} - Form {self.form_level} {self.stream}"
+    
+    @property
+    def class_name(self):
+        return f"Form {self.form_level} {self.stream}"
+
+# students/models.py
+from django.db import models
+from school.models import School
+from django.core.validators import RegexValidator
+from exams.models import Subject
+
+# We will need to link students to the School model. This is key for multi-tenancy.
+class Student(models.Model):
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='students')
+    name = models.CharField(max_length=255)
+    admission_number = models.CharField(max_length=50, unique=True)
+    kcpe_marks = models.IntegerField(null=True, blank=True)
+    stream = models.CharField(max_length=50)
+    form_level = models.IntegerField(choices=[(1, 'Form 1'), (2, 'Form 2'), (3, 'Form 3'), (4, 'Form 4')])
+    
+    # We will format this phone number automatically when saved.
+    phone_contact = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        validators=[
+            RegexValidator(
+                regex=r'^\+?254\d{9}$|^0\d{9}$',
+                message="Phone number must be entered in the format: '+2547XXXXXXXX' or '07XXXXXXXX'."
+            )
+        ]
+    )
+
+    # A many-to-many relationship with subjects to handle optional subjects.
+    subjects = models.ManyToManyField(Subject, related_name='students', blank=True)
+
+    def save(self, *args, **kwargs):
+        # Auto-format the phone number to the international Kenyan format
+        self.phone_contact = format_kenyan_phone_number(self.phone_contact)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.name} ({self.admission_number})"
+
+# A model to manage the automatic advancement of students to the next class.
+class StudentAdvancement(models.Model):
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='advancements')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='advancements')
+    from_form_level = models.IntegerField()
+    to_form_level = models.IntegerField()
+    advancement_year = models.IntegerField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.student.name} moved from Form {self.from_form_level} to Form {self.to_form_level} in {self.advancement_year}"
+
+# exams/models.py
+from django.db import models
+from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils import timezone
+from students.models import Student
+from subjects.models import Subject, SubjectPaper
+from school.models import School
+
+User = get_user_model()
+
+class SubjectCategory(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='subject_categories')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "Subject Categories"
+        unique_together = ('name', 'school')
+
+class GradingSystem(models.Model):
+    name = models.CharField(max_length=100)
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='grading_systems')
+    subject_category = models.ForeignKey(SubjectCategory, on_delete=models.CASCADE, related_name='grading_systems')
+    is_active = models.BooleanField(default=True)
+    is_default = models.BooleanField(default=False)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.school.name} - {self.name} Grading System"
+
+class GradingRange(models.Model):
+    grading_system = models.ForeignKey(GradingSystem, on_delete=models.CASCADE, related_name='grading_ranges')
+    min_marks = models.IntegerField(validators=[MinValueValidator(0)])
+    max_marks = models.IntegerField(validators=[MaxValueValidator(100)])
+    grade = models.CharField(max_length=10)
+    points = models.IntegerField(validators=[MinValueValidator(0)])
+
+    class Meta:
+        unique_together = ('grading_system', 'min_marks', 'max_marks')
+        ordering = ['-max_marks']
+
+    def __str__(self):
+        return f"{self.grading_system.name}: {self.grade} ({self.points} pts)"
+
+class Exam(models.Model):
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='exams')
+    name = models.CharField(max_length=100)
+    form_level = models.IntegerField(choices=[(1, 'Form 1'), (2, 'Form 2'), (3, 'Form 3'), (4, 'Form 4')])
+    year = models.IntegerField()
+    term = models.IntegerField(choices=[(1, 'Term 1'), (2, 'Term 2'), (3, 'Term 3')])
+    is_published = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('school', 'name', 'form_level', 'year', 'term')
+    
+    def __str__(self):
+        return f"{self.school.name} - {self.name} Form {self.form_level} ({self.year} Term {self.term})"
+
+# This model will hold the results for each paper, e.g., PP1, PP2, PP3
+class PaperResult(models.Model):
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='paper_results')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='paper_results')
+    subject_paper = models.ForeignKey(SubjectPaper, on_delete=models.CASCADE, related_name='paper_results')
+    marks = models.IntegerField(validators=[MinValueValidator(0)])
+    
+    class Meta:
+        unique_together = ('exam', 'student', 'subject_paper')
+    
+    def __str__(self):
+        return f"{self.student.name} - {self.subject_paper.subject.name} ({self.subject_paper.paper_number}) for {self.exam.name}"
+
+# This model will hold the final, calculated marks for a subject.
+class ExamResult(models.Model):
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='exam_results')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='exam_results')
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='exam_results')
+    final_marks = models.IntegerField()
+    grade = models.CharField(max_length=10, blank=True)
+    points = models.IntegerField(null=True, blank=True)
+    subject_rank = models.IntegerField(null=True, blank=True)
+    comment = models.TextField(blank=True)
+    teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    class Meta:
+        unique_together = ('exam', 'student', 'subject')
+    
+    def __str__(self):
+        return f"{self.student.name}'s {self.subject.name} result for {self.exam.name}"
+
+# This model will store the aggregated results for a student in a given exam.
+class StudentExamSummary(models.Model):
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='exam_summaries')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='exam_summaries')
+    total_marks = models.IntegerField()
+    mean_marks = models.FloatField()
+    mean_grade = models.CharField(max_length=10)
+    total_points = models.IntegerField()
+    stream_position = models.IntegerField()
+    overall_position = models.IntegerField()
+
+    class Meta:
+        unique_together = ('exam', 'student')
+    
+    def __str__(self):
+        return f"{self.student.name}'s Summary for {self.exam.name}"
+
+# reports/models.py
+from django.db import models
+from school.models import School
+
+class ReportSettings(models.Model):
+    school = models.OneToOneField(School, on_delete=models.CASCADE, related_name='report_settings')
+    show_report_cover = models.BooleanField(default=True)
+    show_subject_grades = models.BooleanField(default=True)
+    show_student_remarks = models.BooleanField(default=True)
+    show_stream_rank = models.BooleanField(default=True)
+    show_overall_rank = models.BooleanField(default=True)
+    show_teacher_initials = models.BooleanField(default=True)
+    show_watermark = models.BooleanField(default=True)
+    show_school_fees_layout = models.BooleanField(default=False)
+    
+    # Text fields for remarks and dates
+    closing_date = models.CharField(max_length=50, blank=True)
+    next_term_begins = models.CharField(max_length=50, blank=True)
+    class_teacher_remarks = models.TextField(blank=True)
+    principal_remarks = models.TextField(blank=True)
+    
+    def __str__(self):
+        return f"Report Settings for {self.school.name}"
+
+# subjects/models.py
+from django.db import models
+from school.models import School
+from exams.models import SubjectCategory
+
+class Subject(models.Model):
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='subjects')
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=10, unique=True)
+    category = models.ForeignKey(SubjectCategory, on_delete=models.SET_NULL, null=True, blank=True)
+    is_optional = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('school', 'name')
+    
+    def __str__(self):
+        return self.name
+
+class SubjectPaper(models.Model):
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='papers')
+    paper_number = models.CharField(max_length=10, help_text="e.g., PP1, PP2, PP3")
+    max_marks = models.IntegerField(validators=[MinValueValidator(0)])
+    contribution_percentage = models.FloatField(
+        help_text="Percentage contribution to the final subject score.",
+        validators=[MinValueValidator(0.0), MaxValueValidator(100.0)]
+    )
+    
+    class Meta:
+        unique_together = ('subject', 'paper_number')
+    
+    def __str__(self):
+        return f"{self.subject.name} - {self.paper_number}"
+
+# school/models.py
+from django.db import models
+from django.core.validators import RegexValidator, EmailValidator
+
+# Helper function for Kenyan phone number formatting
+def format_kenyan_phone_number(phone_number):
+    if phone_number:
+        phone_number = phone_number.strip().replace(' ', '')
+        if phone_number.startswith('07') and len(phone_number) == 10:
+            return '+254' + phone_number[1:]
+        if phone_number.startswith('01') and len(phone_number) == 10:
+            return '+254' + phone_number[1:]
+    return phone_number
+
+# This is the central model for our multi-tenant architecture.
+class School(models.Model):
+    name = models.CharField(max_length=100)
+    location = models.CharField(max_length=100)
+    logo = models.ImageField(upload_to='school_logos/', blank=True, null=True)
+    address = models.CharField(max_length=200, blank=True, null=True)
+    phone_number = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        validators=[
+            RegexValidator(
+                regex=r'^\+?254\d{9}$|^0\d{9}$',
+                message="Phone number must be entered in the format: '+2547XXXXXXXX' or '07XXXXXXXX'."
+            )
+        ]
+    )
+    email = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[EmailValidator()]
+    )
+    
+    def save(self, *args, **kwargs):
+        # Auto-format the phone number to the international Kenyan format
+        self.phone_number = format_kenyan_phone_number(self.phone_number)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name

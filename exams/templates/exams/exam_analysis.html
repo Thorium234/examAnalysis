@@ -1,0 +1,104 @@
+{% extends 'base.html' %}{% load static %}{% block title %}Analysis for {{ exam.name }}{% endblock %}{% block content %}<div class="container-fluid"><div class="d-sm-flex align-items-center justify-content-between mb-4"><h1 class="h3 mb-0 text-gray-800">Analysis for {{ exam.name }}</h1><a href="{% url 'exams:merit_list' exam.pk %}" class="d-none d-sm-inline-block btn btn-secondary shadow-sm"><i class="fas fa-list fa-sm text-white-50"></i> View Merit List</a></div><div class="row">
+    <!-- Overall Performance Card -->
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Overall Mean Grade
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ overall_mean_grade }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-award fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Students -->
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Total Students
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_students }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Subject Performance Summary</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Mean Marks</th>
+                                <th>Mean Grade</th>
+                                <th>Entries</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for subject in subject_summary %}
+                            <tr>
+                                <td>{{ subject.name }}</td>
+                                <td>{{ subject.mean_marks|floatformat:2 }}</td>
+                                <td>{{ subject.mean_grade }}</td>
+                                <td>{{ subject.entries }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">No subject data available.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Grade Distribution</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            {% for grade in grade_distribution.keys %}
+                            <th>{{ grade }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            {% for grade, count in grade_distribution.items %}
+                            <td>{{ count }}</td>
+                            {% endfor %}
+                        </tr>
+                    </tbody>
+                </table>
+                <p class="text-muted mt-3">This table shows the number of students who achieved each mean grade in this exam.</p>
+            </div>
+        </div>
+    </div>
+</div>
+</div>{% endblock %}

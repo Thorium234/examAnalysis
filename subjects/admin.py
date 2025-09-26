@@ -1,23 +1,20 @@
+# subjects/admin.py
 from django.contrib import admin
-from .models import Subject, SubjectCategory, StudentSubjectEnrollment
+from .models import Subject, SubjectPaper
 
-@admin.register(SubjectCategory)
-class SubjectCategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'order')
-    search_fields = ('name',)
-    ordering = ('order', 'name')
+class SubjectPaperInline(admin.TabularInline):
+    model = SubjectPaper
+    extra = 1
 
-@admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
-    list_display = ('name', 'code', 'category', 'is_mandatory', 'min_form_level')
-    list_filter = ('category', 'is_mandatory', 'min_form_level')
+    list_display = ('name', 'code', 'school', 'category', 'is_optional')
+    list_filter = ('school', 'category', 'is_optional')
     search_fields = ('name', 'code')
-    ordering = ('category__order', 'order', 'name')
+    inlines = [SubjectPaperInline]
 
-@admin.register(StudentSubjectEnrollment)
-class StudentSubjectEnrollmentAdmin(admin.ModelAdmin):
-    list_display = ('student', 'subject', 'is_active', 'date_enrolled', 'date_modified', 'modified_by')
-    list_filter = ('is_active', 'subject__category')
-    search_fields = ('student__name', 'student__admission_number', 'subject__name')
-    ordering = ('-date_modified',)
-    raw_id_fields = ('student', 'subject', 'modified_by')
+class SubjectPaperAdmin(admin.ModelAdmin):
+    list_display = ('subject', 'paper_number', 'max_marks', 'contribution_percentage')
+    list_filter = ('subject', 'subject__school')
+
+admin.site.register(Subject, SubjectAdmin)
+admin.site.register(SubjectPaper, SubjectPaperAdmin)

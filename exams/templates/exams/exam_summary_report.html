@@ -1,0 +1,97 @@
+exams/templates/exams/exam_summary_report.html
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container-fluid my-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h1 class="h3 mb-2 text-gray-800"> 
+                {{ exam.name }} - Summary Report
+            </h1>
+            <p class="mb-4">
+                Form: {{ exam.form_level }} &nbsp;&nbsp;|&nbsp;&nbsp; Exam Type: {{ exam.get_exam_type_display }}
+            </p>
+        </div>
+        <div class="col-md-4 text-right">
+            <a href="{% url 'exams:download_csv_report' exam.id %}" class="btn btn-primary">
+                <i class="fas fa-file-csv"></i> Download CSV
+            </a>
+            <a href="{% url 'exams:download_pdf_report' exam.id %}" class="btn btn-danger">
+                <i class="fas fa-file-pdf"></i> Download PDF
+            </a>
+        </div>
+    </div>
+    
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered" id="results-table">
+                    <thead>
+                        <tr>
+                            <th>Admission No</th>
+                            <th>Student Name</th>
+                            <th>Stream</th>
+                            {% for subject in subjects %}
+                            <th>{{ subject_map|get_item:subject.name|default:subject.name|upper }}</th>
+                            {% endfor %}
+                            <th>Total Marks</th>
+                            <th>Mean Marks</th>
+                            <th>No. of Subjects</th>
+                            <th>Grade</th>
+                            <th>Total Points</th>
+                            <th>Stream Position</th>
+                            <th>Class Position</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for summary in student_summaries %}
+                        <tr data-stream="{{ summary.student.stream }}">
+                            <td>{{ summary.student.admission_number }}</td>
+                            <td>{{ summary.student.full_name }}</td>
+                            <td>{{ summary.student.stream }}</td>
+                            {% for subject in subjects %}
+                            <td class="text-center">
+                                {% with marks=student_results|get_item:summary.student.id|get_item:subject.name %}
+                                {{ marks|default_if_none:"-" }}
+                                {% endwith %}
+                            </td>
+                            {% endfor %}
+                            <td>{{ summary.total_marks }}</td>
+                            <td>{{ summary.mean_marks }}</td>
+                            <td>{{ summary.subjects_count }}</td>
+                            <td>{{ summary.mean_grade }}</td>
+                            <td>{{ summary.total_points }}</td>
+                            <td>{{ summary.stream_position }}</td>
+                            <td>{{ summary.overall_position }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- DataTables CSS and JS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Initialize DataTables on your table with the ID "results-table"
+        $('#results-table').DataTable({
+            "paging": true,
+            "ordering": true,
+            "info": true,
+            "searching": true,
+            // Optional: configure sorting behavior
+            "order": [[10, "asc"]], // Sort by Class Position (11th column, index 10) by default
+        });
+    });
+</script>
+{% endblock %}

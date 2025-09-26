@@ -1,0 +1,78 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Report Card - {{ student.full_name }}</title><style>@page {size: A4;margin: 2cm;@top-center {content: "Report Card - {{ exam.name }}";font-family: Arial, sans-serif;font-size: 10pt;color: #555;}}body {font-family: Arial, sans-serif;font-size: 12pt;color: #333;}.header {text-align: center;margin-bottom: 20px;}.header h1 {font-size: 18pt;margin: 0;color: #000;}.header h2 {font-size: 14pt;margin: 0;color: #555;}.details-table {width: 100%;margin-bottom: 20px;}.details-table td {padding: 5px;}.section-title {background-color: #f2f2f2;padding: 8px;font-weight: bold;margin-top: 20px;}.table {width: 100%;border-collapse: collapse;margin-top: 10px;}.table th, .table td {border: 1px solid #ddd;padding: 8px;text-align: left;}.table th {background-color: #f2f2f2;font-weight: bold;}.signature-section {display: flex;justify-content: space-between;margin-top: 50px;}.signature-block {text-align: center;width: 30%;}.signature-line {border-top: 1px solid #333;margin-bottom: 5px;}.watermark {position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%) rotate(-45deg);color: rgba(0, 0, 0, 0.1);font-size: 50pt;pointer-events: none;z-index: -1;}</style></head><body><div class="header"><h1>{{ school.name }}</h1><h2>Academic Report Form - {{ exam.name }}</h2><p>{{ school.address }}, Tel: {{ school.phone_number }}</p></div>{% if school.watermark %}
+    <div class="watermark">{{ school.watermark }}</div>
+{% endif %}
+
+<table class="details-table">
+    <tr>
+        <td><strong>Name:</strong> {{ student.full_name }}</td>
+        <td><strong>Admission No:</strong> {{ student.admission_number }}</td>
+    </tr>
+    <tr>
+        <td><strong>Form:</strong> {{ student.form_level }} {{ student.stream }}</td>
+        <td><strong>Exam:</strong> {{ exam.name }} ({{ exam.academic_year }} Term {{ exam.term }})</td>
+    </tr>
+</table>
+
+<div class="section-title">Subject Performance</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Subject</th>
+            <th>Marks</th>
+            <th>Grade</th>
+            <th>Points</th>
+            <th>Comment</th>
+            <th>Teacher</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for result in results %}
+        <tr>
+            <td>{{ result.subject.name }}</td>
+            <td>{{ result.marks }}</td>
+            <td>{{ result.grade }}</td>
+            <td>{{ result.points }}</td>
+            <td>{{ result.comment|default:"N/A" }}</td>
+            <td>{{ result.teacher.get_full_name }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">No results found for this student.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="section-title">Overall Summary</div>
+<table class="details-table">
+    <tr>
+        <td><strong>Total Marks:</strong> {{ summary.total_marks }}</td>
+        <td><strong>Mean Grade:</strong> {{ summary.mean_grade }}</td>
+        <td><strong>Stream Position:</strong> {{ summary.stream_position }} of {{ summary.total_students_in_stream }}</td>
+    </tr>
+    <tr>
+        <td><strong>Total Points:</strong> {{ summary.total_points }}</td>
+        <td><strong>Mean Points:</strong> {{ summary.mean_points|floatformat:2 }}</td>
+        <td><strong>Overall Position:</strong> {{ summary.overall_position }} of {{ total_students_overall }}</td>
+    </tr>
+</table>
+
+<div class="section-title">Class Teacher's Remarks</div>
+<p>{{ summary.remarks|default:"N/A" }}</p>
+
+<div class="signature-section">
+    <div class="signature-block">
+        <div class="signature-line"></div>
+        <strong>Class Teacher's Signature</strong>
+    </div>
+    <div class="signature-block">
+        <div class="signature-line"></div>
+        <strong>Principal's Signature</strong>
+    </div>
+    <div class="signature-block">
+        <div class="signature-line"></div>
+        <strong>Parent's Signature</strong>
+    </div>
+</div>
+</body>
+</html>

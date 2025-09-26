@@ -1,0 +1,33 @@
+exams/templates/exams/formlevel_list.html
+{% extends 'base.html' %}{% block title %}Form Levels{% endblock %}{% block content %}<div class="container mx-auto p-4"><h1 class="text-3xl font-bold mb-6 text-center text-blue-800">Form Levels</h1><div class="flex justify-end mb-6">
+    <a href="{% url 'exams:formlevel_create' %}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full shadow-md transition-colors duration-300">
+        Create New Form Level
+    </a>
+</div>
+
+<div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto">
+    {% if form_levels %}
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Number</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for form_level in form_levels %}
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ form_level.number }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <a href="{% url 'exams:formlevel_update' pk=form_level.id %}" class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</a>
+                    <a href="{% url 'exams:formlevel_delete' pk=form_level.id %}" class="text-red-600 hover:text-red-900">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-center text-gray-500">No form levels found.</p>
+    {% endif %}
+</div>
+</div>{% endblock %}

@@ -1,0 +1,59 @@
+Admission No 	Student Name 	Stream 	Subject 	Marks 	Grade 	Actions
+4405 	Brarly Kimatia 	East 	Mathematics 	37.00 		
+4405 	Brarly Kimatia 	East 	Biology 	69.00 		
+4405 	Brarly Kimatia 	East 	Physics 	79.00 		
+4405 	Brarly Kimatia 	East 	Geography 	42.00 		
+4405 	Brarly Kimatia 	East 	Christian Religious Education 	64.00 		
+4405 	Brarly Kimatia 	East 	Business Studies 	42.00 		
+
+
+i want this table to be like this 
+AdmissionNo,Name,Stream,Mathematics,Biology,Physics,Geography,CRE,BusinessStudies,totalMark,meanMarks,NoOfSubjects,averageMark
+Grade,totalpoints,Deviation,StreamPosition,ClassPosition
+4405,Brarly Kimatia,East,37.00,69.00,79.00,42.00,64.00,42.00
+
+and this headers should be in short form like CRE for Christian Religious Education
+and     BST for Business Studies
+and     COMP for computer Studies
+and  CHEM for Chemistry
+and     PHY for Physics
+and     BIO for Biology
+and     MATH for Mathematics
+and     GEO for Geography
+and     ENG for English
+and     KIS for Kiswahili
+and     HIST for History
+and     AGRI for Agriculture
+and     TOMA for totalMark
+and     MEMA for meanMarks
+and     NSBJ for NoOfSubjects
+and     AVERAGE MARK for averageMark
+and     GRADE for Grade
+and     TOPO for totalpoints
+and     DEVI for Deviation
+and     STPOS for StreamPosition
+and     CLPOS for ClassPosition
+and the marks should be added in their respective subjects columns
+and the total mark should be added and the mean marks should be calculated and the number of subjects should be calculated
+and the average mark should be calculated
+and the grade should be calculated based on the mean marks
+and the total points should be calculated based on the grade
+and the deviation should be calculated based on the mean marks
+and the stream position should be calculated based on the mean marks
+and the class position should be calculated based on the mean marks
+and the table should be sorted based on the stream position
+and the table should be filterable based on the stream
+and the table should be filterable based on the class
+and the table should be filterable based on the subject
+and the table should be filterable based on the grade
+and the table should be filterable based on the total marks
+and the table should be filterable based on the mean marks
+and the table should be filterable based on the number of subjects
+and the table should be filterable based on the average marks
+and the table should be filterable based on the total points
+and the table should be filterable based on the deviation
+and the table should be filterable based on the stream position
+and the table should be filterable based on the class position
+and the table should be exportable to excel
+and the table should be exportable to pdf
+and the table should be exportable to csv

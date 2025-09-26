@@ -1,33 +1,28 @@
+
+{% endblock %}
 {% extends 'base.html' %}
 {% load bootstrap4 %}
 
-{% block title %}Login - Exam System{% endblock %}
+{% block title %}Login - Friends Kikai Boys High School{% endblock %}
 
 {% block content %}
+
 <div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="text-center">Friends Kikai Boys High School</h4>
-                <p class="text-center mb-0">Examination Management System</p>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    {% bootstrap_form form %}
-                    <button type="submit" class="btn btn-primary btn-block">Login</button>
-                </form>
-                
-                <div class="mt-4">
-                    <h6>Demo Accounts:</h6>
-                    <ul class="list-unstyled">
-                        <li><strong>Admin:</strong> admin / admin123</li>
-                        <li><strong>Teacher:</strong> amira_amara / password123</li>
-                        <li><strong>Principal:</strong> principal / password123</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="col-md-6 col-lg-4">
+<div class="card shadow-lg mt-5">
+<div class="card-header text-center">
+<h4 class="text-white mb-0">Friends Kikai Boys High School</h4>
+<p class="text-white-50 mb-0">Examination Management System</p>
+</div>
+<div class="card-body">
+<h5 class="card-title text-center mb-4">Login to your account</h5>
+<form method="post">
+{% csrf_token %}
+{% bootstrap_form form %}
+<button type="submit" class="btn btn-primary btn-block mt-3">Login</button>
+</form>
+</div>
+</div>
+</div>
 </div>
 {% endblock %}

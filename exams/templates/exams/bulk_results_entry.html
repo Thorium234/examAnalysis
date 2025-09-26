@@ -1,0 +1,51 @@
+{% extends 'base.html' %}{% load static %}{% block title %}Bulk Results Entry{% endblock %}{% block content %}<div class="container-fluid"><div class="d-sm-flex align-items-center justify-content-between mb-4"><h1 class="h3 mb-0 text-gray-800">Bulk Results Entry</h1></div><div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Enter Marks for {{ exam.name }}</h6>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="id_subject" class="form-label">Subject:</label>
+                    <select name="subject" id="id_subject" class="form-control">
+                        <option value="">Select Subject</option>
+                        {% for subject in subjects %}
+                        <option value="{{ subject.pk }}" {% if selected_subject_pk == subject.pk %}selected{% endif %}>{{ subject.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            {% if results %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Adm. No.</th>
+                            <th>Student Name</th>
+                            <th>Marks (out of {{ max_marks }})</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in results %}
+                        <tr>
+                            <td>{{ result.student.admission_number }}</td>
+                            <td>{{ result.student.full_name }}</td>
+                            <td>
+                                <input type="number" name="marks_{{ result.student.admission_number }}" value="{{ result.marks|default:'' }}"
+                                       min="0" max="{{ max_marks }}" class="form-control">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Save Results</button>
+            {% else %}
+            <p class="text-muted">Please select a subject to begin entering results.</p>
+            {% endif %}
+        </form>
+    </div>
+</div>
+</div>{% endblock %}

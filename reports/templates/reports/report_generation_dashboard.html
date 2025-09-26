@@ -1,0 +1,59 @@
+{% extends 'base.html' %}{% load static %}{% block title %}Report Generation{% endblock %}{% block content %}<div class="container-fluid"><div class="d-sm-flex align-items-center justify-content-between mb-4"><h1 class="h3 mb-0 text-gray-800">Report Generation</h1></div><div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Generate Reports</h6>
+    </div>
+    <div class="card-body">
+        <form action="{% url 'reports:generate_pdf' %}" method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="id_exam" class="form-label">Select Exam:</label>
+                    <select name="exam" id="id_exam" class="form-control" required>
+                        <option value="">-- Select an Exam --</option>
+                        {% for exam in exams %}
+                        <option value="{{ exam.pk }}">{{ exam.name }} - {{ exam.academic_year }} Term {{ exam.term }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="id_report_type" class="form-label">Report Type:</label>
+                    <select name="report_type" id="id_report_type" class="form-control" required>
+                        <option value="">-- Select Report Type --</option>
+                        <option value="merit_list">Merit List (Full Class)</option>
+                        <option value="all_report_cards">All Report Cards (Full Class)</option>
+                    </select>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <h6 class="text-primary">Filter by Class (Optional)</h6>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="id_form_level" class="form-label">Form Level:</label>
+                    <select name="form_level" id="id_form_level" class="form-control">
+                        <option value="">All Forms</option>
+                        <option value="1">Form 1</option>
+                        <option value="2">Form 2</option>
+                        <option value="3">Form 3</option>
+                        <option value="4">Form 4</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="id_stream" class="form-label">Stream:</label>
+                    <select name="stream" id="id_stream" class="form-control">
+                        <option value="">All Streams</option>
+                        {% for stream in streams %}
+                        <option value="{{ stream }}">{{ stream }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-file-pdf"></i> Generate Report</button>
+        </form>
+    </div>
+</div>
+</div>{% endblock %}

@@ -1,0 +1,81 @@
+exams/templates/exams/exam_detail_report.html
+{% extends 'base.html' %}{% block title %}Exam Detail - {{ exam.name }}{% endblock %}{% block content %}<div class="container mx-auto p-4"><h1 class="text-3xl font-bold mb-2 text-center text-blue-800">{{ exam.name }} - Summary Report</h1><p class="text-center text-lg text-gray-600 mb-6">Form(s) {% for form in exam.participating_forms.all %}{{ form.number }}{% if not forloop.last %}, {% endif %}{% endfor %}, {{ exam.get_term_display }} {{ exam.year }}</p><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="bg-blue-100 p-4 rounded-xl shadow-md text-center">
+        <h3 class="text-xl font-semibold text-blue-800">Student Count</h3>
+        <p class="text-2xl font-bold text-blue-600">{{ exam.student_summaries.count }}</p>
+    </div> 
+    <div class="bg-green-100 p-4 rounded-xl shadow-md text-center">
+        <h3 class="text-xl font-semibold text-green-800">Overall Mean Grade</h3>
+        <p class="text-2xl font-bold text-green-600">
+            {{ exam.student_summaries.all|first.mean_grade|default:"N/A" }}
+        </p>
+    </div>
+    <div class="bg-yellow-100 p-4 rounded-xl shadow-md text-center">
+        <h3 class="text-xl font-semibold text-yellow-800">Highest Score</h3>
+        <p class="text-2xl font-bold text-yellow-600">
+            {% with max_summary=exam.student_summaries.all|first %}
+                {{ max_summary.total_marks|default:"N/A" }} ({{ max_summary.student.full_name|default:"N/A" }})
+            {% endwith %}
+        </p>
+    </div>
+    <div class="bg-red-100 p-4 rounded-xl shadow-md text-center">
+        <h3 class="text-xl font-semibold text-red-800">Lowest Score</h3>
+        <p class="text-2xl font-bold text-red-600">
+            {% with min_summary=exam.student_summaries.all|last %}
+                {{ min_summary.total_marks|default:"N/A" }} ({{ min_summary.student.full_name|default:"N/A" }})
+            {% endwith %}
+        </p>
+    </div>
+</div>
+
+<div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adm No</th>
+                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stream</th>
+                {% for subject in subjects %}
+                <th class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{{ subject_map.get(subject.name, subject.name) }}</th>
+                {% endfor %}
+                {% for header in summary_headers.values %}
+                <th class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{{ header }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for student_data in student_data_list %}
+            <tr>
+                <td class="px-2 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ student_data.admission_no }}</td>
+                <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{{ student_data.name }}</td>
+                <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500">{{ student_data.stream }}</td>
+                {% for subject in subjects %}
+                <td class="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-900">
+                    {{ student_data.subject_marks.get(subject.name, '-') }}
+                </td>
+                {% endfor %}
+                <td class="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-900">{{ student_data.total_marks|floatformat:"2" }}</td>
+                <td class="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-900">{{ student_data.mean_marks|floatformat:"2" }}</td>
+                <td class="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-900">{{ student_data.num_subjects }}</td>
+                <td class="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-900">{{ student_data.mean_grade }}</td>
+                <td class="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-900">{{ student_data.total_points }}</td>
+                <td class="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-900">{{ student_data.stream_position }}</td>
+                <td class="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-900">{{ student_data.class_position }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="mt-8 flex justify-center space-x-4">
+    <a href="{% url 'exams:upload_results' exam.id %}" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full shadow-md transition-colors duration-300">
+        Upload Results
+    </a>
+    <a href="{% url 'exams:download_csv_report' exam.id %}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full shadow-md transition-colors duration-300">
+        Download CSV
+    </a>
+    <a href="{% url 'exams:download_pdf_report' exam.id %}" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full shadow-md transition-colors duration-300">
+        Download PDF
+    </a>
+</div>
+</div>{% endblock %}

@@ -1,0 +1,49 @@
+exams/templates/exams/paperresult_form.html
+{% extends 'base.html' %}{% block title %}{% if form.instance.pk %}Edit Paper Result{% else %}Create Paper Result{% endif %}{% endblock %}{% block content %}<div class="container mx-auto p-4 max-w-2xl"><h1 class="text-3xl font-bold mb-6 text-center text-blue-800">{% if form.instance.pk %}Edit Paper Result for {{ exam.name }}{% else %}Create New Paper Result for {{ exam.name }}{% endif %}</h1><div class="bg-white p-8 rounded-xl shadow-lg">
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+        {% if not form.instance.pk %}
+            <div>
+                <label for="student" class="block text-sm font-medium text-gray-700">Student</label>
+                <select id="student" name="student" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="">Select a student</option>
+                    {% for student in students %}
+                    <option value="{{ student.id }}">{{ student.full_name }} ({{ student.admission_number }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div>
+                <label for="subject" class="block text-sm font-medium text-gray-700">Subject</label>
+                <select id="subject" name="subject" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="">Select a subject</option>
+                    {% for subject in subjects %}
+                    <option value="{{ subject.id }}">{{ subject.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="paper" class="block text-sm font-medium text-gray-700">Paper</label>
+                <select id="paper" name="paper" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="">Select a paper</option>
+                    <!-- Options will be populated via JavaScript or another method based on subject selection -->
+                </select>
+            </div>
+        {% else %}
+            <p class="mb-4 text-center text-gray-700">Editing result for **{{ result.student.full_name }}** in **{{ result.subject.name }}**, Paper **{{ result.paper.name }}**.</p>
+            <div class="mb-4">
+                <label for="marks" class="block text-sm font-medium text-gray-700">Marks</label>
+                <input type="number" id="marks" name="marks" value="{{ result.marks }}" required min="0" max="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Enter marks">
+            </div>
+        {% endif %}
+
+        <div class="flex justify-end space-x-4">
+            <a href="{% url 'exams:paper_result_list' exam.id %}" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-full shadow-md transition-colors duration-300">Cancel</a>
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full shadow-md transition-colors duration-300">
+                {% if form.instance.pk %}Update{% else %}Create{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+</div>{% endblock %}

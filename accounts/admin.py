@@ -1,27 +1,32 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, TeacherSubject, TeacherClass
+from .models import CustomUser, Role, Profile, TeacherClass
 
-@admin.register(User)
+# This is the correct way to define a custom admin class for your CustomUser model.
 class CustomUserAdmin(UserAdmin):
-    list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_staff')
-    list_filter = ('role', 'is_staff', 'is_superuser', 'is_active')
-    search_fields = ('username', 'first_name', 'last_name', 'email', 'employee_id')
-    
+    model = CustomUser
+    list_display = ('username', 'email', 'school', 'is_staff', 'is_active')
     fieldsets = UserAdmin.fieldsets + (
-        ('Custom Fields', {
-            'fields': ('role', 'phone_number', 'employee_id'),
-        }),
+        (None, {'fields': ('school',)}),
+    )
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        (None, {'fields': ('school',)}),
     )
 
-@admin.register(TeacherSubject)
-class TeacherSubjectAdmin(admin.ModelAdmin):
-    list_display = ('teacher', 'subject_name')
-    list_filter = ('subject_name',)
-    search_fields = ('teacher__username', 'teacher__first_name', 'teacher__last_name', 'subject_name')
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'phone_number', 'display_roles')
+    search_fields = ('user__username', 'phone_number')
 
-@admin.register(TeacherClass)
+    def display_roles(self, obj):
+        return ", ".join([role.name for role in obj.roles.all()])
+    display_roles.short_description = 'Roles'
+
 class TeacherClassAdmin(admin.ModelAdmin):
-    list_display = ('teacher', 'form_level', 'stream', 'is_class_teacher')
-    list_filter = ('form_level', 'stream', 'is_class_teacher')
-    search_fields = ('teacher__username', 'teacher__first_name', 'teacher__last_name')
+    list_display = ('teacher', 'school', 'form_level', 'stream', 'is_class_teacher')
+    list_filter = ('school', 'form_level', 'stream', 'is_class_teacher')
+    search_fields = ('teacher__username', 'school__name')
+
+admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(Role)
+admin.site.register(Profile, ProfileAdmin)
+admin.site.register(TeacherClass, TeacherClassAdmin)

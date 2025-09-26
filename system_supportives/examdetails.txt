@@ -1,0 +1,942 @@
+in exam i had this other supprtive documents located in 
+# exams/forms/bulk_entry.py
+from django import forms
+from django.core.exceptions import ValidationError
+from exams.models import PaperResult, Exam
+from students.models import Student, StudentSubjectEnrollment, Subject, SubjectPaper
+from decimal import Decimal
+
+class BulkPaperResultEntryForm(forms.Form):
+    ENTRY_MODE_CHOICES = (
+        ('standard', 'Standard (Use Paper Ratios)'),
+        ('normal', 'Normal (Direct Entry)')
+    )
+    
+    exam = forms.ModelChoiceField(
+        queryset=Exam.objects.filter(is_active=True),
+        required=True
+    )
+    subject = forms.ModelChoiceField(
+        queryset=None,  # Set in __init__
+        required=True
+    )
+    entry_mode = forms.ChoiceField(
+        choices=ENTRY_MODE_CHOICES,
+        initial='standard',
+        widget=forms.RadioSelect
+    )
+    
+    # For normal mode
+    max_marks = forms.DecimalField(
+        required=False,
+        min_value=0,
+        help_text="Maximum marks for this paper"
+    )
+    
+    # For standard mode
+    paper = forms.ModelChoiceField(
+        queryset=None,  # Set in __init__
+        required=False
+    )
+    
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        if user:
+            # Filter subjects based on user's permissions if needed
+            self.fields['subject'].queryset = Subject.objects.filter(is_active=True)
+        
+        # Paper field will be populated via AJAX based on subject selection
+        self.fields['paper'].queryset = SubjectPaper.objects.none()
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        entry_mode = cleaned_data.get('entry_mode')
+        max_marks = cleaned_data.get('max_marks')
+        paper = cleaned_data.get('paper')
+        
+        if entry_mode == 'normal' and not max_marks:
+            raise ValidationError("Maximum marks are required for normal entry mode")
+        elif entry_mode == 'standard' and not paper:
+            raise ValidationError("Paper selection is required for standard entry mode")
+            
+        return cleaned_data
+
+# exams/forms/result_entry.py
+from django import forms
+from exams.models import PaperResult
+
+class PaperResultRow(forms.Form):
+    student = forms.ModelChoiceField(
+        queryset=Student.objects.all(),
+        widget=forms.HiddenInput
+    )
+    admission_number = forms.CharField(
+        disabled=True,
+        required=False
+    )
+    name = forms.CharField(
+        disabled=True,
+        required=False
+    )
+    marks = forms.DecimalField(
+        required=False,
+        min_value=0,
+        widget=forms.NumberInput(attrs={'step': '0.5'})
+    )
+    status = forms.ChoiceField(
+        choices=PaperResult.STATUS_CHOICES,
+        initial='P',
+        widget=forms.Select(attrs={'class': 'status-select'})
+    )
+    
+    def __init__(self, *args, **kwargs):
+        max_marks = kwargs.pop('max_marks', 100)
+        super().__init__(*args, **kwargs)
+        self.fields['marks'].max_value = max_marks
+        if 'initial' in kwargs:
+            student = kwargs['initial'].get('student')
+            if student:
+                self.fields['admission_number'].initial = student.admission_number
+                self.fields['name'].initial = student.name
+        
+    def clean_marks(self):
+        marks = self.cleaned_data.get('marks')
+        status = self.cleaned_data.get('status')
+        
+        if status == 'P' and marks is None:
+            raise ValidationError("Marks are required for present students")
+        elif status in ['A', 'D'] and marks is not None:
+            raise ValidationError("Marks should not be entered for absent or disqualified students")
+            
+        return marks
+
+class BulkResultUploadForm(forms.Form):
+    result_file = forms.FileField(
+        help_text="Upload Excel or CSV file with results. Format: Admission Number, Marks, Status (P/A/D)"
+    )
+    has_headers = forms.BooleanField(
+        initial=True,
+        required=False,
+        help_text="Check if file has header row"
+    )
+    
+    def clean_result_file(self):
+        file = self.cleaned_data['result_file']
+        ext = file.name.split('.')[-1].lower()
+        
+        if ext not in ['csv', 'xlsx', 'xls']:
+            raise ValidationError("Only CSV and Excel files are allowed")
+            
+        return file
+
+# exams/templatetags/custom_filters.py
+from django import template
+
+register = template.Library()
+
+@register.filter(name='get_item')
+def get_item(dictionary, key):
+    """
+    Returns the value from a dictionary given a key.
+    """
+    return dictionary.get(key)
+
+# exams/utils/spreadsheet.py
+import pandas as pd
+from openpyxl import Workbook
+from openpyxl.styles import PatternFill, Font, Border, Side, Alignment, Protection
+from openpyxl.utils import get_column_letter
+from io import BytesIO
+from django.http import HttpResponse
+from students.models import Student, StudentSubjectEnrollment
+from exams.models import Exam, PaperResult, SubjectPaper
+
+class SpreadsheetTemplate:
+    def __init__(self, exam, subject, papers=None):
+        self.exam = exam
+        self.subject = subject
+        self.papers = papers if isinstance(papers, list) else ([papers] if papers else [])
+        self.wb = Workbook()
+        self.summary_sheet = self.wb.active
+        self.summary_sheet.title = 'Summary'
+        self.validation_errors = []
+        self.processing_progress = {
+            'total': 0,
+            'processed': 0,
+            'success': 0,
+            'errors': 0
+        }
+        
+        # Define styles
+        self.header_fill = PatternFill(start_color="CCE5FF", end_color="CCE5FF", fill_type="solid")
+        self.locked_fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
+        self.border = Border(
+            left=Side(style='thin'),
+            right=Side(style='thin'),
+            top=Side(style='thin'),
+            bottom=Side(style='thin')
+        )
+    
+    def generate_template(self):
+        """Generate a multi-sheet workbook with papers and summary"""
+        # Get eligible students
+        self.students = Student.objects.filter(
+            form_level__in=self.exam.participating_forms.all(),
+            studentsubjectenrollment__subject=self.subject,
+            studentsubjectenrollment__is_enrolled=True
+        ).exclude(
+            paperresult__exam=self.exam,
+            paperresult__subject=self.subject
+        ).order_by('admission_number')
+
+        # Create paper sheets
+        if self.papers:
+            for paper in self.papers:
+                self._create_paper_sheet(paper)
+        else:
+            # Create single sheet for direct entry
+            self._create_paper_sheet(None)
+            
+        # Create summary sheet
+        self._create_summary_sheet()
+        
+        return self.wb
+        
+    def _create_paper_sheet(self, paper):
+        """Create a worksheet for a specific paper or direct entry"""
+        sheet_name = paper.name if paper else "Direct Entry"
+        ws = self.wb.create_sheet(sheet_name)
+        
+        # Set up protection
+        ws.protection.sheet = True
+        ws.protection.password = 'examsheet'
+        
+        # Add metadata
+        ws.row_dimensions[1].hidden = True
+        self._add_metadata(ws, paper)
+        
+        # Add headers
+        headers = ['Admission Number', 'Student Name', 'Stream']
+        if paper:
+            headers.append(f'Marks (out of {paper.max_marks})')
+        else:
+            headers.append('Marks (out of 100)')
+        headers.append('Status (P/A/D)')
+        headers.extend(['Entry Date', 'Comments'])
+        
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=2, column=col)
+            cell.value = header
+            cell.fill = self.header_fill
+            cell.font = Font(bold=True)
+            cell.border = self.border
+            cell.alignment = Alignment(horizontal='center')
+            
+        # Add student data
+        for row, student in enumerate(self.students, 3):
+            self._add_student_row(ws, row, student, paper)
+            
+        # Set column widths
+        column_widths = {
+            'A': 15,  # Admission Number
+            'B': 30,  # Name
+            'C': 10,  # Stream
+            'D': 15,  # Marks
+            'E': 10,  # Status
+            'F': 15,  # Entry Date
+            'G': 30,  # Comments
+        }
+        
+        for col, width in column_widths.items():
+            ws.column_dimensions[col].width = width
+            
+    def _create_summary_sheet(self):
+        """Create a summary sheet with statistics and validation status"""
+        ws = self.summary_sheet
+        
+        # Add exam and subject info
+        ws['A1'] = 'Exam:'
+        ws['B1'] = self.exam.name
+        ws['A2'] = 'Subject:'
+        ws['B2'] = self.subject.name
+        
+        # Add paper summary
+        ws['A4'] = 'Papers Summary:'
+        headers = ['Paper', 'Max Marks', 'Students', 'Entries', 'Missing', 'Invalid']
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=5, column=col)
+            cell.value = header
+            cell.fill = self.header_fill
+            cell.font = Font(bold=True)
+            
+        row = 6
+        for paper in self.papers:
+            ws.cell(row=row, column=1, value=paper.name)
+            ws.cell(row=row, column=2, value=paper.max_marks)
+            ws.cell(row=row, column=3, value=len(self.students))
+            row += 1
+            
+        # Add validation section
+        ws['A10'] = 'Validation Rules:'
+        rules = [
+            'All student information must remain unchanged',
+            'Marks must be within allowed range for each paper',
+            'Status must be P (Present), A (Absent), or D (Disqualified)',
+            'Present students must have valid marks',
+            'Absent/Disqualified students should not have marks'
+        ]
+        
+        for i, rule in enumerate(rules, 11):
+            ws[f'A{i}'] = f'• {rule}'
+        
+        # Add student data
+        for row, student in enumerate(students, 3):
+            # Locked cells
+            self.ws.cell(row=row, column=1, value=student.admission_number).protection = Protection(locked=True)
+            self.ws.cell(row=row, column=2, value=student.name).protection = Protection(locked=True)
+            self.ws.cell(row=row, column=3, value=student.stream).protection = Protection(locked=True)
+            
+            # Mark entry cell
+            marks_cell = self.ws.cell(row=row, column=4)
+            marks_cell.protection = Protection(locked=False)
+            
+            # Status cell with data validation
+            status_cell = self.ws.cell(row=row, column=5)
+            status_cell.protection = Protection(locked=False)
+            
+            # Apply styles
+            for col in range(1, 6):
+                cell = self.ws.cell(row=row, column=col)
+                cell.border = self.border
+                if col < 4:  # Locked cells
+                    cell.fill = self.locked_fill
+        
+        # Add data validation for status column
+        status_range = f'E3:E{len(students) + 2}'
+        self.ws.data_validation = {
+            status_range: 'P,A,D',
+            'type': 'list',
+            'allowBlank': False,
+            'showInputMessage': True,
+            'promptTitle': 'Status',
+            'prompt': 'P=Present, A=Absent, D=Disqualified'
+        }
+        
+        # Set column widths
+        self.ws.column_dimensions['A'].width = 15  # Admission Number
+        self.ws.column_dimensions['B'].width = 30  # Name
+        self.ws.column_dimensions['C'].width = 10  # Stream
+        self.ws.column_dimensions['D'].width = 15  # Marks
+        self.ws.column_dimensions['E'].width = 10  # Status
+        
+        return self.wb
+    
+    def _add_metadata(self):
+        """Add hidden metadata for validation during upload"""
+        metadata = {
+            'exam_id': self.exam.id,
+            'subject_id': self.subject.id,
+            'paper_id': self.paper.id if self.paper else '',
+            'max_marks': self.paper.max_marks if self.paper else 100,
+            'template_version': '1.0'
+        }
+        
+        for col, (key, value) in enumerate(metadata.items(), 1):
+            cell = self.ws.cell(row=1, column=col)
+            cell.value = f"{key}:{value}"
+    
+    def validate_spreadsheet(self, file):
+        """Validate uploaded spreadsheet against template format with detailed checking"""
+        self.validation_errors = []
+        try:
+            # Read all sheets
+            xlsx = pd.ExcelFile(file)
+            sheets_data = {}
+            metadata = {}
+            
+            for sheet_name in xlsx.sheet_names:
+                if sheet_name == 'Summary':
+                    continue
+                    
+                df = pd.read_excel(xlsx, sheet_name=sheet_name, header=1)
+                sheets_data[sheet_name] = df
+                
+                # Extract metadata from hidden row
+                meta_row = pd.read_excel(xlsx, sheet_name=sheet_name, nrows=1)
+                metadata[sheet_name] = self._parse_metadata(meta_row)
+                
+            # Validate each sheet
+            for sheet_name, df in sheets_data.items():
+                self._validate_sheet(df, metadata[sheet_name], sheet_name)
+                
+            if self.validation_errors:
+                return False, self._format_validation_errors()
+                
+            return True, "Validation successful"
+            
+        except Exception as e:
+            return False, f"Error validating spreadsheet: {str(e)}"
+            
+    def _validate_sheet(self, df, metadata, sheet_name):
+        """Perform detailed validation on a single sheet"""
+        # Required columns check
+        required_columns = [
+            'Admission Number', 'Student Name', 'Stream',
+            'Marks', 'Status', 'Entry Date', 'Comments'
+        ]
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        if missing_columns:
+            self.validation_errors.append(
+                f"Sheet '{sheet_name}' is missing columns: {', '.join(missing_columns)}"
+            )
+            
+        # Student data integrity
+        for idx, row in df.iterrows():
+            self._validate_student_row(row, metadata, sheet_name, idx + 3)
+            
+        # Check for duplicate entries
+        duplicates = df['Admission Number'].duplicated()
+        if duplicates.any():
+            duplicate_numbers = df[duplicates]['Admission Number'].tolist()
+            self.validation_errors.append(
+                f"Sheet '{sheet_name}' has duplicate entries for: {', '.join(duplicate_numbers)}"
+            )
+            
+    def _validate_student_row(self, row, metadata, sheet_name, row_num):
+        """Validate a single student row with detailed checks"""
+        # Status validation
+        if pd.notna(row['Status']) and row['Status'] not in ['P', 'A', 'D']:
+            self.validation_errors.append(
+                f"Invalid status '{row['Status']}' in {sheet_name} row {row_num}"
+            )
+            
+        # Marks validation
+        if row['Status'] == 'P':
+            if pd.isna(row['Marks']):
+                self.validation_errors.append(
+                    f"Missing marks for present student in {sheet_name} row {row_num}"
+                )
+            elif not (isinstance(row['Marks'], (int, float)) and 
+                     0 <= row['Marks'] <= float(metadata.get('max_marks', 100))):
+                self.validation_errors.append(
+                    f"Invalid marks '{row['Marks']}' in {sheet_name} row {row_num}"
+                )
+        elif pd.notna(row['Marks']):
+            self.validation_errors.append(
+                f"Marks should not be entered for {row['Status']} status in {sheet_name} row {row_num}"
+            )
+            
+        # Student existence check
+        try:
+            student = Student.objects.get(admission_number=row['Admission Number'])
+            if student.name != row['Student Name'] or student.stream != row['Stream']:
+                self.validation_errors.append(
+                    f"Student information mismatch in {sheet_name} row {row_num}"
+                )
+        except Student.DoesNotExist:
+            self.validation_errors.append(
+                f"Invalid admission number '{row['Admission Number']}' in {sheet_name} row {row_num}"
+            )
+    
+    def process_spreadsheet(self, file):
+        """Process uploaded spreadsheet with progress tracking and summary generation"""
+        try:
+            xlsx = pd.ExcelFile(file)
+            self.processing_progress['total'] = sum(
+                len(pd.read_excel(xlsx, sheet_name=name, header=1))
+                for name in xlsx.sheet_names if name != 'Summary'
+            )
+            
+            all_results = []
+            sheet_summaries = {}
+            
+            for sheet_name in xlsx.sheet_names:
+                if sheet_name == 'Summary':
+                    continue
+                    
+                df = pd.read_excel(xlsx, sheet_name=sheet_name, header=1)
+                meta_row = pd.read_excel(xlsx, sheet_name=sheet_name, nrows=1)
+                metadata = self._parse_metadata(meta_row)
+                
+                results, summary = self._process_sheet(df, metadata, sheet_name)
+                all_results.extend(results)
+                sheet_summaries[sheet_name] = summary
+                
+            # Bulk create all results
+            PaperResult.objects.bulk_create(all_results)
+            
+            # Generate final summary
+            return self._generate_processing_summary(sheet_summaries)
+            
+        except Exception as e:
+            raise Exception(f"Error processing spreadsheet: {str(e)}")
+    
+    def _process_sheet(self, df, metadata, sheet_name):
+        """Process a single sheet and generate summary"""
+        results = []
+        summary = {
+            'total': len(df),
+            'processed': 0,
+            'success': 0,
+            'errors': 0,
+            'absent': 0,
+            'disqualified': 0,
+            'marks_distribution': {
+                'A': 0, 'B': 0, 'C': 0, 'D': 0, 'E': 0
+            }
+        }
+        
+        for idx, row in df.iterrows():
+            try:
+                if pd.isna(row['Status']):
+                    continue
+                    
+                student = Student.objects.get(admission_number=row['Admission Number'])
+                result = PaperResult(
+                    exam_id=metadata['exam_id'],
+                    student=student,
+                    subject_id=metadata['subject_id'],
+                    paper_id=metadata.get('paper_id'),
+                    marks=row['Marks'] if row['Status'] == 'P' else None,
+                    status=row['Status'],
+                    comments=row.get('Comments', '')
+                )
+                
+                # Update summary statistics
+                if row['Status'] == 'P':
+                    grade = self._calculate_grade(row['Marks'])
+                    summary['marks_distribution'][grade[0]] += 1
+                    summary['success'] += 1
+                elif row['Status'] == 'A':
+                    summary['absent'] += 1
+                elif row['Status'] == 'D':
+                    summary['disqualified'] += 1
+                    
+                results.append(result)
+                summary['processed'] += 1
+                
+            except Exception as e:
+                summary['errors'] += 1
+                self.validation_errors.append(
+                    f"Error in {sheet_name} row {idx + 3}: {str(e)}"
+                )
+                
+            # Update progress
+            self.processing_progress['processed'] += 1
+            
+        return results, summary
+    
+    def _generate_processing_summary(self, sheet_summaries):
+        """Generate a detailed processing summary"""
+        total_summary = {
+            'total_entries': sum(s['total'] for s in sheet_summaries.values()),
+            'successful': sum(s['success'] for s in sheet_summaries.values()),
+            'errors': sum(s['errors'] for s in sheet_summaries.values()),
+            'absent': sum(s['absent'] for s in sheet_summaries.values()),
+            'disqualified': sum(s['disqualified'] for s in sheet_summaries.values()),
+            'marks_distribution': {},
+            'sheet_details': sheet_summaries
+        }
+        
+        # Aggregate marks distribution
+        for grade in ['A', 'B', 'C', 'D', 'E']:
+            total_summary['marks_distribution'][grade] = sum(
+                s['marks_distribution'][grade] for s in sheet_summaries.values()
+            )
+            
+        return total_summary
+        
+    def _calculate_grade(self, marks):
+        """Calculate grade for summary statistics"""
+        if marks >= 80:
+            return 'A'
+        elif marks >= 65:
+            return 'B'
+        elif marks >= 50:
+            return 'C'
+        elif marks >= 40:
+            return 'D'
+        else:
+            return 'E'
+
+# exams/forms.py
+from django import forms
+from .models import (
+    Exam, ExamResult, SubjectCategory, 
+    GradingSystem, GradingRange, FormLevel, PaperResult
+)
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
+
+class ExamForm(forms.ModelForm):
+    participating_forms = forms.ModelMultipleChoiceField(
+        queryset=FormLevel.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=True,
+        help_text="Select one or more forms that will participate in this exam"
+    )
+    
+    class Meta:
+        model = Exam
+        fields = [
+            'name', 'year', 'term',
+            'is_ordinary_exam', 'is_consolidated_exam',
+            'is_kcse', 'is_year_average',
+            'participating_forms', 'is_active'
+        ]
+        widgets = {
+            'year': forms.NumberInput(attrs={'min': 2000, 'max': 2100}),
+            'is_ordinary_exam': forms.CheckboxInput(attrs={'class': 'exam-type-checkbox'}),
+            'is_consolidated_exam': forms.CheckboxInput(attrs={'class': 'exam-type-checkbox'}),
+            'is_kcse': forms.CheckboxInput(attrs={'class': 'exam-type-checkbox'}),
+            'is_year_average': forms.CheckboxInput(attrs={'class': 'exam-type-checkbox'}),
+        }
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        # Ensure at least one form level is selected
+        participating_forms = cleaned_data.get('participating_forms')
+        if not participating_forms:
+            raise ValidationError(_("Please select at least one form level for the exam."))
+            
+        # Ensure at least one exam type is selected
+        exam_types = [
+            cleaned_data.get('is_ordinary_exam'),
+            cleaned_data.get('is_consolidated_exam'),
+            cleaned_data.get('is_kcse'),
+            cleaned_data.get('is_year_average')
+        ]
+        
+        if not any(exam_types):
+            raise ValidationError(_("Please select one exam type."))
+            
+        if sum(bool(x) for x in exam_types) > 1:
+            raise ValidationError(_("Please select only one exam type."))
+
+class ExamResultForm(forms.ModelForm):
+    class Meta:
+        model = ExamResult
+        fields = ['student', 'subject', 'total_marks']
+
+class SubjectCategoryForm(forms.ModelForm):
+    class Meta:
+        model = SubjectCategory
+        fields = ['name']
+
+class GradingSystemForm(forms.ModelForm):
+    class Meta:
+        model = GradingSystem
+        fields = ['name', 'category']
+
+class GradingRangeForm(forms.ModelForm):
+    class Meta:
+        model = GradingRange
+        fields = ['grade', 'low_mark', 'high_mark', 'points', 'grading_system']
+
+class FormLevelForm(forms.ModelForm):
+    class Meta:
+        model = FormLevel
+        fields = ['number']
+        
+class PaperResultForm(forms.ModelForm):
+    class Meta:
+        model = PaperResult
+        fields = ['exam', 'student', 'subject', 'paper', 'marks', 'status']
+
+# exams/services.py
+from django.db.models import Sum, Count, Avg, Min, Max
+from decimal import Decimal
+from django.db import transaction
+from .models import ExamResult, StudentExamSummary, Exam, PaperResult
+from students.models import Student, Subject
+import csv
+
+
+def calculate_exam_statistics(exam):
+    """Calculate comprehensive exam statistics"""
+    results = ExamResult.objects.filter(exam=exam)
+    summaries = StudentExamSummary.objects.filter(exam=exam)
+
+    stats = {
+        'total_students': results.values('student').distinct().count(),
+        'total_subjects': results.values('subject').distinct().count(),
+        'average_marks': results.aggregate(avg_marks=Avg('total_marks'))['avg_marks'],
+        'mean_points': summaries.aggregate(avg_points=Avg('mean_points'))['avg_points'],
+        'grade_distribution': {
+            'A': results.filter(total_marks__gte=80).count(),
+            'B': results.filter(total_marks__range=(65, 79.99)).count(),
+            'C': results.filter(total_marks__range=(50, 64.99)).count(),
+            'D': results.filter(total_marks__range=(40, 49.99)).count(),
+            'E': results.filter(total_marks__lt=40).count()
+        }
+    }
+    return stats
+
+def process_results_upload(exam, csv_file):
+    """Process a CSV file containing exam results"""
+    reader = csv.DictReader(csv_file)
+    processed = 0
+    
+    for row in reader:
+        try:
+            student = Student.objects.get(admission_number=row['Admission Number'])
+            subject = Subject.objects.get(name=row['Subject'])
+            marks = float(row['Marks'])
+            
+            if 0 <= marks <= 100:
+                result, created = ExamResult.objects.update_or_create(
+                    exam=exam,
+                    student=student,
+                    subject=subject,
+                    defaults={'total_marks': marks}
+                )
+                result.calculate_grade()
+                result.save()
+                processed += 1
+                
+        except (Student.DoesNotExist, Subject.DoesNotExist, ValueError) as e:
+            continue
+            
+    # After processing all results, update summaries
+    update_exam_summaries(exam)
+    return processed
+
+def update_exam_summaries(exam):
+    """Update all student summaries for an exam"""
+    students = Student.objects.filter(examresult__exam=exam).distinct()
+    
+    for student in students:
+        results = ExamResult.objects.filter(exam=exam, student=student)
+        total_marks = results.aggregate(total=Sum('total_marks'))['total']
+        mean_marks = results.aggregate(avg=Avg('total_marks'))['avg']
+        
+        # Calculate positions
+        stream_position = calculate_stream_position(exam, student, mean_marks)
+        overall_position = calculate_overall_position(exam, student, mean_marks)
+        
+        StudentExamSummary.objects.update_or_create(
+            exam=exam,
+            student=student,
+            defaults={
+                'total_marks': total_marks,
+                'mean_marks': mean_marks,
+                'stream_position': stream_position,
+                'overall_position': overall_position
+            }
+        )
+
+class ExamResultsService:
+    """Service class to handle exam result calculations and ranking"""
+    
+    @staticmethod
+    def calculate_student_summary(exam, student):
+        """Calculate summary for a specific student in an exam"""
+        results = ExamResult.objects.filter(exam=exam, student=student)
+        
+        if not results.exists():
+            return None
+        
+        total_marks = sum(result.marks for result in results)
+        total_points = sum(result.points for result in results)
+        subjects_count = results.count()
+        mean_marks = total_marks / subjects_count if subjects_count > 0 else 0
+        
+        # Calculate mean grade based on points average
+        mean_points = total_points / subjects_count if subjects_count > 0 else 0
+        mean_grade = ExamResultsService.get_mean_grade_from_points(mean_points)
+        
+        # Create or update the summary
+        summary, created = StudentExamSummary.objects.update_or_create(
+            exam=exam,
+            student=student,
+            defaults={
+                'total_marks': total_marks,
+                'total_points': total_points,
+                'mean_marks': mean_marks,
+                'mean_grade': mean_grade,
+                'subjects_count': subjects_count,
+            }
+        )
+        
+        return summary
+    
+    @staticmethod
+    def get_mean_grade_from_points(mean_points):
+        """Convert mean points to mean grade using Kenyan grading system"""
+        if mean_points >= 11.5:
+            return 'A'
+        elif mean_points >= 10.5:
+            return 'A-'
+        elif mean_points >= 9.5:
+            return 'B+'
+        elif mean_points >= 8.5:
+            return 'B'
+        elif mean_points >= 7.5:
+            return 'B-'
+        elif mean_points >= 6.5:
+            return 'C+'
+        elif mean_points >= 5.5:
+            return 'C'
+        elif mean_points >= 4.5:
+            return 'C-'
+        elif mean_points >= 3.5:
+            return 'D+'
+        elif mean_points >= 2.5:
+            return 'D'
+        elif mean_points >= 1.5:
+            return 'D-'
+        else:
+            return 'E'
+    
+    @staticmethod
+    def calculate_all_summaries_for_exam(exam):
+        """Calculate summaries for all students in an exam"""
+        students_with_results = Student.objects.filter(
+            exam_results__exam=exam,
+            form_level=exam.form_level
+        ).distinct()
+        
+        for student in students_with_results:
+            ExamResultsService.calculate_student_summary(exam, student)
+        
+        # Now calculate positions
+        ExamResultsService.calculate_positions(exam)
+    
+    @staticmethod
+    def calculate_positions(exam):
+        """Calculate overall and stream positions using Chinese technique (merit order)"""
+        # Get all summaries for this exam ordered by total marks (descending)
+        # Chinese technique: Higher total marks = better position, ties broken by total points
+        summaries = StudentExamSummary.objects.filter(exam=exam).order_by(
+            '-total_marks', '-total_points', 'student__name'
+        )
+        
+        # Calculate overall positions
+        for position, summary in enumerate(summaries, 1):
+            summary.overall_position = position
+            summary.total_students_overall = summaries.count()
+            summary.save(update_fields=['overall_position', 'total_students_overall'])
+        
+        # Calculate stream positions
+        streams = summaries.values_list('student__stream', flat=True).distinct()
+        
+    @staticmethod
+    def calculate_final_marks(exam_id, student_id, subject_id):
+        """Calculate final marks for a subject based on paper results and their contribution percentages"""
+        # Get all paper results for this exam-student-subject combination
+        paper_results = PaperResult.objects.filter(
+            exam_id=exam_id,
+            student_id=student_id,
+            subject_id=subject_id
+        ).select_related('paper')
+        
+        # Get the contribution percentages for each paper
+        paper_ratios = SubjectPaperRatio.objects.filter(
+            subject_id=subject_id,
+            is_active=True
+        ).select_related('paper')
+        
+        # If no results or no ratios, return None
+        if not paper_results.exists() or not paper_ratios.exists():
+            return None, 'P'
+        
+        total_marks = Decimal('0.0')
+        total_contribution = Decimal('0.0')
+        
+        # Check if student was absent or disqualified in any paper
+        if any(r.status == 'A' for r in paper_results):
+            return Decimal('-1.0'), 'A'  # Absent
+        if any(r.status == 'D' for r in paper_results):
+            return Decimal('-2.0'), 'D'  # Disqualified
+        
+        # Calculate weighted average
+        for ratio in paper_ratios:
+            result = next(
+                (r for r in paper_results if r.paper_id == ratio.paper_id),
+                None
+            )
+            if result:
+                # Convert marks to percentage of paper's max marks
+                paper_percentage = (result.marks / ratio.paper.max_marks) * 100
+                # Apply contribution percentage
+                contribution = (paper_percentage * ratio.contribution_percentage / 100)
+                total_marks += contribution
+                total_contribution += ratio.contribution_percentage
+        
+        # If we don't have 100% contribution, scale up the marks
+        if total_contribution < 100:
+            total_marks = (total_marks * 100) / total_contribution
+        
+        return round(total_marks, 2), 'P'
+    
+    @staticmethod
+    @transaction.atomic
+    def update_exam_result(exam_id, student_id, subject_id):
+        """Update or create an ExamResult based on PaperResults"""
+        total_marks, status = ExamResultsService.calculate_final_marks(
+            exam_id, student_id, subject_id
+        )
+        
+        if total_marks is None:
+            return None
+            
+        result, created = ExamResult.objects.update_or_create(
+            exam_id=exam_id,
+            student_id=student_id,
+            subject_id=subject_id,
+            defaults={
+                'total_marks': total_marks,
+                'status': status
+            }
+        )
+        
+        return result
+        
+        for stream in streams:
+            stream_summaries = summaries.filter(student__stream=stream)
+            stream_count = stream_summaries.count()
+            
+            for position, summary in enumerate(stream_summaries, 1):
+                summary.stream_position = position
+                summary.total_students_in_stream = stream_count
+                summary.save(update_fields=['stream_position', 'total_students_in_stream'])
+    
+    @staticmethod
+    def calculate_subject_rankings(exam):
+        """Calculate rankings within each subject for an exam"""
+        from students.models import Subject
+        
+        subjects = Subject.objects.filter(
+            examresult__exam=exam
+        ).distinct()
+        
+        for subject in subjects:
+            results = ExamResult.objects.filter(
+                exam=exam, 
+                subject=subject
+            ).order_by('-marks', 'student__name')
+            
+            total_students = results.count()
+            
+            for rank, result in enumerate(results, 1):
+                result.rank_in_subject = rank
+                result.total_students_in_subject = total_students
+                result.save(update_fields=['rank_in_subject', 'total_students_in_subject'])
+    
+    @staticmethod
+    def recalculate_exam_rankings(exam_id):
+        """Main method to recalculate all rankings for an exam"""
+        try:
+            exam = Exam.objects.get(id=exam_id)
+            
+            # Step 1: Calculate individual student summaries
+            ExamResultsService.calculate_all_summaries_for_exam(exam)
+            
+            # Step 2: Calculate subject rankings
+            ExamResultsService.calculate_subject_rankings(exam)
+            
+            return True
+        except Exam.DoesNotExist:
+            return False

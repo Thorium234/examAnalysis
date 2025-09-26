@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block title %}Report Settings{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-lg mt-5">
+            <div class="card-header text-center bg-primary text-white">
+                <h4 class="mb-0">Report Settings</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Visibility and Layout</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% bootstrap_field form.show_report_cover %}
+                                    {% bootstrap_field form.show_subject_grades %}
+                                    {% bootstrap_field form.show_student_remarks %}
+                                    {% bootstrap_field form.show_stream_rank %}
+                                    {% bootstrap_field form.show_overall_rank %}
+                                    {% bootstrap_field form.show_teacher_initials %}
+                                    {% bootstrap_field form.show_watermark %}
+                                    {% bootstrap_field form.show_school_fees_layout %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Remarks and Dates</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% bootstrap_field form.closing_date %}
+                                    {% bootstrap_field form.next_term_begins %}
+                                    {% bootstrap_field form.class_teacher_remarks %}
+                                    {% bootstrap_field form.principal_remarks %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">Save Settings</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends 'base.html' %}{% load static %}{% block title %}{{ student.full_name }} - Report Card{% endblock %}{% block content %}<div class="container-fluid"><div class="row mb-4"><div class="col-12 d-flex justify-content-between align-items-center"><h1 class="h3 text-gray-800">Report Card: {{ student.full_name }}</h1><a href="{% url 'reports:generate_student_pdf' student.admission_number exam.pk %}" class="btn btn-primary shadow-sm"><i class="fas fa-download fa-sm text-white-50"></i> Generate PDF</a></div></div><div class="card shadow mb-4">
+    <div class="card-header py-3 bg-primary">
+        <h6 class="m-0 font-weight-bold text-white">Student Details</h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Name:</strong> {{ student.full_name }}</p>
+                <p><strong>Admission No:</strong> {{ student.admission_number }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Form:</strong> {{ student.form_level }} {{ student.stream }}</p>
+                <p><strong>Exam:</strong> {{ exam.name }} ({{ exam.academic_year }} Term {{ exam.term }})</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3 bg-secondary">
+        <h6 class="m-0 font-weight-bold text-white">Subject Performance</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Marks</th>
+                        <th>Grade</th>
+                        <th>Points</th>
+                        <th>Rank in Subject</th>
+                        <th>Comment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in results %}
+                    <tr>
+                        <td>{{ result.subject.name }}</td>
+                        <td>{{ result.marks }}</td>
+                        <td>{{ result.grade }}</td>
+                        <td>{{ result.points }}</td>
+                        <td>{{ result.rank_in_subject }} of {{ result.total_students_in_subject }}</td>
+                        <td>{{ result.comment|default:"N/A" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">No results found for this student.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-header py-3 bg-success">
+        <h6 class="m-0 font-weight-bold text-white">Overall Summary</h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <p><strong>Total Marks:</strong> {{ summary.total_marks }}</p>
+                <p><strong>Mean Marks:</strong> {{ summary.mean_marks|floatformat:2 }}</p>
+            </div>
+            <div class="col-md-4">
+                <p><strong>Mean Grade:</strong> {{ summary.mean_grade }}</p>
+                <p><strong>Mean Points:</strong> {{ summary.mean_points|floatformat:2 }}</p>
+            </div>
+            <div class="col-md-4">
+                <p><strong>Stream Position:</strong> {{ summary.stream_position }}</p>
+                <p><strong>Overall Position:</strong> {{ summary.overall_position }}</p>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-md-12">
+                <p><strong>Class Teacher Remarks:</strong> {{ summary.remarks|default:"N/A" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+</div>{% endblock %}
