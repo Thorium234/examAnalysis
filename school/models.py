@@ -25,14 +25,14 @@ class FormLevel(models.Model):
     Represents the Form levels in the school (e.g., Form 1, Form 2, Form 3, Form 4).
     """
     school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='form_levels')
-    name = models.CharField(max_length=50)
+    number = models.IntegerField(unique=True, choices=[(1, 'Form 1'), (2, 'Form 2'), (3, 'Form 3'), (4, 'Form 4')])
 
     class Meta:
-        unique_together = ('school', 'name')
-        ordering = ['name']
-        
+        unique_together = ('school', 'number')
+        ordering = ['number']
+
     def __str__(self):
-        return f'{self.name} - {self.school.name}'
+        return f'Form {self.number} - {self.school.name}'
 
 class Stream(models.Model):
     """

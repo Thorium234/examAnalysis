@@ -42,7 +42,7 @@ class StudentAdvancementAdmin(admin.ModelAdmin):
         }),
     )
     list_display = ('student', 'from_form_level', 'to_form_level', 'advancement_year', 'timestamp')
-    list_filter = ('school', 'advancement_year')
+    list_filter = ('student__school', 'advancement_year')
     search_fields = ('student__name', 'student__admission_number')
     date_hierarchy = 'timestamp'
     readonly_fields = ('timestamp',)

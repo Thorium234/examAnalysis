@@ -22,10 +22,10 @@ class Student(models.Model):
     kcpe_marks = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(500)])
     stream = models.CharField(max_length=50, blank=True, null=True)
     
-    # Correcting the circular import. We use a string reference 'exams.FormLevel'
+    # Correcting the circular import. We use a string reference 'school.FormLevel'
     # instead of importing the model directly at the top of the file.
     form_level = models.ForeignKey(
-        'exams.FormLevel',
+        'school.FormLevel',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -52,17 +52,18 @@ class StudentAdvancement(models.Model):
     
     # We use a string reference here as well to avoid circular imports.
     from_form_level = models.ForeignKey(
-        'exams.FormLevel',
+        'school.FormLevel',
         on_delete=models.CASCADE,
         related_name='students_advanced_from'
     )
-    
+
     to_form_level = models.ForeignKey(
-        'exams.FormLevel',
+        'school.FormLevel',
         on_delete=models.CASCADE,
         related_name='students_advanced_to'
     )
     advancement_year = models.IntegerField()
+    timestamp = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         verbose_name_plural = "Student Advancements"

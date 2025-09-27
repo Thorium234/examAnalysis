@@ -29,6 +29,10 @@ urlpatterns = [
     # Reports and Analysis Dashboard
     path('reports/', views.reports_and_analysis, name='reports_and_analysis'),
 
+    # Form Level Management
+    path('form-levels/', views.FormLevelListView.as_view(), name='form_level_list'),
+    path('form-levels/create/', views.FormLevelCreateView.as_view(), name='form_level_create'),
+
     # URLs for managing the School object itself using Class-Based Views
     # We keep these for the superuser to manage the school's details (name, logo, etc.).
     path('create/', views.SchoolCreateView.as_view(), name='school_create'),

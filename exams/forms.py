@@ -1,9 +1,10 @@
 # exams/forms.py
 from django import forms
 from .models import (
-    Exam, ExamResult, SubjectCategory, 
-    GradingSystem, GradingRange, FormLevel, PaperResult
+    Exam, ExamResult, SubjectCategory,
+    GradingSystem, GradingRange, PaperResult
 )
+from school.models import FormLevel
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 

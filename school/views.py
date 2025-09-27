@@ -5,7 +5,7 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.models import User
+from accounts.models import CustomUser
 from django.contrib import messages
 from django.db.models import Q
 from .models import School, FormLevel, Stream
@@ -59,7 +59,7 @@ def school_dashboard(request):
     """
     Main dashboard for the school.
     """
-    school = request.user.profile.school
+    school = request.user.school
     context = {
         'school': school,
     }
@@ -91,7 +91,7 @@ def teacher_list(request):
     For now, we'll assume a teacher is any user with is_staff=True.
     A more robust solution with a dedicated Teacher model will be implemented later.
     """
-    teachers = User.objects.filter(Q(is_staff=True) | Q(is_superuser=True)).order_by('username')
+    teachers = CustomUser.objects.filter(Q(is_staff=True) | Q(is_superuser=True)).order_by('username')
     context = {
         'teachers': teachers
     }
@@ -105,7 +105,7 @@ def student_list(request):
     For now, we will assume a student is any user that is not a staff member or superuser.
     A more robust solution with a dedicated Student model will be implemented later.
     """
-    students = User.objects.filter(is_staff=False, is_superuser=False).order_by('username')
+    students = CustomUser.objects.filter(is_staff=False, is_superuser=False).order_by('username')
     context = {
         'students': students
     }
@@ -144,7 +144,7 @@ class FormLevelListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         # Filter form levels by the user's school
-        return FormLevel.objects.filter(school=self.request.user.profile.school)
+        return FormLevel.objects.filter(school=self.request.user.school)
 
 
 class FormLevelCreateView(LoginRequiredMixin, CreateView):
@@ -158,5 +158,5 @@ class FormLevelCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         # Automatically set the school to the current user's school
-        form.instance.school = self.request.user.profile.school
+        form.instance.school = self.request.user.school
         return super().form_valid(form)

@@ -29,7 +29,7 @@ class FormLevelForm(forms.ModelForm):
     """
     class Meta:
         model = FormLevel
-        fields = ['name']
+        fields = ['number']
 
 class StreamForm(forms.ModelForm):
     """

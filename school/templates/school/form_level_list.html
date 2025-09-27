@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}
+Form Levels
+{% endblock %}
+{% block content %}
+<div class="container-fluid py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-10">
+      <h1 class="display-4 text-center mb-4 font-weight-bold text-dark">Form Levels</h1>
+      <p class="lead text-center mb-5 text-muted">View and manage form levels in {{ request.user.school.name }}.</p>
+    </div>
+  </div>
+  <div class="row">
+    <!-- Sidebar Navigation -->
+    <div class="col-md-3">
+      <div class="list-group shadow-sm rounded-lg">
+        <a href="{% url 'school:forms_dashboard' %}" class="list-group-item list-group-item-action"><i class="fas fa-arrow-left me-2"></i> Back to Forms Dashboard</a>
+        <a href="{% url 'school:form_level_list' %}" class="list-group-item list-group-item-action active"><i class="fas fa-list me-2"></i> Form Levels</a>
+        <a href="{% url 'school:form_level_create' %}" class="list-group-item list-group-item-action"><i class="fas fa-plus me-2"></i> Create Form Level</a>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="col-md-9">
+      <div class="card shadow-sm mb-4 border-0 rounded-lg">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center rounded-top-lg">
+          <h5 class="card-title mb-0">Form Levels ({{ form_levels.count }})</h5>
+          <a href="{% url 'school:form_level_create' %}" class="btn btn-light btn-sm"><i class="fas fa-plus me-1"></i> Add Form Level</a>
+        </div>
+        <div class="card-body p-4">
+          {% if form_levels %}
+            <div class="table-responsive">
+              <table class="table table-striped table-hover rounded-lg">
+                <thead class="table-light">
+                  <tr>
+                    <th scope="col">Form Number</th>
+                    <th scope="col">School</th>
+                    <th scope="col">Streams</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for form_level in form_levels %}
+                    <tr>
+                      <td>Form {{ form_level.number }}</td>
+                      <td>{{ form_level.school.name }}</td>
+                      <td>{{ form_level.streams.count }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-center text-muted py-4">No form levels found. <a href="{% url 'school:form_level_create' %}">Create one now</a>.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

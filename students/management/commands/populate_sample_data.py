@@ -6,9 +6,9 @@ from students.models import (
 )
 from exams.models import (
     Exam, ExamResult, StudentExamSummary,
-    SubjectCategory, GradingSystem, GradingRange,
-    FormLevel
+    SubjectCategory, GradingSystem, GradingRange
 )
+from school.models import School, FormLevel
 from accounts.models import TeacherSubject, TeacherClass
 from datetime import date, datetime
 import random
@@ -339,7 +339,7 @@ class Command(BaseCommand):
         # First ensure we have form levels
         forms = []
         for level in [2, 3]:
-            form, _ = FormLevel.objects.get_or_create(number=level)
+            form, _ = FormLevel.objects.get_or_create(number=level, defaults={'school': School.objects.first()})
             forms.append(form)
 
         # Create sample exams
