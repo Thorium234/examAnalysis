@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}School-Wide Dashboard{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">School-Wide Performance Dashboard</h1>
+    </div>
+
+    <!-- Top Streams Performance -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">Top Performing Streams</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Stream</th>
+                                    <th>Avg Total Marks</th>
+                                    <th>Avg Grade</th>
+                                    <th>Students</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stream in stream_performance %}
+                                <tr>
+                                    <td><strong>{{ stream.student__stream }}</strong></td>
+                                    <td>{{ stream.avg_total_marks|floatformat:1 }}</td>
+                                    <td>{{ stream.avg_mean_grade|floatformat:1 }}</td>
+                                    <td>{{ stream.student_count }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No stream data available.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Forms Performance -->
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-success">Form Performance</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Form</th>
+                                    <th>Avg Total Marks</th>
+                                    <th>Avg Grade</th>
+                                    <th>Students</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for form in form_performance %}
+                                <tr>
+                                    <td><strong>Form {{ form.student__form_level }}</strong></td>
+                                    <td>{{ form.avg_total_marks|floatformat:1 }}</td>
+                                    <td>{{ form.avg_mean_grade|floatformat:1 }}</td>
+                                    <td>{{ form.student_count }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No form data available.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Subjects Performance -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-info">Subject Performance Rankings</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Subject</th>
+                                    <th>Avg Marks</th>
+                                    <th>Max Marks</th>
+                                    <th>Students</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for subject in subject_performance %}
+                                <tr>
+                                    <td><strong>{{ forloop.counter }}</strong></td>
+                                    <td>{{ subject.subject__name }}</td>
+                                    <td>{{ subject.avg_marks|floatformat:1 }}%</td>
+                                    <td>{{ subject.max_marks }}%</td>
+                                    <td>{{ subject.student_count }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No subject data available.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Exams -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-warning">Recent Exams</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for exam in recent_exams %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-left-warning">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ exam.name }}</h5>
+                                    <p class="card-text">
+                                        Form {{ exam.participating_forms }}<br>
+                                        {{ exam.term }} Term {{ exam.year }}
+                                    </p>
+                                    <a href="#" class="btn btn-warning btn-sm">View Results</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-md-12">
+                            <p class="text-center text-muted">No recent exams found.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Cards -->
+    <div class="row">
+        <div class="col-md-12">
+            <h4 class="mb-3">Quick Navigation</h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Form 1
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">Students</div>
+                        </div>
+                        <div class="col-auto">
+                            <a href="{% url 'school:class_dashboard' 1 %}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Form 2
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">Students</div>
+                        </div>
+                        <div class="col-auto">
+                            <a href="{% url 'school:class_dashboard' 2 %}" class="btn btn-success btn-sm">
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Form 3
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">Students</div>
+                        </div>
+                        <div class="col-auto">
+                            <a href="{% url 'school:class_dashboard' 3 %}" class="btn btn-info btn-sm">
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Form 4
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">Students</div>
+                        </div>
+                        <div class="col-auto">
+                            <a href="{% url 'school:class_dashboard' 4 %}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

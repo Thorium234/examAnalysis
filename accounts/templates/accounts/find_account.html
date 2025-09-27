@@ -1,0 +1,113 @@
+{% extends 'auth_base.html' %}
+{% load static %}
+
+{% block title %}Find Your Account - Friends Kikai Boys High School{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+    <h3 class="mb-2">{{ greeting }}!</h3>
+    <p class="text-muted">Welcome back to Friends Kikai Boys High School</p>
+    <p class="text-muted">Examination Management System</p>
+</div>
+
+<form method="post" id="find-account-form">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="username_or_email" class="form-label">Username or Email Address</label>
+        <input type="text"
+               class="form-control"
+               id="username_or_email"
+               name="username_or_email"
+               placeholder="Enter your username or email"
+               required
+               autocomplete="username">
+        <small class="form-text text-muted">Enter your username or email address to find your account</small>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-auth mt-4" id="continue-btn">
+        <i class="fas fa-search mr-2"></i>Continue
+    </button>
+</form>
+
+<div class="auth-links">
+    <p class="mb-2">
+        <a href="#" onclick="showForgotUsername()">Forgot Username?</a>
+    </p>
+    <p class="mb-0">
+        <a href="#" onclick="showPasswordReset()">Forgot Password?</a>
+    </p>
+</div>
+
+<!-- Hidden forms for additional options -->
+<div id="forgot-username-form" style="display: none;">
+    <hr class="my-4">
+    <h5>Forgot Username?</h5>
+    <form method="post" action="{% url 'accounts:password_reset_request' %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="email" class="form-label">Email Address</label>
+            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+        </div>
+        <button type="submit" class="btn btn-warning btn-sm">
+            <i class="fas fa-envelope mr-2"></i>Send Recovery Email
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm ml-2" onclick="hideForgotUsername()">Cancel</button>
+    </form>
+</div>
+
+<div id="password-reset-form" style="display: none;">
+    <hr class="my-4">
+    <h5>Reset Password</h5>
+    <form method="post" action="{% url 'accounts:password_reset_request' %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="reset_email" class="form-label">Email Address</label>
+            <input type="email" class="form-control" id="reset_email" name="email" placeholder="Enter your email" required>
+        </div>
+        <button type="submit" class="btn btn-danger btn-sm">
+            <i class="fas fa-key mr-2"></i>Send Reset Code
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm ml-2" onclick="hidePasswordReset()">Cancel</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block auth_links %}
+<div class="auth-links">
+    <p class="mb-0">Need help? <a href="#">Contact Support</a></p>
+</div>
+{% endblock %}
+
+<script>
+function showForgotUsername() {
+    document.getElementById('forgot-username-form').style.display = 'block';
+    document.getElementById('password-reset-form').style.display = 'none';
+}
+
+function hideForgotUsername() {
+    document.getElementById('forgot-username-form').style.display = 'none';
+}
+
+function showPasswordReset() {
+    document.getElementById('password-reset-form').style.display = 'block';
+    document.getElementById('forgot-username-form').style.display = 'none';
+}
+
+function hidePasswordReset() {
+    document.getElementById('password-reset-form').style.display = 'none';
+}
+
+// Loading animation for form submission
+document.getElementById('find-account-form').addEventListener('submit', function(e) {
+    const btn = document.getElementById('continue-btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="loading"></span> Finding Account...';
+    btn.disabled = true;
+
+    // Re-enable after 3 seconds if no redirect happens
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }, 3000);
+});
+</script>

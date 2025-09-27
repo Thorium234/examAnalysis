@@ -1,1 +1,13 @@
-{% extends 'base.html' %}{% block title %}Logged Out{% endblock %}{% block content %}<div class="row justify-content-center"><div class="col-md-6 col-lg-4"><div class="card shadow-lg mt-5 text-center"><div class="card-body"><h5 class="card-title text-success mb-3">You have been logged out successfully.</h5><p class="card-text text-muted mb-4">Thank you for using the system.</p><a href="{% url 'accounts:login' %}" class="btn btn-primary">Log in again</a></div></div></div></div>{% endblock %}
+{% extends 'auth_base.html' %}
+
+{% block title %}Logged Out - Friends Kikai Boys High School{% endblock %}
+
+{% block content %}
+<h5 class="card-title text-center mb-4 text-success">
+    <i class="fas fa-check-circle mr-2"></i>You have been logged out successfully
+</h5>
+<p class="card-text text-center text-muted mb-4">Thank you for using the Examination Management System.</p>
+<a href="{% url 'accounts:login' %}" class="btn btn-primary btn-auth">
+    <i class="fas fa-sign-in-alt mr-2"></i>Log in again
+</a>
+{% endblock %}

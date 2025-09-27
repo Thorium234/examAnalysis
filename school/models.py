@@ -47,4 +47,4 @@ class Stream(models.Model):
         ordering = ['form_level', 'name']
         
     def __str__(self):
-        return f'{self.form_level.name} {self.name}'
+        return f'Form {self.form_level.number} {self.name}'

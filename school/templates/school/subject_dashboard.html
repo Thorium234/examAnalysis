@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ subject.name }} - Marks Entry{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ subject.name }} Dashboard</h1>
+        {% if form_level %}
+        <a href="{% url 'school:class_dashboard' form_level %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Form {{ form_level }}
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Subject Info Card -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-left-info shadow">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h5>{{ subject.name }}</h5>
+                            <p class="text-muted">Code: {{ subject.code }}</p>
+                            <p class="text-muted">Category: {{ subject.category.name|default:"N/A" }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6>Max Marks: {{ subject.max_marks|default:100 }}</h6>
+                            <p class="text-muted">Optional: {% if subject.is_optional %}Yes{% else %}No{% endif %}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Quick Stats</h6>
+                            <div class="row">
+                                <div class="col-4">
+                                    <div class="text-center">
+                                        <span class="h4 text-primary">{{ students|length }}</span>
+                                        <br><small class="text-muted">Students</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-center">
+                                        <span class="h4 text-success">{{ exam_results|length }}</span>
+                                        <br><small class="text-muted">Results</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-center">
+                                        <span class="h4 text-warning">85%</span>
+                                        <br><small class="text-muted">Avg Score</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Marks Entry Form -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">Enter/Update Marks</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="marks-form">
+                        {% csrf_token %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Adm No</th>
+                                        <th>Student Name</th>
+                                        {% if stream %}
+                                        <th>Stream</th>
+                                        {% endif %}
+                                        <th>Current Marks</th>
+                                        <th>New Marks</th>
+                                        <th>Grade</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student in students %}
+                                    <tr>
+                                        <td>{{ student.admission_number }}</td>
+                                        <td>{{ student.full_name }}</td>
+                                        {% if stream %}
+                                        <td>{{ student.stream }}</td>
+                                        {% endif %}
+                                        <td>
+                                            {% comment %} Get current marks {% endcomment %}
+                                            {% for result in exam_results %}
+                                                {% if result.student == student %}
+                                                    {{ result.total_marks }}
+                                                {% endif %}
+                                            {% empty %}
+                                            -
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control form-control-sm"
+                                                   name="marks_{{ student.id }}" min="0" max="100" step="0.5">
+                                        </td>
+                                        <td id="grade_{{ student.id }}">-</td>
+                                        <td>
+                                            <button type="button" class="btn btn-primary btn-sm save-marks"
+                                                    data-student-id="{{ student.id }}">
+                                                Save
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Save All Marks
+                            </button>
+                            <a href="#" class="btn btn-info">
+                                <i class="fas fa-download"></i> Export to Excel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Results -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-success">Recent Results</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Exam</th>
+                                    <th>Student</th>
+                                    <th>Marks</th>
+                                    <th>Grade</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in exam_results %}
+                                <tr>
+                                    <td>{{ result.exam.name }}</td>
+                                    <td>{{ result.student.full_name }}</td>
+                                    <td>{{ result.total_marks }}</td>
+                                    <td>A</td>
+                                    <td>{{ result.date_entered|date:"M d, Y" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No results found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-calculate grades
+document.querySelectorAll('input[name^="marks_"]').forEach(input => {
+    input.addEventListener('input', function() {
+        const marks = parseFloat(this.value);
+        const studentId = this.name.split('_')[1];
+        const gradeCell = document.getElementById(`grade_${studentId}`);
+
+        if (marks >= 80) gradeCell.textContent = 'A';
+        else if (marks >= 75) gradeCell.textContent = 'A-';
+        else if (marks >= 70) gradeCell.textContent = 'B+';
+        else if (marks >= 65) gradeCell.textContent = 'B';
+        else if (marks >= 60) gradeCell.textContent = 'B-';
+        else if (marks >= 55) gradeCell.textContent = 'C+';
+        else if (marks >= 50) gradeCell.textContent = 'C';
+        else if (marks >= 45) gradeCell.textContent = 'C-';
+        else if (marks >= 40) gradeCell.textContent = 'D+';
+        else if (marks >= 35) gradeCell.textContent = 'D';
+        else if (marks >= 30) gradeCell.textContent = 'D-';
+        else gradeCell.textContent = 'E';
+    });
+});
+</script>
+{% endblock %}

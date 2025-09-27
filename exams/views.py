@@ -237,7 +237,7 @@ class StudentReportCardView(TeacherRequiredMixin, TemplateView):
 
 # Grading System CRUD
 #----------------------------------------------------------------------
-class GradingSystemListView(HODRequiredMixin, ListView):
+class GradingSystemListView(TeacherRequiredMixin, ListView):
     model = GradingSystem
     template_name = 'exams/grading_system_list.html'
     context_object_name = 'grading_systems'
@@ -245,7 +245,7 @@ class GradingSystemListView(HODRequiredMixin, ListView):
     def get_queryset(self):
         return GradingSystem.objects.filter(school=self.request.user.school)
 
-class GradingSystemCreateView(HODRequiredMixin, CreateView):
+class GradingSystemCreateView(TeacherRequiredMixin, CreateView):
     model = GradingSystem
     fields = ['name', 'description', 'is_active']
     template_name = 'exams/grading_system_form.html'
@@ -255,20 +255,20 @@ class GradingSystemCreateView(HODRequiredMixin, CreateView):
         form.instance.school = self.request.user.school
         return super().form_valid(form)
 
-class GradingSystemUpdateView(HODRequiredMixin, UpdateView):
+class GradingSystemUpdateView(TeacherRequiredMixin, UpdateView):
     model = GradingSystem
     fields = ['name', 'description', 'is_active']
     template_name = 'exams/grading_system_form.html'
     success_url = reverse_lazy('grading_system_list')
 
-class GradingSystemDeleteView(HODRequiredMixin, DeleteView):
+class GradingSystemDeleteView(TeacherRequiredMixin, DeleteView):
     model = GradingSystem
     template_name = 'exams/grading_system_confirm_delete.html'
     success_url = reverse_lazy('grading_system_list')
 
 # Grading Range CRUD
 #----------------------------------------------------------------------
-class GradingRangeCreateView(HODRequiredMixin, CreateView):
+class GradingRangeCreateView(TeacherRequiredMixin, CreateView):
     model = GradingRange
     fields = ['grading_system', 'grade', 'min_score', 'max_score', 'points']
     template_name = 'exams/grading_range_form.html'
@@ -276,7 +276,7 @@ class GradingRangeCreateView(HODRequiredMixin, CreateView):
     def get_success_url(self):
         return reverse_lazy('grading_system_detail', kwargs={'pk': self.object.grading_system.pk})
 
-class GradingRangeUpdateView(HODRequiredMixin, UpdateView):
+class GradingRangeUpdateView(TeacherRequiredMixin, UpdateView):
     model = GradingRange
     fields = ['grade', 'min_score', 'max_score', 'points']
     template_name = 'exams/grading_range_form.html'
@@ -284,14 +284,14 @@ class GradingRangeUpdateView(HODRequiredMixin, UpdateView):
     def get_success_url(self):
         return reverse_lazy('grading_system_detail', kwargs={'pk': self.object.grading_system.pk})
 
-class GradingRangeDeleteView(HODRequiredMixin, DeleteView):
+class GradingRangeDeleteView(TeacherRequiredMixin, DeleteView):
     model = GradingRange
     template_name = 'exams/grading_range_confirm_delete.html'
 
     def get_success_url(self):
         return reverse_lazy('grading_system_detail', kwargs={'pk': self.object.grading_system.pk})
 
-class GradingSystemDetailView(HODRequiredMixin, TemplateView):
+class GradingSystemDetailView(TeacherRequiredMixin, TemplateView):
     template_name = 'exams/grading_system_detail.html'
 
     def get_context_data(self, **kwargs):

@@ -1,0 +1,133 @@
+{% extends 'auth_base.html' %}
+{% load static %}
+
+{% block title %}Welcome Back - Friends Kikai Boys High School{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+    <h3 class="mb-2">Welcome back!</h3>
+    <p class="text-muted">We found your account</p>
+</div>
+
+<!-- Account Info Card -->
+<div class="account-info-card mb-4">
+    <div class="d-flex align-items-center">
+        <div class="avatar-circle mr-3">
+            {% if user.profile.avatar %}
+                <img src="{{ user.profile.avatar.url }}" alt="Avatar" class="avatar-img">
+            {% else %}
+                <div class="avatar-placeholder">
+                    <i class="fas fa-user fa-2x"></i>
+                </div>
+            {% endif %}
+        </div>
+        <div class="account-details">
+            <h5 class="mb-1">{{ user.get_full_name|default:user.username }}</h5>
+            <p class="text-muted mb-1">{{ user.email }}</p>
+            <p class="text-muted mb-0">
+                {% for role in user.profile.roles.all %}
+                    <span class="badge badge-primary">{{ role.name }}</span>
+                {% endfor %}
+            </p>
+        </div>
+    </div>
+</div>
+
+<form method="post" id="login-form">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="password" class="form-label">Enter your password</label>
+        <input type="password"
+               class="form-control"
+               id="password"
+               name="password"
+               placeholder="Enter your password"
+               required
+               autocomplete="current-password">
+        <small class="form-text text-muted">Your password is required to sign in</small>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-auth mt-4" id="signin-btn">
+        <i class="fas fa-sign-in-alt mr-2"></i>Sign In
+    </button>
+</form>
+
+<div class="auth-links">
+    <p class="mb-2">
+        <a href="{% url 'accounts:password_reset_request' %}">Forgot Password?</a>
+    </p>
+    <p class="mb-0">
+        <a href="{% url 'accounts:find_account' %}">Not you? Sign in with a different account</a>
+    </p>
+</div>
+{% endblock %}
+
+{% block auth_links %}
+<div class="auth-links">
+    <p class="mb-0">Need help? <a href="#">Contact Support</a></p>
+</div>
+{% endblock %}
+
+<style>
+.account-info-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    padding: 1.5rem;
+    border: 2px solid #e9ecef;
+    margin-bottom: 2rem;
+}
+
+.avatar-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #667eea;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.account-details {
+    flex: 1;
+}
+
+.account-details h5 {
+    color: #212529;
+    font-weight: 600;
+}
+
+.badge {
+    font-size: 0.75rem;
+    margin-right: 0.25rem;
+}
+</style>
+
+<script>
+// Loading animation for form submission
+document.getElementById('login-form').addEventListener('submit', function(e) {
+    const btn = document.getElementById('signin-btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="loading"></span> Signing In...';
+    btn.disabled = true;
+
+    // Re-enable after 3 seconds if no redirect happens
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }, 3000);
+});
+</script>

@@ -76,6 +76,49 @@
           </div>
         </a>
       </div>
+
+      <!-- Students Management Card -->
+      <div class="col-md-4">
+        <a href="{% url 'students:student_list' %}" class="card card-hover h-100 shadow-sm rounded-lg border-0 p-4">
+          <div class="card-body text-center d-flex flex-column align-items-center">
+            <i class="fas fa-user-graduate fa-3x text-success mb-3"></i>
+            <h5 class="card-title font-weight-bold">Students Management</h5>
+            <p class="card-text text-muted">Manage student records and enrollments.</p>
+          </div>
+        </a>
+      </div>
+
+      <!-- Exams Card -->
+      <div class="col-md-4">
+        <a href="{% url 'exams:exam_list' %}" class="card card-hover h-100 shadow-sm rounded-lg border-0 p-4">
+          <div class="card-body text-center d-flex flex-column align-items-center">
+            <i class="fas fa-file-alt fa-3x text-danger mb-3"></i>
+            <h5 class="card-title font-weight-bold">Exams</h5>
+            <p class="card-text text-muted">Create and manage school examinations.</p>
+          </div>
+        </a>
+      </div>
+
+      <!-- Subjects Card -->
+      <div class="col-md-4">
+        <a href="{% url 'subjects:subject_list' %}" class="card card-hover h-100 shadow-sm rounded-lg border-0 p-4">
+          <div class="card-body text-center d-flex flex-column align-items-center">
+            <i class="fas fa-book fa-3x text-warning mb-3"></i>
+            <h5 class="card-title font-weight-bold">Subjects</h5>
+            <p class="card-text text-muted">Manage subjects and subject papers.</p>
+          </div>
+      <!-- School-Wide Dashboard Card -->
+      <div class="col-md-4">
+        <a href="{% url 'school:school_wide_dashboard' %}" class="card card-hover h-100 shadow-sm rounded-lg border-0 p-4">
+          <div class="card-body text-center d-flex flex-column align-items-center">
+            <i class="fas fa-chart-bar fa-3x text-secondary mb-3"></i>
+            <h5 class="card-title font-weight-bold">School Analytics</h5>
+            <p class="card-text text-muted">View school-wide performance analytics and rankings.</p>
+          </div>
+        </a>
+      </div>
+        </a>
+      </div>
     </div>
   </div>
   <style>

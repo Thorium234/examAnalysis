@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Profile - Friends Kikai Boys High School{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">My Profile</h1>
+    </div>
+
+    <div class="row">
+        <!-- Profile Information -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Profile Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-4">
+                            {% if user.profile.avatar %}
+                                <img src="{{ user.profile.avatar.url }}" alt="Avatar" class="rounded-circle" width="120" height="120">
+                            {% else %}
+                                <div class="avatar-placeholder-large">
+                                    <i class="fas fa-user fa-3x"></i>
+                                </div>
+                            {% endif %}
+                            <br>
+                            <button class="btn btn-sm btn-outline-primary mt-2">Change Photo</button>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" class="form-control" value="{{ user.get_full_name }}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Username</label>
+                                <input type="text" class="form-control" value="{{ user.username }}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" class="form-control" value="{{ user.email }}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Phone Number</label>
+                                <input type="text" class="form-control" value="{{ user.profile.phone_number|default:'Not set' }}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Roles</label>
+                                <div>
+                                    {% for role in user.profile.roles.all %}
+                                        <span class="badge badge-primary">{{ role.name }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'accounts:change_password' %}" class="btn btn-primary btn-block mb-2">
+                        <i class="fas fa-key mr-2"></i>Change Password
+                    </a>
+                    <button class="btn btn-outline-primary btn-block mb-2">
+                        <i class="fas fa-edit mr-2"></i>Edit Profile
+                    </button>
+                    <button class="btn btn-outline-info btn-block">
+                        <i class="fas fa-download mr-2"></i>Export Data
+                    </button>
+                </div>
+            </div>
+
+            <!-- School Information -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">School Information</h6>
+                </div>
+                <div class="card-body">
+                    <h5>{{ school_info.name }}</h5>
+                    <p class="text-muted">{{ school_info.address|default:'Address not set' }}</p>
+                    <p class="text-muted">{{ school_info.phone|default:'Phone not set' }}</p>
+                    <p class="text-muted">{{ school_info.email|default:'Email not set' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- School Users -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">School Staff</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Roles</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for school_user in school_users %}
+                                <tr>
+                                    <td>{{ school_user.get_full_name|default:school_user.username }}</td>
+                                    <td>{{ school_user.username }}</td>
+                                    <td>{{ school_user.email }}</td>
+                                    <td>
+                                        {% for role in school_user.profile.roles.all %}
+                                            <span class="badge badge-secondary">{{ role.name }}</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        {% if school_user.is_active %}
+                                            <span class="badge badge-success">Active</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No other staff members found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-placeholder-large {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin: 0 auto;
+    border: 4px solid #e9ecef;
+}
+</style>
+{% endblock %}

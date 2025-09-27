@@ -4,7 +4,7 @@ from django.urls import path
 from . import views
 
 app_name = 'school'
- 
+
 urlpatterns = [
     # Main dashboard view. This will be the landing page for authenticated users.
     # It is a function-based view, separate from the SchoolDashboardView class.
@@ -38,4 +38,12 @@ urlpatterns = [
     path('create/', views.SchoolCreateView.as_view(), name='school_create'),
     path('<int:pk>/update/', views.SchoolUpdateView.as_view(), name='school_update'),
     path('<int:pk>/delete/', views.SchoolDeleteView.as_view(), name='school_delete'),
+
+    # New Dashboard URLs
+    path('class/<int:form_level>/', views.class_dashboard, name='class_dashboard'),
+    path('stream/<int:form_level>/<str:stream>/', views.stream_dashboard, name='stream_dashboard'),
+    path('subject/<int:subject_id>/', views.subject_dashboard, name='subject_dashboard'),
+    path('subject/<int:form_level>/<int:subject_id>/', views.subject_dashboard, name='subject_dashboard_form'),
+    path('subject/<int:form_level>/<str:stream>/<int:subject_id>/', views.subject_dashboard, name='subject_dashboard_stream'),
+    path('school-wide/', views.school_wide_dashboard, name='school_wide_dashboard'),
 ]

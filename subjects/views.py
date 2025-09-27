@@ -26,7 +26,7 @@ class SubjectCreateView(SchoolAdminOrHODRequiredMixin, CreateView):
     model = Subject
     template_name = 'subjects/subject_form.html'
     fields = ['name', 'code', 'category', 'is_optional']
-    success_url = reverse_lazy('subject_list')
+    success_url = reverse_lazy('subjects:subject_list')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -41,7 +41,7 @@ class SubjectUpdateView(SchoolAdminOrHODRequiredMixin, UpdateView):
     model = Subject
     template_name = 'subjects/subject_form.html'
     fields = ['name', 'code', 'category', 'is_optional']
-    success_url = reverse_lazy('subject_list')
+    success_url = reverse_lazy('subjects:subject_list')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -54,7 +54,7 @@ class SubjectUpdateView(SchoolAdminOrHODRequiredMixin, UpdateView):
 class SubjectDeleteView(SchoolAdminOrHODRequiredMixin, DeleteView):
     model = Subject
     template_name = 'subjects/subject_confirm_delete.html'
-    success_url = reverse_lazy('subject_list')
+    success_url = reverse_lazy('subjects:subject_list')
     
     def get_queryset(self):
         return Subject.objects.filter(school=self.request.user.school)
@@ -63,4 +63,4 @@ class SubjectPaperCreateView(SchoolAdminOrHODRequiredMixin, CreateView):
     model = SubjectPaper
     template_name = 'subjects/subject_paper_form.html'
     fields = ['subject', 'paper_number', 'max_marks', 'contribution_percentage']
-    success_url = reverse_lazy('subject_list')
+    success_url = reverse_lazy('subjects:subject_list')

@@ -17,7 +17,7 @@ ALLOWED_HOSTS = ["*", "localhost", "127.0.0.1"]
 # Application definition
 
 INSTALLED_APPS = [
-    'accounts',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -28,11 +28,12 @@ INSTALLED_APPS = [
     'rest_framework',
     'bootstrap4',
     'reportlab',
+    'accounts',
+    'school',
     'students',
     'exams',
     'reports',
     'subjects',
-    'school',
 
 ]
 
@@ -141,6 +142,6 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # Login/Logout URLs
-LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/accounts/login/'
+LOGIN_URL = '/accounts/find-account/'
+LOGIN_REDIRECT_URL = '/school/'
+LOGOUT_REDIRECT_URL = '/accounts/goodbye/'
