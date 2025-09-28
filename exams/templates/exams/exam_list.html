@@ -17,7 +17,7 @@
                 <tbody>
                     {% for exam in exams %}
                     <tr>
-                        <td><a href="{% url 'exams:exam_detail' exam.pk %}">{{ exam.name }}</a></td>
+                        <td>{{ exam.name }}</td>
                         <td>{{ exam.get_term_display }}</td>
                         <td>{{ exam.academic_year }}</td>
                         <td>
@@ -28,9 +28,9 @@
                             {% endif %}
                         </td>
                         <td>
-                            <a href="{% url 'exams:exam_update' exam.pk %}" class="btn btn-sm btn-info">Edit</a>
+                            <a href="{% url 'exams:exam_edit' exam.pk %}" class="btn btn-sm btn-info">Edit</a>
                             <a href="{% url 'exams:exam_delete' exam.pk %}" class="btn btn-sm btn-danger">Delete</a>
-                            <a href="{% url 'exams:exam_bulk_entry' exam.pk %}" class="btn btn-sm btn-success">Enter Results</a>
+                            <a href="{% url 'exams:exam_results_upload_choice' exam.pk %}" class="btn btn-sm btn-success">Enter Results</a>
                         </td>
                     </tr>
                     {% empty %}

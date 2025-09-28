@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ category.name }} Department Dashboard{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3 mb-0 text-gray-800">{{ category.name }} Department Dashboard</h1>
+            <p class="text-muted">{{ category.description }}</p>
+        </div>
+    </div>
+
+    <!-- Department Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Subjects
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ department_stats.total_subjects }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-book fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Average Performance
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ department_stats.avg_performance|floatformat:1 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Total Students
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ department_stats.total_students }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Top Performers
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ department_stats.top_performers|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-trophy fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subjects in Department -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Subjects in {{ category.name }}</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for subject in subjects %}
+                        <div class="col-md-3 mb-3">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">{{ subject.name }}</h5>
+                                    <p class="card-text">{{ subject.code }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form-Level Performance -->
+    {% if form_performance %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Performance by Form Level</h6>
+                </div>
+                <div class="card-body">
+                    {% for form_data in form_performance %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="text-primary">Form {{ form_data.form_level }}</h5>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="card">
+                                        <div class="card-body text-center">
+                                            <h4 class="text-success">{{ form_data.student_count }}</h4>
+                                            <p class="text-muted">Students</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card">
+                                        <div class="card-body text-center">
+                                            <h4 class="text-info">{{ form_data.avg_marks }}</h4>
+                                            <p class="text-muted">Avg Marks</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Top Students</h6>
+                                    <ul class="list-group">
+                                        {% for student in form_data.top_students %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            {{ student.student.admission_number }} - {{ student.student.get_full_name }}
+                                            <span class="badge badge-primary badge-pill">{{ student.total_marks }}</span>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                            {% if form_data.deviations %}
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <h6>Recent Performance Deviations</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Student</th>
+                                                    <th>Subject</th>
+                                                    <th>Marks</th>
+                                                    <th>Deviation</th>
+                                                    <th>Exam</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for dev in form_data.deviations %}
+                                                <tr>
+                                                    <td>{{ dev.student.admission_number }} - {{ dev.student.get_full_name }}</td>
+                                                    <td>{{ dev.subject.name }}</td>
+                                                    <td>{{ dev.marks }}</td>
+                                                    <td class="{% if dev.deviation > 0 %}text-success{% else %}text-danger{% endif %}">
+                                                        {{ dev.deviation|floatformat:1 }}
+                                                    </td>
+                                                    <td>{{ dev.exam.name }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <hr>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Top Performers Overall -->
+    {% if department_stats.top_performers %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Top Performers in {{ category.name }}</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Student</th>
+                                    <th>Average Marks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for performer in department_stats.top_performers %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        {% for student in performer.student.all %}
+                                        {{ student.admission_number }} - {{ student.get_full_name }}
+                                        {% endfor %}
+                                    </td>
+                                    <td>{{ performer.avg_marks|floatformat:1 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Exam Results - {{ exam.name }} - Form {{ form_level.number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">{{ exam.name }} - Form {{ form_level.number }} Results</h1>
+            <p class="text-muted">Year {{ exam.year }} • Term {{ exam.term }}</p>
+        </div>
+        <div>
+            <a href="{% url 'exams:exam_results_entry' exam.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Enter Results
+            </a>
+            <button onclick="window.print()" class="btn btn-secondary">
+                <i class="fas fa-print"></i> Print
+            </button>
+            <a href="{% url 'exams:generate_exam_pdf' exam.pk form_level.id %}" class="btn btn-success">
+                <i class="fas fa-download"></i> Download PDF
+            </a>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Student Results</h6>
+        </div>
+        <div class="card-body">
+            {% if student_results %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="resultsTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Adm No.</th>
+                                <th>Student Name</th>
+                                <th>Stream</th>
+                                {% for subject_paper in student_results.0.results %}
+                                <th>{{ subject_paper.subject_paper.subject.name }} ({{ subject_paper.subject_paper.paper_number }})</th>
+                                {% endfor %}
+                                <th>Total</th>
+                                <th>Percentage</th>
+                                <th>Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student_result in student_results %}
+                            <tr>
+                                <td>{{ student_result.student.admission_number }}</td>
+                                <td>{{ student_result.student.name }}</td>
+                                <td>{{ student_result.student.stream|default:"-" }}</td>
+                                {% for result in student_result.results %}
+                                <td class="text-center">{{ result.score }}</td>
+                                {% endfor %}
+                                <td class="font-weight-bold">{{ student_result.total_marks }}</td>
+                                <td class="font-weight-bold">{{ student_result.percentage|floatformat:1 }}%</td>
+                                <td>
+                                    {% if student_result.percentage >= 80 %}
+                                        <span class="badge badge-success">A</span>
+                                    {% elif student_result.percentage >= 75 %}
+                                        <span class="badge badge-success">A-</span>
+                                    {% elif student_result.percentage >= 70 %}
+                                        <span class="badge badge-info">B+</span>
+                                    {% elif student_result.percentage >= 65 %}
+                                        <span class="badge badge-info">B</span>
+                                    {% elif student_result.percentage >= 60 %}
+                                        <span class="badge badge-info">B-</span>
+                                    {% elif student_result.percentage >= 55 %}
+                                        <span class="badge badge-warning">C+</span>
+                                    {% elif student_result.percentage >= 50 %}
+                                        <span class="badge badge-warning">C</span>
+                                    {% elif student_result.percentage >= 45 %}
+                                        <span class="badge badge-warning">C-</span>
+                                    {% elif student_result.percentage >= 40 %}
+                                        <span class="badge badge-danger">D+</span>
+                                    {% elif student_result.percentage >= 35 %}
+                                        <span class="badge badge-danger">D</span>
+                                    {% else %}
+                                        <span class="badge badge-dark">E</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-chart-line fa-3x text-gray-300 mb-3"></i>
+                    <h5 class="text-muted">No Results Found</h5>
+                    <p class="text-muted">Results have not been entered for this exam yet.</p>
+                    <a href="{% url 'exams:exam_results_entry' exam.pk %}" class="btn btn-primary">
+                        Enter Results
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    {% if student_results %}
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Students</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ student_results|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Average Score</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% widthratio student_results|length 1 0 %}{% for sr in student_results %}{% widthratio sr.percentage 1 0 %}{% endfor %}{% widthratio student_results|length 1 0 %}%
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-bar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Highest Score</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% for sr in student_results %}
+                                    {% if forloop.first %}{{ sr.percentage|floatformat:1 }}{% endif %}
+                                {% empty %}0
+                                {% endfor %}%
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-trophy fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pass Rate</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% for sr in student_results %}
+                                    {% if sr.percentage >= 50 %}{% endif %}
+                                {% endfor %}%
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+@media print {
+    .btn, .card-header {
+        display: none !important;
+    }
+    .container-fluid {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+}
+</style>
+{% endblock %}

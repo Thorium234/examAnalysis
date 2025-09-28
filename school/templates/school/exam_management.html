@@ -1,45 +1,243 @@
 {% extends 'base.html' %}
-{% block title %}Exam Management{% endblock %}
+{% load static %}
+{% block title %}Exam Management Dashboard{% endblock %}
 {% block content %}
-<div class="container py-5">
-    <div class="text-center mb-5">
-        <h1 class="display-4 font-weight-bold text-dark mb-2">Exam Management</h1>
-        <p class="lead text-muted">Create, publish, and manage school exams.</p>
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Exam Management Dashboard</h1>
+        <a href="{% url 'exams:exam_create' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Create New Exam
+        </a>
     </div>
-    <!-- Dashboard Cards -->
-    <div class="row g-4">
-      <!-- Exam List Card -->
-      <div class="col-md-4">
-        <a href="{% url 'exams:exam_list' %}" class="card card-hover h-100 shadow-sm rounded-lg border-0 p-4">
-          <div class="card-body text-center d-flex flex-column align-items-center">
-            <i class="fas fa-list fa-3x text-primary mb-3"></i>
-            <h5 class="card-title font-weight-bold">Exam List</h5>
-            <p class="card-text text-muted">View and manage all exams.</p>
-          </div>
-        </a>
-      </div>
 
-      <!-- Create Exam Card -->
-      <div class="col-md-4">
-        <a href="{% url 'exams:exam_create' %}" class="card card-hover h-100 shadow-sm rounded-lg border-0 p-4">
-          <div class="card-body text-center d-flex flex-column align-items-center">
-            <i class="fas fa-plus fa-3x text-success mb-3"></i>
-            <h5 class="card-title font-weight-bold">Create Exam</h5>
-            <p class="card-text text-muted">Create a new examination.</p>
-          </div>
-        </a>
-      </div>
+    <!-- Quick Stats Row -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Exams</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ exam_count|default:0 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Published Exams</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ published_exam_count|default:0 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Grading Systems</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ grading_system_count|default:0 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-cogs fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Active Exams</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_exam_count|default:0 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-      <!-- Grading Systems Card -->
-      <div class="col-md-4">
-        <a href="{% url 'exams:grading_system_list' %}" class="card card-hover h-100 shadow-sm rounded-lg border-0 p-4">
-          <div class="card-body text-center d-flex flex-column align-items-center">
-            <i class="fas fa-cogs fa-3x text-warning mb-3"></i>
-            <h5 class="card-title font-weight-bold">Grading Systems</h5>
-            <p class="card-text text-muted">Manage grading systems and ranges.</p>
-          </div>
-        </a>
-      </div>
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Recent Exams -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Exams</h6>
+                    <a href="{% url 'exams:exam_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_exams %}
+                        <div class="table-responsive">
+                            <table class="table table-borderless">
+                                <thead>
+                                    <tr>
+                                        <th>Exam Name</th>
+                                        <th>Form</th>
+                                        <th>Year/Term</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for exam in recent_exams %}
+                                    <tr>
+                                        <td>{{ exam.name }}</td>
+                                        <td>Form {{ exam.form_level }}</td>
+                                        <td>{{ exam.year }} Term {{ exam.term }}</td>
+                                        <td>
+                                            {% if exam.is_published %}
+                                                <span class="badge badge-success">Published</span>
+                                            {% elif exam.is_active %}
+                                                <span class="badge badge-warning">Active</span>
+                                            {% else %}
+                                                <span class="badge badge-secondary">Draft</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'exams:exam_results_entry' exam.pk %}" class="btn btn-sm btn-outline-primary">Results</a>
+                                            <a href="{% url 'exams:exam_edit' exam.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-file-alt fa-3x text-gray-300 mb-3"></i>
+                            <p class="text-muted">No exams found. <a href="{% url 'exams:exam_create' %}">Create your first exam</a></p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Sidebar -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'exams:exam_create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Create New Exam
+                        </a>
+                        <a href="{% url 'exams:exam_list' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-list"></i> View All Exams
+                        </a>
+                        <a href="{% url 'exams:grading_system_list' %}" class="btn btn-outline-info">
+                            <i class="fas fa-cogs"></i> Manage Grading Systems
+                        </a>
+                        <a href="{% url 'reports:report_generation_dashboard' %}" class="btn btn-outline-success">
+                            <i class="fas fa-file-pdf"></i> Generate Reports
+                        </a>
+                        <a href="{% url 'exams:exam_create' %}?template=midterm" class="btn btn-outline-warning">
+                            <i class="fas fa-copy"></i> Create Mid-Term Exam
+                        </a>
+                    </div>
+
+                    <!-- Grading Systems Summary -->
+                    <hr class="my-4">
+                    <h6 class="font-weight-bold text-primary mb-3">Grading Systems</h6>
+                    {% if recent_grading_systems %}
+                        {% for gs in recent_grading_systems %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-sm">{{ gs.name }}</span>
+                            <a href="{% url 'exams:grading_system_detail' gs.pk %}" class="btn btn-sm btn-outline-secondary">View</a>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted small mb-0">No grading systems configured</p>
+                    {% endif %}
+                    <a href="{% url 'exams:grading_system_create' %}" class="btn btn-sm btn-outline-primary mt-2">Add Grading System</a>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Activity</h6>
+                </div>
+                <div class="card-body">
+                    <div class="timeline timeline-xs">
+                        {% if recent_exams %}
+                            {% for exam in recent_exams|slice:":3" %}
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-primary"></div>
+                                <div class="timeline-content">
+                                    <h6 class="timeline-title">{{ exam.name }} created</h6>
+                                    <p class="text-muted small">Form {{ exam.form_level }} • {{ exam.year }} Term {{ exam.term }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-3">
+                                <p class="text-muted small">No recent activity</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+.card-hover {
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+.card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
+}
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e9ecef;
+}
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+.timeline-marker {
+    position: absolute;
+    left: -22px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+.timeline-title {
+    font-size: 0.9rem;
+    margin-bottom: 2px;
+}
+</style>
 {% endblock %}

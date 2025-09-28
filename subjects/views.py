@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
 from django.forms import inlineformset_factory
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -62,5 +62,21 @@ class SubjectDeleteView(SchoolAdminOrHODRequiredMixin, DeleteView):
 class SubjectPaperCreateView(SchoolAdminOrHODRequiredMixin, CreateView):
     model = SubjectPaper
     template_name = 'subjects/subject_paper_form.html'
-    fields = ['subject', 'paper_number', 'max_marks', 'contribution_percentage']
+    fields = ['subject', 'paper_number', 'max_marks', 'student_contribution_marks']
     success_url = reverse_lazy('subjects:subject_list')
+
+class SubjectDetailView(LoginRequiredMixin, DetailView):
+    model = Subject
+    template_name = 'subjects/subject_detail.html'
+    context_object_name = 'subject'
+
+    def get_queryset(self):
+        return Subject.objects.filter(school=self.request.user.school)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        subject = self.get_object()
+        context['subject_papers'] = subject.papers.all()
+        # For now, no teachers assigned
+        context['teachers'] = []
+        return context

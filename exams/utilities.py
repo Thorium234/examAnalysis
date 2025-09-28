@@ -12,7 +12,7 @@ class ExamResultsService:
         Returns a dictionary of student summaries.
         """
         exam = Exam.objects.get(pk=exam_id)
-        students = Student.objects.filter(form_level=exam.form_level, school=exam.school, is_active=True).order_by('stream', 'name')
+        students = Student.objects.filter(form_level=exam.form_level, school=exam.school).order_by('stream', 'name')
 
         student_data = {}
         all_subjects = {}
@@ -36,10 +36,10 @@ class ExamResultsService:
                 
                 # Check if we have a valid max_marks and contribution for the subject
                 # This prevents division by zero if data is missing
-                if paper_result.subject_paper.max_marks > 0 and paper_result.subject_paper.contribution_percentage > 0:
-                    normalized_marks = (paper_result.marks / paper_result.subject_paper.max_marks) * 100
+                if paper_result.subject_paper.max_marks > 0 and paper_result.subject_paper.student_contribution_marks > 0:
+                    contribution_marks = (paper_result.marks / paper_result.subject_paper.max_marks) * paper_result.subject_paper.student_contribution_marks
                 else:
-                    normalized_marks = 0
+                    contribution_marks = 0
 
                 if subject_name not in subject_marks:
                     subject_marks[subject_name] = {
@@ -49,8 +49,8 @@ class ExamResultsService:
                         'points': None
                     }
 
-                subject_marks[subject_name]['total_marks'] += normalized_marks * (Decimal(paper_result.subject_paper.contribution_percentage) / 100)
-                subject_marks[subject_name]['total_contribution'] += Decimal(paper_result.subject_paper.contribution_percentage)
+                subject_marks[subject_name]['total_marks'] += contribution_marks
+                subject_marks[subject_name]['total_contribution'] += paper_result.subject_paper.student_contribution_marks
 
             # Step 2: Calculate subject grades and points
             for subject_name, data in subject_marks.items():

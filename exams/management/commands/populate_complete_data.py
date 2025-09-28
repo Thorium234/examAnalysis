@@ -133,7 +133,7 @@ class Command(BaseCommand):
                 paper_number=paper_number,
                 defaults={
                     'max_marks': max_marks,
-                    'contribution_percentage': 100.0 / len(papers)
+                    'student_contribution_marks': 100 // len(papers)
                 }
             )
 

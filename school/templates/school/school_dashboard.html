@@ -23,51 +23,55 @@
       {% endif %}
 
       <!-- Teachers Card -->
-      <div class="col-md-4">
+      <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
         <a href="{% url 'school:teacher_list' %}" class="card card-hover h-100 shadow-sm rounded-lg border-0 p-4">
           <div class="card-body text-center d-flex flex-column align-items-center">
             <i class="fas fa-chalkboard-teacher fa-3x text-info mb-3"></i>
             <h5 class="card-title font-weight-bold">Teachers</h5>
+            <h3 class="text-info">{{ teacher_count }}</h3>
             <p class="card-text text-muted">View and manage the list of all teachers.</p>
           </div>
         </a>
       </div>
 
       <!-- Students Card -->
-      <div class="col-md-4">
+      <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
         <a href="{% url 'school:student_list' %}" class="card card-hover h-100 shadow-sm rounded-lg border-0 p-4">
           <div class="card-body text-center d-flex flex-column align-items-center">
             <i class="fas fa-user-graduate fa-3x text-success mb-3"></i>
             <h5 class="card-title font-weight-bold">Students</h5>
+            <h3 class="text-success">{{ student_count }}</h3>
             <p class="card-text text-muted">View and manage the list of all students.</p>
           </div>
         </a>
       </div>
 
       <!-- Forms & Classes Card -->
-      <div class="col-md-4">
+      <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
         <a href="{% url 'school:forms_dashboard' %}" class="card card-hover h-100 shadow-sm rounded-lg border-0 p-4">
           <div class="card-body text-center d-flex flex-column align-items-center">
             <i class="fas fa-school fa-3x text-warning mb-3"></i>
             <h5 class="card-title font-weight-bold">Forms & Classes</h5>
+            <h3 class="text-warning">{{ form_level_count }}</h3>
             <p class="card-text text-muted">Manage forms and their respective classes.</p>
           </div>
         </a>
       </div>
 
       <!-- Exam Management Card -->
-      <div class="col-md-4">
+      <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
         <a href="{% url 'school:exam_management' %}" class="card card-hover h-100 shadow-sm rounded-lg border-0 p-4">
           <div class="card-body text-center d-flex flex-column align-items-center">
             <i class="fas fa-file-alt fa-3x text-danger mb-3"></i>
-            <h5 class="card-title font-weight-bold">Exam Management</h5>
+            <h5 class="card-title font-weight-bold">Exams</h5>
+            <h3 class="text-danger">{{ exam_count }}</h3>
             <p class="card-text text-muted">Create, publish, and manage school exams.</p>
           </div>
         </a>
       </div>
 
       <!-- Reports & Analysis Card -->
-      <div class="col-md-4">
+      <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
         <a href="{% url 'school:reports_and_analysis' %}" class="card card-hover h-100 shadow-sm rounded-lg border-0 p-4">
           <div class="card-body text-center d-flex flex-column align-items-center">
             <i class="fas fa-chart-line fa-3x text-info mb-3"></i>
@@ -78,7 +82,7 @@
       </div>
 
       <!-- Students Management Card -->
-      <div class="col-md-4">
+      <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
         <a href="{% url 'students:student_list' %}" class="card card-hover h-100 shadow-sm rounded-lg border-0 p-4">
           <div class="card-body text-center d-flex flex-column align-items-center">
             <i class="fas fa-user-graduate fa-3x text-success mb-3"></i>
@@ -88,35 +92,28 @@
         </a>
       </div>
 
-      <!-- Exams Card -->
-      <div class="col-md-4">
-        <a href="{% url 'exams:exam_list' %}" class="card card-hover h-100 shadow-sm rounded-lg border-0 p-4">
-          <div class="card-body text-center d-flex flex-column align-items-center">
-            <i class="fas fa-file-alt fa-3x text-danger mb-3"></i>
-            <h5 class="card-title font-weight-bold">Exams</h5>
-            <p class="card-text text-muted">Create and manage school examinations.</p>
-          </div>
-        </a>
-      </div>
+      
 
       <!-- Subjects Card -->
-      <div class="col-md-4">
+      <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
         <a href="{% url 'subjects:subject_list' %}" class="card card-hover h-100 shadow-sm rounded-lg border-0 p-4">
           <div class="card-body text-center d-flex flex-column align-items-center">
             <i class="fas fa-book fa-3x text-warning mb-3"></i>
             <h5 class="card-title font-weight-bold">Subjects</h5>
+            <h3 class="text-warning">{{ subject_count }}</h3>
             <p class="card-text text-muted">Manage subjects and subject papers.</p>
           </div>
+        </a>
+      </div>
+
       <!-- School-Wide Dashboard Card -->
-      <div class="col-md-4">
+      <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
         <a href="{% url 'school:school_wide_dashboard' %}" class="card card-hover h-100 shadow-sm rounded-lg border-0 p-4">
           <div class="card-body text-center d-flex flex-column align-items-center">
             <i class="fas fa-chart-bar fa-3x text-secondary mb-3"></i>
             <h5 class="card-title font-weight-bold">School Analytics</h5>
             <p class="card-text text-muted">View school-wide performance analytics and rankings.</p>
           </div>
-        </a>
-      </div>
         </a>
       </div>
     </div>

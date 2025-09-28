@@ -1,37 +1,270 @@
-{% extends 'base.html' %}{% block title %}Enter Results - {{ exam.name }}{% endblock %}{% block content %}<div class="container mx-auto p-4"><h1 class="text-3xl font-bold mb-6 text-center text-blue-800">Enter Results for {{ exam.name }}</h1><div class="bg-white p-8 rounded-xl shadow-lg">
-    <form method="POST" action="{% url 'exams:add_result' exam.id %}" class="space-y-6">
-        {% csrf_token %}
-        <div>
-            <label for="student" class="block text-sm font-medium text-gray-700">Student</label>
-            <select id="student" name="student" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                <option value="">Select a student</option>
-                {% for student in students %}
-                <option value="{{ student.id }}">{{ student.full_name }} ({{ student.admission_number }})</option>
-                {% endfor %}
-            </select>
-        </div>
-        
-        <div>
-            <label for="subject" class="block text-sm font-medium text-gray-700">Subject</label>
-            <select id="subject" name="subject" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                <option value="">Select a subject</option>
-                {% for subject in subjects %}
-                <option value="{{ subject.id }}">{{ subject.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Enter Results - {{ exam.name }}{% endblock %}
 
-        <div>
-            <label for="marks" class="block text-sm font-medium text-gray-700">Marks</label>
-            <input type="number" id="marks" name="marks" required min="0" max="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Enter marks (e.g., 85)">
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0 rounded-lg mt-5">
+                <div class="card-header bg-primary text-white py-4">
+                    <h3 class="mb-0 text-center">
+                        <i class="fas fa-edit mr-2"></i>
+                        Enter Results for {{ exam.name }}
+                    </h3>
+                    <p class="mb-0 mt-2 text-center">{{ exam.get_exam_type_display }} - {{ exam.form_level }} {{ exam.participating_forms.all|join:", " }}</p>
+                </div>
+                <div class="card-body p-5">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="POST" action="{% url 'exams:exam_results_entry' exam.id %}" class="space-y-6">
+                        {% csrf_token %}
+
+                        <!-- Student Selection -->
+                        <div class="form-group">
+                            <label for="student" class="font-weight-bold">
+                                <i class="fas fa-user-graduate mr-1"></i>Select Student
+                            </label>
+                            <select id="student" name="student" required class="form-control form-control-lg">
+                                <option value="">Choose a student...</option>
+                                {% for student in students %}
+                                <option value="{{ student.id }}">{{ student.admission_number }} - {{ student.name }} ({{ student.stream }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Subject Selection -->
+                        <div class="form-group">
+                            <label for="subject" class="font-weight-bold">
+                                <i class="fas fa-book mr-1"></i>Select Subject
+                            </label>
+                            <select id="subject" name="subject" required class="form-control form-control-lg" onchange="loadSubjectPapers()">
+                                <option value="">Choose a subject...</option>
+                                {% for subject in subjects %}
+                                <option value="{{ subject.id }}">{{ subject.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Paper Entry Section -->
+                        <div id="paper-entry-section" class="hidden">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-file-alt mr-2"></i>Paper Marks & Contribution Ratios
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="papers-container" class="row">
+                                        <!-- Papers will be loaded dynamically -->
+                                    </div>
+
+                                    <div class="mt-4 alert alert-info">
+                                        <h6 class="alert-heading">
+                                            <i class="fas fa-calculator mr-1"></i>Final Subject Mark Calculation
+                                        </h6>
+                                        <p class="mb-2">
+                                            The final subject mark will be calculated using weighted averages based on the contribution percentages.
+                                        </p>
+                                        <strong>Formula:</strong>
+                                        <code class="bg-light px-2 py-1 rounded">
+                                            (Paper1_Mark × Ratio1% + Paper2_Mark × Ratio2% + ...) ÷ 100
+                                        </code>
+                                        <br>
+                                        <small class="text-muted">
+                                            Total contribution ratios must equal 100% for accurate calculation.
+                                        </small>
+                                        <div class="mt-2">
+                                            <span id="ratio-total-display" class="badge badge-secondary">Total: 0%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group text-center mt-4">
+                            <button type="button" onclick="window.history.back()" class="btn btn-secondary btn-lg mr-3">
+                                <i class="fas fa-arrow-left mr-2"></i>Cancel
+                            </button>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save mr-2"></i>Save Results
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-        
-        <div class="flex justify-end space-x-4">
-            <button type="button" onclick="window.history.back()" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-full shadow-md transition-colors duration-300">Cancel</button>
-            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full shadow-md transition-colors duration-300">
-                Save Result
-            </button>
-        </div>
-    </form>
+    </div>
 </div>
-</div>{% endblock %}
+
+<script>
+function loadSubjectPapers() {
+    const subjectId = document.getElementById('subject').value;
+    const paperSection = document.getElementById('paper-entry-section');
+    const papersContainer = document.getElementById('papers-container');
+
+    if (!subjectId) {
+        paperSection.classList.add('hidden');
+        return;
+    }
+
+    // Subject paper configurations based on typical Kenyan curriculum
+    const subjectPapers = {
+        'biology': [
+            {name: 'Paper 1 (Theory)', max_marks: 80, default_ratio: 40},
+            {name: 'Paper 2 (Practical)', max_marks: 80, default_ratio: 40},
+            {name: 'Paper 3 (Practical)', max_marks: 20, default_ratio: 20}
+        ],
+        'chemistry': [
+            {name: 'Paper 1 (Theory)', max_marks: 80, default_ratio: 40},
+            {name: 'Paper 2 (Practical)', max_marks: 80, default_ratio: 40},
+            {name: 'Paper 3 (Practical)', max_marks: 20, default_ratio: 20}
+        ],
+        'physics': [
+            {name: 'Paper 1 (Theory)', max_marks: 80, default_ratio: 40},
+            {name: 'Paper 2 (Practical)', max_marks: 80, default_ratio: 40},
+            {name: 'Paper 3 (Practical)', max_marks: 20, default_ratio: 20}
+        ],
+        'mathematics': [
+            {name: 'Paper 1', max_marks: 100, default_ratio: 50},
+            {name: 'Paper 2', max_marks: 100, default_ratio: 50}
+        ],
+        'english': [
+            {name: 'Paper 1 (Functional Writing)', max_marks: 100, default_ratio: 50},
+            {name: 'Paper 2 (Comprehension)', max_marks: 100, default_ratio: 50}
+        ],
+        'kiswahili': [
+            {name: 'Paper 1 (Lugha)', max_marks: 100, default_ratio: 50},
+            {name: 'Paper 2 (Insha)', max_marks: 100, default_ratio: 50}
+        ],
+        'history': [
+            {name: 'Paper 1', max_marks: 100, default_ratio: 100}
+        ],
+        'geography': [
+            {name: 'Paper 1', max_marks: 100, default_ratio: 100}
+        ],
+        'cre': [
+            {name: 'Paper 1', max_marks: 100, default_ratio: 100}
+        ],
+        'agriculture': [
+            {name: 'Paper 1', max_marks: 100, default_ratio: 100}
+        ],
+        'business': [
+            {name: 'Paper 1', max_marks: 100, default_ratio: 100}
+        ]
+    };
+
+    // Get subject name (lowercase for matching)
+    const subjectSelect = document.getElementById('subject');
+    const subjectName = subjectSelect.options[subjectSelect.selectedIndex].text.toLowerCase();
+
+    const papers = subjectPapers[subjectName] || [
+        {name: 'Paper 1', max_marks: 100, default_ratio: 100}
+    ];
+
+    // Generate HTML for papers
+    let papersHtml = '';
+    papers.forEach((paper, index) => {
+        papersHtml += `
+            <div class="col-md-6 mb-4">
+                <div class="card border-primary">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0 text-primary">
+                            <i class="fas fa-file mr-1"></i>${paper.name}
+                        </h6>
+                        <small class="text-muted">Maximum: ${paper.max_marks} marks</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Marks Obtained</label>
+                            <input type="number"
+                                   name="paper_${index}_marks"
+                                   min="0"
+                                   max="${paper.max_marks}"
+                                   class="form-control"
+                                   placeholder="Enter marks (0-${paper.max_marks})"
+                                   required>
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Contribution Ratio (%)</label>
+                            <input type="number"
+                                   name="paper_${index}_ratio"
+                                   min="0"
+                                   max="100"
+                                   value="${paper.default_ratio}"
+                                   class="form-control"
+                                   placeholder="Percentage contribution"
+                                   required
+                                   onchange="validateRatios()">
+                        </div>
+                        <input type="hidden" name="paper_${index}_name" value="${paper.name}">
+                        <input type="hidden" name="paper_${index}_max_marks" value="${paper.max_marks}">
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    papersContainer.innerHTML = papersHtml;
+    paperSection.classList.remove('hidden');
+    validateRatios();
+}
+
+// Validate that ratios total 100%
+function validateRatios() {
+    const ratioInputs = document.querySelectorAll('input[name*="_ratio"]');
+    let total = 0;
+
+    ratioInputs.forEach(input => {
+        total += parseInt(input.value) || 0;
+    });
+
+    // Update visual feedback
+    const ratioTotalDisplay = document.getElementById('ratio-total-display');
+    if (ratioTotalDisplay) {
+        ratioTotalDisplay.textContent = `Total: ${total}%`;
+        ratioTotalDisplay.className = total === 100 ?
+            'badge badge-success' : 'badge badge-warning';
+    }
+
+    // Enable/disable submit button
+    const submitBtn = document.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = total !== 100;
+    }
+}
+
+// Initialize validation on page load
+document.addEventListener('DOMContentLoaded', function() {
+    validateRatios();
+});
+</script>
+
+<style>
+.card {
+    margin-top: 2rem !important;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn {
+    border-radius: 0.375rem;
+}
+
+.alert {
+    border-radius: 0.375rem;
+}
+</style>
+{% endblock %}

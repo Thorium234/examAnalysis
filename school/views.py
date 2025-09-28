@@ -186,8 +186,7 @@ def class_dashboard(request, form_level):
     school = request.user.school
     students = Student.objects.filter(
         school=school,
-        form_level=form_level,
-        is_active=True
+        form_level=form_level
     ).order_by('stream', 'admission_number')
 
     # Get subjects available for this form
@@ -238,8 +237,7 @@ def stream_dashboard(request, form_level, stream):
     students = Student.objects.filter(
         school=school,
         form_level=form_level,
-        stream=stream,
-        is_active=True
+        stream=stream
     ).order_by('admission_number')
 
     # Get subjects available for this form
@@ -291,7 +289,7 @@ def subject_dashboard(request, form_level=None, stream=None, subject_id=None):
     subject = get_object_or_404(Subject, id=subject_id, school=school)
 
     # Filter students based on form/stream
-    students_query = Student.objects.filter(school=school, is_active=True)
+    students_query = Student.objects.filter(school=school)
     if form_level:
         students_query = students_query.filter(form_level=form_level)
     if stream:
@@ -362,4 +360,81 @@ def school_wide_dashboard(request):
         'subject_performance': subject_performance,
         'recent_exams': recent_exams,
     }
+@login_required
+def department_dashboard(request, category_id):
+    """
+    Dashboard for a specific department (subject category).
+    Shows analysis at form level, top students, deviations, graphs.
+    """
+    from subjects.models import SubjectCategory
+    school = request.user.school
+    category = get_object_or_404(SubjectCategory, id=category_id, school=school)
+
+    # Get all subjects in this category
+    subjects = Subject.objects.filter(category=category, school=school)
+
+    # Get form-level performance for this department
+    form_performance = []
+    for form_level in range(1, 5):  # Forms 1-4
+        students_in_form = Student.objects.filter(
+            school=school,
+            form_level=form_level
+        )
+
+        # Get exam results for subjects in this category
+        results = ExamResult.objects.filter(
+            subject__in=subjects,
+            student__in=students_in_form,
+            exam__is_active=True
+        ).select_related('student', 'exam', 'subject')
+
+        if results.exists():
+            avg_marks = results.aggregate(Avg('total_marks'))['total_marks__avg'] or 0
+            top_students = results.order_by('-total_marks')[:5]
+
+            # Calculate deviations
+            class_avg = avg_marks
+            deviations = []
+            for result in results.order_by('-exam__date_created')[:10]:
+                deviation = result.total_marks - class_avg
+                deviations.append({
+                    'student': result.student,
+                    'subject': result.subject,
+                    'marks': result.total_marks,
+                    'deviation': deviation,
+                    'exam': result.exam
+                })
+
+            form_performance.append({
+                'form_level': form_level,
+                'student_count': students_in_form.count(),
+                'avg_marks': round(avg_marks, 2),
+                'top_students': top_students,
+                'deviations': deviations[:5],  # Show top 5 deviations
+                'subject_count': subjects.count()
+            })
+
+    # Get overall department statistics
+    all_results = ExamResult.objects.filter(
+        subject__in=subjects,
+        exam__is_active=True,
+        student__school=school
+    )
+
+    department_stats = {
+        'total_students': Student.objects.filter(school=school).count(),
+        'total_subjects': subjects.count(),
+        'avg_performance': all_results.aggregate(Avg('total_marks'))['total_marks__avg'] or 0,
+        'top_performers': all_results.values('student').annotate(
+            avg_marks=Avg('total_marks')
+        ).order_by('-avg_marks')[:10]
+    }
+
+    context = {
+        'category': category,
+        'subjects': subjects,
+        'form_performance': form_performance,
+        'department_stats': department_stats,
+    }
+    return render(request, 'school/department_dashboard.html', context)
     return render(request, 'school/school_wide_dashboard.html', context)

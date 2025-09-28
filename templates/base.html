@@ -171,18 +171,6 @@
                     </div>
                 </li>
 
-                <!-- Exams Menu -->
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#exams-sub" data-toggle="collapse" role="button" aria-expanded="false" aria-controls="exams-sub">
-                        <i class="fas fa-file-alt"></i> Exams
-                    </a>
-                    <div class="collapse collapse-menu" id="exams-sub">
-                        <a class="nav-link" href="{% url 'school:exam_management' %}"><i class="fas fa-clipboard-list"></i> Management</a>
-                        <!-- The following URL is an assumption, you'll need to create this view and URL -->
-                        <a class="nav-link" href="#"><i class="fas fa-plus-square"></i> Create Exam</a>
-                    </div>
-                </li>
-
                 <!-- Students Menu -->
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="#students-sub" data-toggle="collapse" role="button" aria-expanded="false" aria-controls="students-sub">
@@ -202,7 +190,7 @@
                     <div class="collapse collapse-menu" id="exams-sub">
                         <a class="nav-link" href="{% url 'exams:exam_list' %}"><i class="fas fa-list"></i> Exam List</a>
                         <a class="nav-link" href="{% url 'exams:exam_create' %}"><i class="fas fa-plus"></i> Create Exam</a>
-                        <a class="nav-link" href="{% url 'exams:grading_system_list' %}"><i class="fas fa-cogs"></i> Grading Systems</a>
+                        <a class="nav-link" href="{% url 'exams:gradingsystem_list' %}"><i class="fas fa-cogs"></i> Grading Systems</a>
                     </div>
                 </li>
 
@@ -232,9 +220,12 @@
             </ul>
 
             <div class="mt-auto p-4 border-top">
-                <a class="nav-link d-flex align-items-center" href="{% url 'accounts:logout' %}">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
+                <form method="post" action="{% url 'accounts:logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="nav-link d-flex align-items-center bg-transparent border-0 text-white">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </form>
             </div>
         </nav>
         {% endif %}

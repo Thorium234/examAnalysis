@@ -19,6 +19,8 @@ class StudentListView(LoginRequiredMixin, ListView):
     context_object_name = 'students'
     
     def get_queryset(self):
+        if self.request.user.is_superuser:
+            return Student.objects.all().order_by('school', 'form_level', 'stream', 'name')
         return Student.objects.filter(school=self.request.user.school).order_by('form_level', 'stream', 'name')
 
 class StudentCreateView(SchoolAdminOrHODRequiredMixin, CreateView):
@@ -28,6 +30,10 @@ class StudentCreateView(SchoolAdminOrHODRequiredMixin, CreateView):
     success_url = reverse_lazy('student_list')
     
     def form_valid(self, form):
+        if not self.request.user.school:
+            from django.contrib import messages
+            messages.error(self.request, 'Your account is not associated with a school. Please contact an administrator.')
+            return self.form_invalid(form)
         form.instance.school = self.request.user.school
         return super().form_valid(form)
 

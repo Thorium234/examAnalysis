@@ -56,7 +56,7 @@ class ExamForm(forms.ModelForm):
 class ExamResultForm(forms.ModelForm):
     class Meta:
         model = ExamResult
-        fields = ['student', 'subject', 'total_marks']
+        fields = ['student', 'subject', 'final_marks']
 
 class SubjectCategoryForm(forms.ModelForm):
     class Meta:
@@ -66,12 +66,12 @@ class SubjectCategoryForm(forms.ModelForm):
 class GradingSystemForm(forms.ModelForm):
     class Meta:
         model = GradingSystem
-        fields = ['name', 'category']
+        fields = ['name', 'subject_category']
 
 class GradingRangeForm(forms.ModelForm):
     class Meta:
         model = GradingRange
-        fields = ['grade', 'low_mark', 'high_mark', 'points', 'grading_system']
+        fields = ['grade', 'min_marks', 'max_marks', 'points']
 
 class FormLevelForm(forms.ModelForm):
     class Meta:
@@ -81,4 +81,4 @@ class FormLevelForm(forms.ModelForm):
 class PaperResultForm(forms.ModelForm):
     class Meta:
         model = PaperResult
-        fields = ['exam', 'student', 'subject', 'paper', 'marks', 'status']
+        fields = ['exam', 'student', 'subject_paper', 'marks']

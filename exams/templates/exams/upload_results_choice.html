@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Upload Results - {{ exam.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-lg mt-5">
+                <div class="card-header bg-primary text-white py-4">
+                    <h3 class="mb-0 text-center">
+                        <i class="fas fa-upload mr-2"></i>
+                        Upload Results for {{ exam.name }}
+                    </h3>
+                    <p class="mb-0 mt-2 text-center">{{ exam.get_exam_type_display }} - {{ exam.form_level }} {{ exam.participating_forms.all|join:", " }}</p>
+                </div>
+                <div class="card-body p-5">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <div class="row">
+                        <!-- Manual Entry Option -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card border-primary h-100">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-keyboard mr-2"></i>Manual Entry
+                                    </h5>
+                                </div>
+                                <div class="card-body text-center">
+                                    <i class="fas fa-edit fa-3x text-primary mb-3"></i>
+                                    <h6 class="card-title">Enter Results Manually</h6>
+                                    <p class="card-text text-muted">
+                                        Select students and enter marks individually for each subject and paper.
+                                        Suitable for small classes or detailed paper-by-paper entry.
+                                    </p>
+                                    <a href="{% url 'exams:exam_results_entry' exam.id %}" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-plus mr-2"></i>Start Manual Entry
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Excel Upload Option -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card border-success h-100">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-file-excel mr-2"></i>Excel Upload
+                                    </h5>
+                                </div>
+                                <div class="card-body text-center">
+                                    <i class="fas fa-file-csv fa-3x text-success mb-3"></i>
+                                    <h6 class="card-title">Upload from Excel</h6>
+                                    <p class="card-text text-muted">
+                                        Download a template, fill it with student results, and upload back.
+                                        Perfect for bulk data entry and large classes.
+                                    </p>
+                                    <div class="d-flex flex-column">
+                                        <a href="{% url 'exams:download_exam_results_template' exam.id %}" class="btn btn-outline-success mb-2">
+                                            <i class="fas fa-download mr-2"></i>Download Template
+                                        </a>
+                                        <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#uploadModal">
+                                            <i class="fas fa-upload mr-2"></i>Upload Excel File
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Section -->
+                    <div class="card border-warning mt-4">
+                        <div class="card-header bg-warning">
+                            <h6 class="mb-0">
+                                <i class="fas fa-cogs mr-2"></i>Grade Settings
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="exclude_absent" checked>
+                                        <label class="form-check-label" for="exclude_absent">
+                                            <strong>X Grade:</strong> Exclude absent students from mean calculations
+                                        </label>
+                                    </div>
+                                    <small class="text-muted d-block">Students marked as absent get X grade and 0 points</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="exclude_disqualified" checked>
+                                        <label class="form-check-label" for="exclude_disqualified">
+                                            <strong>Y Grade:</strong> Exclude disqualified students from mean calculations
+                                        </label>
+                                    </div>
+                                    <small class="text-muted d-block">Students marked as disqualified get Y grade and 0 points</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="text-center mt-4">
+                        <a href="{% url 'exams:exam_list' %}" class="btn btn-secondary mr-3">
+                            <i class="fas fa-arrow-left mr-2"></i>Back to Exams
+                        </a>
+                        <a href="{% url 'exams:exam_results_summary' exam.id %}" class="btn btn-info">
+                            <i class="fas fa-chart-bar mr-2"></i>View Results Summary
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Excel Upload Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="uploadModalLabel">
+                    <i class="fas fa-upload mr-2"></i>Upload Excel Results
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="POST" action="{% url 'exams:upload_results' exam.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        <strong>Instructions:</strong>
+                        <ol class="mb-0 mt-2">
+                            <li>Download the template using the button above</li>
+                            <li>Fill in student results following the format</li>
+                            <li>Save as CSV or Excel file</li>
+                            <li>Upload the completed file below</li>
+                        </ol>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="csv_file" class="font-weight-bold">
+                            <i class="fas fa-file mr-1"></i>Select File
+                        </label>
+                        <input type="file" class="form-control-file" id="csv_file" name="csv_file"
+                               accept=".csv,.xlsx,.xls" required>
+                        <small class="form-text text-muted">
+                            Supported formats: CSV, Excel (.xlsx, .xls)
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-upload mr-2"></i>Upload & Process
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.btn {
+    border-radius: 0.375rem;
+}
+
+.modal-content {
+    border-radius: 0.5rem;
+}
+</style>
+
+<script>
+// Save grade settings to localStorage
+document.addEventListener('DOMContentLoaded', function() {
+    const excludeAbsent = document.getElementById('exclude_absent');
+    const excludeDisqualified = document.getElementById('exclude_disqualified');
+
+    // Load saved settings
+    excludeAbsent.checked = localStorage.getItem('exclude_absent') !== 'false';
+    excludeDisqualified.checked = localStorage.getItem('exclude_disqualified') !== 'false';
+
+    // Save settings on change
+    excludeAbsent.addEventListener('change', function() {
+        localStorage.setItem('exclude_absent', this.checked);
+    });
+
+    excludeDisqualified.addEventListener('change', function() {
+        localStorage.setItem('exclude_disqualified', this.checked);
+    });
+});
+</script>
+{% endblock %}

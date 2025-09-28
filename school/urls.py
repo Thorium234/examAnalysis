@@ -2,6 +2,7 @@
 
 from django.urls import path
 from . import views
+from exams.views import GradingSystemListView
 
 app_name = 'school'
 
@@ -46,4 +47,5 @@ urlpatterns = [
     path('subject/<int:form_level>/<int:subject_id>/', views.subject_dashboard, name='subject_dashboard_form'),
     path('subject/<int:form_level>/<str:stream>/<int:subject_id>/', views.subject_dashboard, name='subject_dashboard_stream'),
     path('school-wide/', views.school_wide_dashboard, name='school_wide_dashboard'),
+    path('grading-systems/', GradingSystemListView.as_view(), name='gradingsystem_list'),
 ]

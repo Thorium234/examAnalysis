@@ -10,7 +10,7 @@
                         <th>Subject Name</th>
                         <th>Subject Code</th>
                         <th>Category</th>
-                        <th>HoD</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -20,7 +20,7 @@
                         <td><a href="{% url 'subjects:subject_detail' subject.id %}">{{ subject.name }}</a></td>
                         <td>{{ subject.code }}</td>
                         <td>{{ subject.category.name }}</td>
-                        <td>{{ subject.hod.get_full_name|default:subject.hod.username }}</td>
+                        <td>{% if subject.is_optional %}Optional{% else %}Core{% endif %}</td>
                         <td>
                             <a href="{% url 'subjects:subject_update' subject.id %}" class="btn btn-sm btn-info">Edit</a>
                             <a href="{% url 'subjects:subject_delete' subject.id %}" class="btn btn-sm btn-danger">Delete</a>

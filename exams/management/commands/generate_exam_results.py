@@ -244,10 +244,10 @@ class Command(BaseCommand):
             paper = paper_result.subject_paper
             # Normalize to 100 marks scale
             normalized_marks = (paper_result.marks / paper.max_marks) * 100
-            # Apply contribution percentage
-            weighted_marks = normalized_marks * (paper.contribution_percentage / 100)
+            # Apply contribution marks
+            weighted_marks = normalized_marks * (paper.student_contribution_marks / 100)
             total_weighted_marks += weighted_marks
-            total_contribution += paper.contribution_percentage
+            total_contribution += paper.student_contribution_marks
 
         # If total contribution < 100%, scale up
         if total_contribution < 100:

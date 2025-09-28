@@ -41,7 +41,7 @@ Form Levels
                 <tbody>
                   {% for form_level in form_levels %}
                     <tr>
-                      <td>Form {{ form_level.number }}</td>
+                      <td><a href="{% url 'school:class_dashboard' form_level.number %}">Form {{ form_level.number }}</a></td>
                       <td>{{ form_level.school.name }}</td>
                       <td>{{ form_level.streams.count }}</td>
                     </tr>

@@ -40,8 +40,8 @@
                   <td>{{ student.kcpe_marks }}</td>
                   <td>{{ student.phone_contact }}</td>
                   <td>
-                    <a href="{% url 'students:update_student' student.admission_number %}" class="btn btn-sm btn-info">Edit</a>
-                    <a href="{% url 'students:delete_student' student.admission_number %}" class="btn btn-sm btn-danger">Delete</a>
+                    <a href="{% url 'students:update_student' student.pk %}" class="btn btn-sm btn-info">Edit</a>
+                    <a href="{% url 'students:delete_student' student.pk %}" class="btn btn-sm btn-danger">Delete</a>
                   </td>
                 </tr>
               {% empty %}

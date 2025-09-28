@@ -13,7 +13,7 @@ class SubjectAdmin(admin.ModelAdmin):
     inlines = [SubjectPaperInline]
 
 class SubjectPaperAdmin(admin.ModelAdmin):
-    list_display = ('subject', 'paper_number', 'max_marks', 'contribution_percentage')
+    list_display = ('subject', 'paper_number', 'max_marks', 'student_contribution_marks')
     list_filter = ('subject', 'subject__school')
 
 admin.site.register(Subject, SubjectAdmin)

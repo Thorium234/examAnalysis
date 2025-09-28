@@ -12,13 +12,26 @@ from subjects.models import SubjectCategory # Centralized SubjectCategory model
 class GradingSystem(models.Model):
     name = models.CharField(max_length=100)
     school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='grading_systems')
-    subject_category = models.ForeignKey(SubjectCategory, on_delete=models.CASCADE, related_name='grading_systems')
+    subject_category = models.ForeignKey(SubjectCategory, on_delete=models.CASCADE, related_name='grading_systems', null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_default = models.BooleanField(default=False)
     # Use settings.AUTH_USER_MODEL to refer to the custom user model
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def get_grade_and_points(self, marks):
+        """
+        Get the grade and points for given marks.
+        """
+        ranges = self.grading_ranges.filter(
+            min_marks__lte=marks,
+            max_marks__gte=marks
+        ).first()
+
+        if ranges:
+            return ranges.grade, ranges.points
+        return 'N/A', 0
 
     def __str__(self):
         return f"{self.school.name} - {self.name} Grading System"
@@ -43,6 +56,12 @@ class Exam(models.Model):
     form_level = models.IntegerField(choices=[(1, 'Form 1'), (2, 'Form 2'), (3, 'Form 3'), (4, 'Form 4')])
     year = models.IntegerField()
     term = models.IntegerField(choices=[(1, 'Term 1'), (2, 'Term 2'), (3, 'Term 3')])
+    participating_forms = models.ManyToManyField('school.FormLevel', related_name='exams', blank=True)
+    is_active = models.BooleanField(default=True)
+    is_ordinary_exam = models.BooleanField(default=True)
+    is_consolidated_exam = models.BooleanField(default=False)
+    is_kcse = models.BooleanField(default=False)
+    is_year_average = models.BooleanField(default=False)
     is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -54,6 +73,22 @@ class Exam(models.Model):
         return f"{self.school.name} - {self.name} Form {self.form_level} ({self.year} Term {self.term})"
 
 # This model will hold the results for each paper, e.g., PP1, PP2, PP3
+# This model will hold the results for each paper, e.g., PP1, PP2, PP3
+class PaperResult(models.Model):
+    STATUS_CHOICES = [
+        ('P', 'Present'),
+        ('A', 'Absent'),
+        ('D', 'Disqualified'),
+    ]
+
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='paper_results')
+    # Using string references to avoid circular imports
+    student = models.ForeignKey('students.Student', on_delete=models.CASCADE, related_name='paper_results')
+    subject_paper = models.ForeignKey('subjects.SubjectPaper', on_delete=models.CASCADE, related_name='paper_results')
+    marks = models.IntegerField(validators=[MinValueValidator(0)], null=True, blank=True)
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
+    entered_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    entered_at = models.DateTimeField(auto_now_add=True)
 class PaperResult(models.Model):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='paper_results')
     # Using string references to avoid circular imports
@@ -98,6 +133,11 @@ class StudentExamSummary(models.Model):
     total_points = models.IntegerField()
     stream_position = models.IntegerField()
     overall_position = models.IntegerField()
+    # Best of 7 subjects fields
+    subjects_count = models.IntegerField(default=0, help_text="Total number of subjects taken")
+    best_of_seven_marks = models.IntegerField(null=True, blank=True, help_text="Total marks from best 7 subjects")
+    best_of_seven_points = models.IntegerField(null=True, blank=True, help_text="Total points from best 7 subjects")
+    excluded_subjects = models.JSONField(default=list, help_text="List of subject IDs excluded from best 7 calculation")
 
     class Meta:
         unique_together = ('exam', 'student')

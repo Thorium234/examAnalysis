@@ -175,7 +175,7 @@ class Command(BaseCommand):
                     SubjectPaperRatio.objects.create(
                         subject=subject,
                         paper=paper,
-                        contribution_percentage=ratio
+                        student_contribution_marks=ratio
                     )
                 
                 self.stdout.write(f'Created papers for: {subject.name}')

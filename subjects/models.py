@@ -26,6 +26,7 @@ class Subject(models.Model):
         blank=True,
         related_name='subjects'
     )
+    form_levels = models.ManyToManyField('school.FormLevel', related_name='subjects', blank=True)
     is_optional = models.BooleanField(default=False)
 
     class Meta:
@@ -38,9 +39,10 @@ class SubjectPaper(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='papers')
     paper_number = models.CharField(max_length=10, help_text="e.g., PP1, PP2, PP3")
     max_marks = models.IntegerField(validators=[MinValueValidator(0)])
-    contribution_percentage = models.FloatField(
-        help_text="Percentage contribution to the final subject score.",
-        validators=[MinValueValidator(0.0), MaxValueValidator(100.0)]
+    student_contribution_marks = models.IntegerField(
+        help_text="Student contribution marks to the final subject score.",
+        validators=[MinValueValidator(0)],
+        default=50
     )
     
     class Meta:

@@ -1,295 +1,231 @@
-# exams/services.py
-from django.db.models import Sum, Count, Avg, Min, Max
-from decimal import Decimal
-from django.db import transaction
-from .models import ExamResult, StudentExamSummary, Exam, PaperResult
-from students.models import Student, Subject
-import csv
+from django.db.models import Avg, Count, Sum, F, Q
+from .models import ExamResult, StudentExamSummary, GradingSystem, GradingRange, PaperResult
+from students.models import Student
+from subjects.models import Subject
+import logging
 
+logger = logging.getLogger(__name__)
 
-def calculate_exam_statistics(exam):
-    """Calculate comprehensive exam statistics"""
-    results = ExamResult.objects.filter(exam=exam)
-    summaries = StudentExamSummary.objects.filter(exam=exam)
+class GradingService:
+    """
+    Service class for handling grading calculations including best of 7 subjects logic
+    """
 
-    stats = {
-        'total_students': results.values('student').distinct().count(),
-        'total_subjects': results.values('subject').distinct().count(),
-        'average_marks': results.aggregate(avg_marks=Avg('total_marks'))['avg_marks'],
-        'mean_points': summaries.aggregate(avg_points=Avg('mean_points'))['avg_points'],
-        'grade_distribution': {
-            'A': results.filter(total_marks__gte=80).count(),
-            'B': results.filter(total_marks__range=(65, 79.99)).count(),
-            'C': results.filter(total_marks__range=(50, 64.99)).count(),
-            'D': results.filter(total_marks__range=(40, 49.99)).count(),
-            'E': results.filter(total_marks__lt=40).count()
-        }
-    }
-    return stats
+    @staticmethod
+    def calculate_subject_final_marks(exam, student, subject):
+        """
+        Calculate final marks for a subject considering paper ratios.
+        """
+        from subjects.models import SubjectPaperRatio
 
-def process_results_upload(exam, csv_file):
-    """Process a CSV file containing exam results"""
-    reader = csv.DictReader(csv_file)
-    processed = 0
-    
-    for row in reader:
+        # Get all paper results for this exam, student, and subject
+        paper_results = PaperResult.objects.filter(
+            exam=exam,
+            student=student,
+            subject_paper__subject=subject
+        ).select_related('subject_paper')
+
+        if not paper_results.exists():
+            return 0
+
+        total_weighted_marks = 0
+        total_weight = 0
+
+        for paper_result in paper_results:
+            # Get the contribution ratio for this paper
+            ratio = SubjectPaperRatio.objects.filter(
+                subject=subject,
+                paper=paper_result.subject_paper
+            ).first()
+
+            if ratio:
+                weight = ratio.contribution_percentage / 100.0
+                total_weighted_marks += paper_result.marks * weight
+                total_weight += weight
+
+        # If no ratios defined, use simple average
+        if total_weight == 0:
+            return sum(p.marks for p in paper_results) / len(paper_results)
+
+        return total_weighted_marks / total_weight if total_weight > 0 else 0
+
+    @staticmethod
+    def calculate_best_of_seven(exam_results):
+        """
+        Calculate the best 7 subjects from a list of exam results.
+        Returns a tuple of (best_results, excluded_results, total_marks, total_points)
+        """
+        if len(exam_results) <= 7:
+            # If 7 or fewer subjects, use all of them
+            best_results = exam_results
+            excluded_results = []
+        else:
+            # Sort by marks descending and take top 7
+            sorted_results = sorted(exam_results, key=lambda x: x.final_marks, reverse=True)
+            best_results = sorted_results[:7]
+            excluded_results = sorted_results[7:]
+
+        # Calculate totals
+        total_marks = sum(result.final_marks for result in best_results)
+        total_points = sum(result.points or 0 for result in best_results)
+
+        return best_results, excluded_results, total_marks, total_points
+
+    @staticmethod
+    def calculate_student_exam_summary(student, exam):
+        """
+        Calculate and update the exam summary for a student.
+        Implements the best of 7 subjects logic with paper ratios.
+        """
         try:
-            student = Student.objects.get(admission_number=row['Admission Number'])
-            subject = Subject.objects.get(name=row['Subject'])
-            marks = float(row['Marks'])
-            
-            if 0 <= marks <= 100:
-                result, created = ExamResult.objects.update_or_create(
+            # Get all subjects the student took in this exam
+            subjects = Subject.objects.filter(
+                examresult__student=student,
+                examresult__exam=exam
+            ).distinct()
+
+            exam_results = []
+            for subject in subjects:
+                # Calculate final marks for each subject using paper ratios
+                final_marks = GradingService.calculate_subject_final_marks(exam, student, subject)
+
+                # Get or create exam result
+                exam_result, created = ExamResult.objects.get_or_create(
                     exam=exam,
                     student=student,
                     subject=subject,
-                    defaults={'total_marks': marks}
+                    defaults={'final_marks': final_marks}
                 )
-                result.calculate_grade()
-                result.save()
-                processed += 1
-                
-        except (Student.DoesNotExist, Subject.DoesNotExist, ValueError) as e:
-            continue
-            
-    # After processing all results, update summaries
-    update_exam_summaries(exam)
-    return processed
 
-def update_exam_summaries(exam):
-    """Update all student summaries for an exam"""
-    students = Student.objects.filter(examresult__exam=exam).distinct()
-    
-    for student in students:
-        results = ExamResult.objects.filter(exam=exam, student=student)
-        total_marks = results.aggregate(total=Sum('total_marks'))['total']
-        mean_marks = results.aggregate(avg=Avg('total_marks'))['avg']
-        
-        # Calculate positions
-        stream_position = calculate_stream_position(exam, student, mean_marks)
-        overall_position = calculate_overall_position(exam, student, mean_marks)
-        
-        StudentExamSummary.objects.update_or_create(
-            exam=exam,
-            student=student,
-            defaults={
-                'total_marks': total_marks,
-                'mean_marks': mean_marks,
-                'stream_position': stream_position,
-                'overall_position': overall_position
-            }
-        )
+                # Update final marks if not created
+                if not created:
+                    exam_result.final_marks = final_marks
+                    exam_result.save()
 
-class ExamResultsService:
-    """Service class to handle exam result calculations and ranking"""
-    
-    @staticmethod
-    def calculate_student_summary(exam, student):
-        """Calculate summary for a specific student in an exam"""
-        results = ExamResult.objects.filter(exam=exam, student=student)
-        
-        if not results.exists():
-            return None
-        
-        total_marks = sum(result.marks for result in results)
-        total_points = sum(result.points for result in results)
-        subjects_count = results.count()
-        mean_marks = total_marks / subjects_count if subjects_count > 0 else 0
-        
-        # Calculate mean grade based on points average
-        mean_points = total_points / subjects_count if subjects_count > 0 else 0
-        mean_grade = ExamResultsService.get_mean_grade_from_points(mean_points)
-        
-        # Create or update the summary
-        summary, created = StudentExamSummary.objects.update_or_create(
-            exam=exam,
-            student=student,
-            defaults={
-                'total_marks': total_marks,
-                'total_points': total_points,
-                'mean_marks': mean_marks,
-                'mean_grade': mean_grade,
-                'subjects_count': subjects_count,
-            }
-        )
-        
-        return summary
-    
-    @staticmethod
-    def get_mean_grade_from_points(mean_points):
-        """Convert mean points to mean grade using Kenyan grading system"""
-        if mean_points >= 11.5:
-            return 'A'
-        elif mean_points >= 10.5:
-            return 'A-'
-        elif mean_points >= 9.5:
-            return 'B+'
-        elif mean_points >= 8.5:
-            return 'B'
-        elif mean_points >= 7.5:
-            return 'B-'
-        elif mean_points >= 6.5:
-            return 'C+'
-        elif mean_points >= 5.5:
-            return 'C'
-        elif mean_points >= 4.5:
-            return 'C-'
-        elif mean_points >= 3.5:
-            return 'D+'
-        elif mean_points >= 2.5:
-            return 'D'
-        elif mean_points >= 1.5:
-            return 'D-'
-        else:
-            return 'E'
-    
-    @staticmethod
-    def calculate_all_summaries_for_exam(exam):
-        """Calculate summaries for all students in an exam"""
-        students_with_results = Student.objects.filter(
-            exam_results__exam=exam,
-            form_level=exam.form_level
-        ).distinct()
-        
-        for student in students_with_results:
-            ExamResultsService.calculate_student_summary(exam, student)
-        
-        # Now calculate positions
-        ExamResultsService.calculate_positions(exam)
-    
-    @staticmethod
-    def calculate_positions(exam):
-        """Calculate overall and stream positions using Chinese technique (merit order)"""
-        # Get all summaries for this exam ordered by total marks (descending)
-        # Chinese technique: Higher total marks = better position, ties broken by total points
-        summaries = StudentExamSummary.objects.filter(exam=exam).order_by(
-            '-total_marks', '-total_points', 'student__name'
-        )
-        
-        # Calculate overall positions
-        for position, summary in enumerate(summaries, 1):
-            summary.overall_position = position
-            summary.total_students_overall = summaries.count()
-            summary.save(update_fields=['overall_position', 'total_students_overall'])
-        
-        # Calculate stream positions
-        streams = summaries.values_list('student__stream', flat=True).distinct()
-        
-    @staticmethod
-    def calculate_final_marks(exam_id, student_id, subject_id):
-        """Calculate final marks for a subject based on paper results and their contribution percentages"""
-        # Get all paper results for this exam-student-subject combination
-        paper_results = PaperResult.objects.filter(
-            exam_id=exam_id,
-            student_id=student_id,
-            subject_id=subject_id
-        ).select_related('paper')
-        
-        # Get the contribution percentages for each paper
-        paper_ratios = SubjectPaperRatio.objects.filter(
-            subject_id=subject_id,
-            is_active=True
-        ).select_related('paper')
-        
-        # If no results or no ratios, return None
-        if not paper_results.exists() or not paper_ratios.exists():
-            return None, 'P'
-        
-        total_marks = Decimal('0.0')
-        total_contribution = Decimal('0.0')
-        
-        # Check if student was absent or disqualified in any paper
-        if any(r.status == 'A' for r in paper_results):
-            return Decimal('-1.0'), 'A'  # Absent
-        if any(r.status == 'D' for r in paper_results):
-            return Decimal('-2.0'), 'D'  # Disqualified
-        
-        # Calculate weighted average
-        for ratio in paper_ratios:
-            result = next(
-                (r for r in paper_results if r.paper_id == ratio.paper_id),
-                None
+                # Calculate grade and points
+                grading_system = GradingSystem.objects.filter(
+                    school=exam.school,
+                    is_active=True
+                ).first()
+
+                if grading_system:
+                    grade, points = grading_system.get_grade_and_points(final_marks)
+                    exam_result.grade = grade
+                    exam_result.points = points
+                    exam_result.save()
+
+                exam_results.append(exam_result)
+
+            if not exam_results:
+                logger.warning(f"No exam results found for student {student} in exam {exam}")
+                return None
+
+            # Calculate best of 7
+            best_results, excluded_results, best_marks, best_points = GradingService.calculate_best_of_seven(exam_results)
+
+            # Calculate mean marks and grade from best 7
+            subjects_count = len(exam_results)
+            mean_marks = best_marks / 7 if best_results else 0
+
+            if grading_system:
+                # Calculate mean grade and points
+                mean_grade, mean_points = grading_system.get_grade_and_points(mean_marks)
+            else:
+                mean_grade = 'N/A'
+                mean_points = 0
+
+            # Calculate positions (stream and overall)
+            stream_position, overall_position = GradingService.calculate_positions(student, exam, best_marks)
+
+            # Update or create summary
+            summary, created = StudentExamSummary.objects.update_or_create(
+                student=student,
+                exam=exam,
+                defaults={
+                    'total_marks': sum(r.final_marks for r in exam_results),
+                    'mean_marks': mean_marks,
+                    'mean_grade': mean_grade,
+                    'total_points': sum(r.points or 0 for r in exam_results),
+                    'stream_position': stream_position,
+                    'overall_position': overall_position,
+                    'subjects_count': subjects_count,
+                    'best_of_seven_marks': best_marks,
+                    'best_of_seven_points': best_points,
+                    'excluded_subjects': [r.subject.id for r in excluded_results],
+                }
             )
-            if result:
-                # Convert marks to percentage of paper's max marks
-                paper_percentage = (result.marks / ratio.paper.max_marks) * 100
-                # Apply contribution percentage
-                contribution = (paper_percentage * ratio.contribution_percentage / 100)
-                total_marks += contribution
-                total_contribution += ratio.contribution_percentage
-        
-        # If we don't have 100% contribution, scale up the marks
-        if total_contribution < 100:
-            total_marks = (total_marks * 100) / total_contribution
-        
-        return round(total_marks, 2), 'P'
-    
-    @staticmethod
-    @transaction.atomic
-    def update_exam_result(exam_id, student_id, subject_id):
-        """Update or create an ExamResult based on PaperResults"""
-        total_marks, status = ExamResultsService.calculate_final_marks(
-            exam_id, student_id, subject_id
-        )
-        
-        if total_marks is None:
+
+            logger.info(f"Updated exam summary for student {student} in exam {exam}")
+            return summary
+
+        except Exception as e:
+            logger.error(f"Error calculating exam summary for student {student}: {e}")
             return None
-            
-        result, created = ExamResult.objects.update_or_create(
-            exam_id=exam_id,
-            student_id=student_id,
-            subject_id=subject_id,
-            defaults={
-                'total_marks': total_marks,
-                'status': status
-            }
+
+    @staticmethod
+    def calculate_positions(student, exam, best_marks):
+        """
+        Calculate stream and overall positions for a student.
+        """
+        # Get all students in the same form level and exam
+        form_students = Student.objects.filter(
+            school=exam.school,
+            form_level=student.form_level
         )
-        
-        return result
-        
-        for stream in streams:
-            stream_summaries = summaries.filter(student__stream=stream)
-            stream_count = stream_summaries.count()
-            
-            for position, summary in enumerate(stream_summaries, 1):
-                summary.stream_position = position
-                summary.total_students_in_stream = stream_count
-                summary.save(update_fields=['stream_position', 'total_students_in_stream'])
-    
+
+        # Get their best marks for comparison
+        student_summaries = StudentExamSummary.objects.filter(
+            exam=exam,
+            student__in=form_students
+        ).select_related('student')
+
+        # Calculate positions
+        all_marks = [(s.best_of_seven_marks or 0, s.student.stream) for s in student_summaries]
+        all_marks.append((best_marks, student.stream))
+        all_marks.sort(key=lambda x: x[0], reverse=True)
+
+        # Find positions
+        overall_position = 1
+        stream_position = 1
+        current_marks = best_marks
+
+        for marks, stream in all_marks:
+            if marks > current_marks:
+                overall_position += 1
+                if stream == student.stream:
+                    stream_position += 1
+            elif marks == current_marks:
+                # Handle ties - same position
+                pass
+            else:
+                break
+
+        return stream_position, overall_position
+
     @staticmethod
-    def calculate_subject_rankings(exam):
-        """Calculate rankings within each subject for an exam"""
-        from students.models import Subject
-        
-        subjects = Subject.objects.filter(
-            examresult__exam=exam
-        ).distinct()
-        
-        for subject in subjects:
-            results = ExamResult.objects.filter(
-                exam=exam, 
-                subject=subject
-            ).order_by('-marks', 'student__name')
-            
-            total_students = results.count()
-            
-            for rank, result in enumerate(results, 1):
-                result.rank_in_subject = rank
-                result.total_students_in_subject = total_students
-                result.save(update_fields=['rank_in_subject', 'total_students_in_subject'])
-    
+    def bulk_calculate_exam_summaries(exam):
+        """
+        Calculate exam summaries for all students in an exam.
+        """
+        students = Student.objects.filter(
+            school=exam.school,
+            form_level__in=exam.participating_forms.all()
+        )
+
+        summaries = []
+        for student in students:
+            summary = GradingService.calculate_student_exam_summary(student, exam)
+            if summary:
+                summaries.append(summary)
+
+        logger.info(f"Calculated summaries for {len(summaries)} students in exam {exam}")
+        return summaries
+
     @staticmethod
-    def recalculate_exam_rankings(exam_id):
-        """Main method to recalculate all rankings for an exam"""
-        try:
-            exam = Exam.objects.get(id=exam_id)
-            
-            # Step 1: Calculate individual student summaries
-            ExamResultsService.calculate_all_summaries_for_exam(exam)
-            
-            # Step 2: Calculate subject rankings
-            ExamResultsService.calculate_subject_rankings(exam)
-            
-            return True
-        except Exam.DoesNotExist:
-            return False
+    def get_grading_ranges(grading_system):
+        """
+        Get grading ranges ordered by marks descending.
+        """
+        return GradingRange.objects.filter(
+            grading_system=grading_system
+        ).order_by('-max_marks')

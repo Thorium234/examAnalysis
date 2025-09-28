@@ -6,15 +6,23 @@ from django.conf.urls.static import static # Import the static function
 from django.shortcuts import redirect
 
 def root_redirect(request):
-    """Redirect root URL to find account page"""
-    return redirect('accounts:find_account')
+    """Redirect root URL based on authentication status"""
+    if request.user.is_authenticated:
+        # Check if user is a student
+        if hasattr(request.user, 'profile') and request.user.profile.roles.filter(name='Student').exists():
+            return redirect('accounts:student_dashboard')
+        else:
+            return redirect(settings.LOGIN_REDIRECT_URL)
+    else:
+        return redirect('login_selection')
 
 urlpatterns = [
     # Admin URL
     path('admin/', admin.site.urls),
 
-    # Root URL redirect to find account
+    # Root URL redirect to login selection
     path('', root_redirect, name='root'),
+    path('login-selection/', lambda request: redirect('accounts:find_account'), name='login_selection'),
 
     # App-specific URLs
     path('accounts/', include('accounts.urls')),

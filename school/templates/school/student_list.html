@@ -32,17 +32,23 @@
                 <table class="table table-striped table-hover rounded-lg">
                   <thead class="table-light">
                     <tr>
-                      <th scope="col">Username</th>
-                      <th scope="col">Email</th>
-                      <th scope="col">Joined</th>
+                      <th scope="col">Admission No.</th>
+                      <th scope="col">Full Name</th>
+                      <th scope="col">Form</th>
+                      <th scope="col">Stream</th>
+                      <th scope="col">KCPE Marks</th>
+                      <th scope="col">Phone</th>
                     </tr>
                   </thead>
                   <tbody>
                     {% for student in students %}
                       <tr>
-                        <td>{{ student.username }}</td>
-                        <td>{{ student.email }}</td>
-                        <td>{{ student.date_joined|date:'M d, Y' }}</td>
+                        <td>{{ student.admission_number }}</td>
+                        <td>{{ student.full_name }}</td>
+                        <td>{{ student.form_level }}</td>
+                        <td>{{ student.stream }}</td>
+                        <td>{{ student.kcpe_marks }}</td>
+                        <td>{{ student.phone_contact }}</td>
                       </tr>
                     {% endfor %}
                   </tbody>
