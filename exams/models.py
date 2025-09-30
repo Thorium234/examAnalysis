@@ -72,23 +72,6 @@ class Exam(models.Model):
     def __str__(self):
         return f"{self.school.name} - {self.name} Form {self.form_level} ({self.year} Term {self.term})"
 
-# This model will hold the results for each paper, e.g., PP1, PP2, PP3
-# This model will hold the results for each paper, e.g., PP1, PP2, PP3
-class PaperResult(models.Model):
-    STATUS_CHOICES = [
-        ('P', 'Present'),
-        ('A', 'Absent'),
-        ('D', 'Disqualified'),
-    ]
-
-    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='paper_results')
-    # Using string references to avoid circular imports
-    student = models.ForeignKey('students.Student', on_delete=models.CASCADE, related_name='paper_results')
-    subject_paper = models.ForeignKey('subjects.SubjectPaper', on_delete=models.CASCADE, related_name='paper_results')
-    marks = models.IntegerField(validators=[MinValueValidator(0)], null=True, blank=True)
-    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
-    entered_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
-    entered_at = models.DateTimeField(auto_now_add=True)
 class PaperResult(models.Model):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='paper_results')
     # Using string references to avoid circular imports

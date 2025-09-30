@@ -147,7 +147,11 @@ CSRF_TRUSTED_ORIGINS = [
     "https://*.ngrok-free.app"
 ]
 
+# Email settings for password reset
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@schoolchengji.com'
+
 # Login/Logout URLs
 LOGIN_URL = '/accounts/find-account/'
 LOGIN_REDIRECT_URL = '/school/'
-LOGOUT_REDIRECT_URL = '/accounts/goodbye/'
+LOGOUT_REDIRECT_URL = '/accounts/find-account/'

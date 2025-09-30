@@ -1,0 +1,279 @@
+Dashboard Overview
+This is a school management dashboard for Friends Kikai Boys High School with these main sections:
+
+1. TOP BANNER (Payment Alert)
+
+Red/pink alert bar saying: "The school's subscription is due in 41 days. Please pay by 09/Nov/2025 to continue enjoying the service"
+Orange "Make payment" button on the right
+
+Tell your programmer:
+"Add a notification banner at the top of the page. It should have a light red/pink background color. The text should say the subscription is due in X days with a deadline date. Put an orange button on the right side that says 'Make payment'."
+
+2. WELCOME SECTION (Hero Banner)
+
+Large banner with background image (books/library)
+Profile picture placeholder on the left
+Text: "Welcome Paul Ijendi Inyangala, Manage exams from the comfort of your mobile phone"
+
+Tell your programmer:
+"Create a welcome banner with a background image. On the left side, show a circular profile picture. Next to it, display 'Welcome [User's Name]' and a subtitle about managing exams from mobile."
+
+3. STATISTICS CARDS (4 boxes in 2 rows)
+Row 1:
+
+Teachers: Shows number "14" with icon
+Students: Shows number "254" with icon
+
+Row 2:
+
+Staff: Shows number "0" with icon
+Streams: Shows number "6" with icon
+
+Each card has an arrow (→) on the right side
+Tell your programmer:
+"Make 4 white cards arranged in 2 rows and 2 columns. Each card should have:
+
+An icon on the left (in light blue circle)
+A number (large text)
+A label below (Teachers, Students, Staff, or Streams)
+An arrow on the right side
+The cards should be clickable."
+
+
+4. CALENDAR SECTION (Right Side)
+
+Title: "Upcoming Events"
+Three view buttons: Month (selected/blue), Week, Day
+Calendar showing September 2025
+"+ Add Event" button (green)
+
+Tell your programmer:
+"On the right side, create a calendar widget with:
+
+A title 'Upcoming Events'
+Three toggle buttons for Month/Week/Day view (Month should be blue when selected)
+A green '+ Add Event' button
+A full month calendar showing all dates in a grid with columns for Mon-Sun"
+
+
+5. EXAM RESULTS SECTION (3 cards at bottom)
+Each card shows:
+
+Title: Form 2, Form 3, Form 4
+Subtitle: Exam name and term (e.g., "AVERAGE EXAM - (2025 TERM 2)")
+Two columns of data:
+
+Left: Mean Points with red indicator (-0.810↓)
+Right: Mean Marks with red indicator (-13.770↓)
+
+
+Large numbers: Points average (e.g., 1.3333) and Percentage (e.g., 12.29%)
+Bottom row: Mean Grade (E, E, D-) and Students count (103, 58, 58)
+Green button: "View Analysis"
+
+Tell your programmer:
+"At the bottom, create 3 cards side by side. Each card should have:
+
+A header with the form name and exam details
+Two boxes at the top showing 'Mean Points' and 'Mean Marks' with small red badges showing negative change (like -0.810 with down arrow)
+Two large numbers below: the actual mean points and the percentage
+At the bottom: Mean Grade (letter) on left, Students count on right
+A green button at the bottom saying 'View Analysis'
+Make the cards have rounded corners and shadow effects."
+
+
+COLOR SCHEME
+Tell your programmer:
+"Use these colors:
+
+Primary green: #4CAF50 or similar (for buttons, navigation)
+Light blue: for icons backgrounds
+White: for card backgrounds
+Red/pink: for alerts
+Orange: for payment button
+Gray: for text labels"
+
+
+LAYOUT STRUCTURE
+Tell your programmer:
+"The layout should be:
+
+Top navigation bar (green)
+Alert banner (full width)
+Welcome banner (left side, takes about 60% width)
+Calendar section (right side, takes about 40% width)
+Statistics cards (4 cards below welcome banner)
+Exam results cards (3 cards at the bottom, full width, evenly spaced)"
+
+
+Hey Kilocode, I need you to build a school management dashboard. Let me break it down step by step:
+
+PROJECT: School Dashboard for Friends Kikai Boys High School
+STEP 1: Create the Top Navigation Bar
+
+Make a horizontal navigation bar with green background (#4CAF50)
+On the left: Put the school logo and name "Friends Kikai Boys High School"
+On the right: Add language selector showing "English", search icon, notification icon (with red badge showing "4"), and user profile picture with name "Paul Ijendi Inyangala"
+Below that, add three navigation tabs: "Dashboard", "My Subjects", "Graduated Classes"
+
+
+STEP 2: Add Payment Alert Banner
+
+Create a full-width alert banner below the navigation
+Background color: light pink/coral (#FFE5E5)
+Text should say: "The school's subscription is due in 41 days. Please pay by 09/Nov/2025 to continue enjoying the service."
+On the right side: Add an orange button that says "Make payment"
+
+
+STEP 3: Build the Welcome Hero Section
+Create a large rectangular card with:
+
+Background: A semi-transparent overlay on top of a books/library image
+Left side: Circular profile picture placeholder (gray circle with user silhouette)
+Right side text:
+
+Line 1: "Welcome Paul Ijendi Inyangala," (white text, large)
+Line 2: "Manage exams from the comfort of your mobile phone" (white text, smaller)
+
+
+
+
+STEP 4: Create Statistics Cards (4 cards)
+Make 4 white rectangular cards arranged in a 2x2 grid:
+Card 1 (Top Left):
+
+Icon: Two people icon in light blue circle
+Number: "14" (large, bold)
+Label: "Teachers" (gray text)
+Arrow icon on the right (→)
+
+Card 2 (Top Right):
+
+Icon: Stacked books/graduation cap in light blue circle
+Number: "254" (large, bold)
+Label: "Students" (gray text)
+Arrow icon on the right (→)
+
+Card 3 (Bottom Left):
+
+Icon: Single person with badge in light blue circle
+Number: "0" (large, bold)
+Label: "Staff" (gray text)
+Arrow icon on the right (→)
+
+Card 4 (Bottom Right):
+
+Icon: House/building in light blue circle
+Number: "6" (large, bold)
+Label: "Streams" (gray text)
+Arrow icon on the right (→)
+
+All cards should have:
+
+White background
+Rounded corners
+Shadow effect
+Be clickable
+
+
+STEP 5: Build Calendar Widget (Right Side)
+This goes on the right side of the screen, next to the welcome section:
+Top section:
+
+Title: "Upcoming Events"
+View toggle buttons: "Month" (blue/selected), "Week", "Day"
+Green button: "+ Add Event"
+
+Calendar grid:
+
+Show "September 2025" at the top with left/right arrows to change months
+Create a 7-column table with headers: Mon, Tue, Wed, Thu, Fri, Sat, Sun
+Fill in dates 1-30 for September 2025
+Each date should be in its own cell
+Current date should be highlighted or have different styling
+
+
+STEP 6: Create Exam Results Cards (3 cards at the bottom)
+Make 3 white cards side by side, each showing:
+Card 1 - Form 2:
+
+Header: "Form 2"
+Subheader: "AVERAGE EXAM - (2025 TERM 2)" (gray text)
+Two small boxes at top:
+
+Left box: "Mean Points" with value "-0.810↓" (red badge)
+Right box: "Mean Marks" with value "-13.770↓" (red badge)
+
+
+Two large numbers below:
+
+Left: "1.3333" (green text, large)
+Right: "12.29%" (green text, large)
+
+
+Bottom section with two parts:
+
+Left: "Mean Grade" label with "E" (green, large)
+Right: "Students" label with "103" (green, large)
+
+
+Green button at bottom: "View Analysis"
+
+Card 2 - Form 3:
+
+Same structure as Card 1
+Header: "Form 3"
+Subheader: "AVERAGE EXAM - (2025 TERM 2)"
+Mean Points: "-0.080↓", Mean Marks: "-9.770↓"
+Numbers: "1.4091" and "13.1%"
+Mean Grade: "E", Students: "58"
+
+Card 3 - Form 4:
+
+Same structure as Card 1 and 2
+Header: "Form 4"
+Subheader: "BUNGOMA WEST JOINT - (2025 TERM 2)"
+Mean Points: "-0.090↓", Mean Marks: "-0.680↓"
+Numbers: "1.6346" and "15.88%"
+Mean Grade: "D-", Students: "58"
+
+
+STEP 7: Add Footer
+At the bottom of the page:
+
+Text: "© 2025 Zeraki. All Rights Reserved."
+Small icons for settings, user profile, and help
+
+
+LAYOUT SPECIFICATIONS:
+Overall structure:
+
+Main container: Full width, light gray background (#F5F5F5)
+Left section (60% width): Welcome banner + 4 statistics cards + 3 exam cards
+Right section (40% width): Calendar widget
+
+Spacing:
+
+Gap between cards: 20px
+Card padding: 20px inside
+Rounded corners: 8px radius
+Shadow: subtle drop shadow on all cards
+
+Colors:
+
+Primary green: #4CAF50
+Light blue (icons): #E3F2FD
+Red (negative indicators): #FF5252
+Orange (payment button): #FF6B35
+Gray text: #757575
+Dark text: #333333
+
+Fonts:
+
+Numbers: Bold, large (24-32px)
+Headers: Bold, medium (18-20px)
+Labels: Regular, small (14-16px)
+
+
+Make sure all cards are responsive and have hover effects. The entire dashboard should work on desktop, tablet, and mobile screens.
+Do you understand these requirements, Kilocode? Start building it step by step and let me know when each section is complete.

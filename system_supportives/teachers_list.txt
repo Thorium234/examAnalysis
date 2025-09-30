@@ -1,0 +1,21 @@
+School,Friends Kikai Boys High School
+Title,Teachers List
+Address,P.O BOX 345 CHWELE
+Contact,0710702705
+Email,kikaiboys@gmail.com
+
+#,Surname,First Name,Other Names,Username,Phone,Gender,TSC Number,National ID No.
+1,Amara,Amira,,amiraamara@kikaiboys,+254726957273,Male,557280,,
+2,Asiba,Andrew,,andrewasiba@kikaiboys,+254726628317,Male,315040,,
+3,Clerkson,Biketi,,biketiclerkson@kikaiboys,+254710447789,Male,,,
+4,B.wanyonyi,Charles,,charlesbwanyonyi@kikaiboys,+254714645091,Male,792340,,
+5,Wekesa,Christine,,christinewekesa@kikaiboys,+254708836321,Female,647807,,
+6,Wafula,Fastine,,fastinewafula@kikaiboys,+254768448735,Male,,,
+7,Wafula,Fastine,Wanjala,fastinewafula1@kikaiboys,+254768448735,Male,,,
+8,Sakula,Kevin,Muchwang'i,kevinsakula@kikaiboys,+254792432938,Male,748175,,
+9,Simion,Machoka,M.machoka,msimion@kikaiboys,+254726593837,Male,682579,,
+10,Wafula,Masafu,,masafuwafula@kikaiboys,+254725706899,,,
+11,Inyangala,Paul,Ijendi,paulinyangala@kikaiboys,+254114710909,Male,,,
+12,Wanduyu,Paul,Wanjala,paulwanduyu@kikaiboys,+254112834664,Male,,,
+13,Maina,Samuel,,samuelmaina@kikaiboys,+254791398405,Male,4521922221,,
+14,Kituyi,Saul,,saulkutuyi@kikaiboys,+254729223050,,,

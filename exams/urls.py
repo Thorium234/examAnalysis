@@ -32,4 +32,10 @@ urlpatterns = [
     path('grading-systems/<int:grading_system_pk>/ranges/create/', views.GradingRangeCreateView.as_view(), name='gradingrange_create'),
     path('grading-ranges/<int:pk>/edit/', views.GradingRangeUpdateView.as_view(), name='gradingrange_update'),
     path('grading-ranges/<int:pk>/delete/', views.GradingRangeDeleteView.as_view(), name='gradingrange_delete'),
+
+    # Paper Ratio URLs
+    path('paper-ratios/', views.SubjectPaperRatioListView.as_view(), name='paper_ratios_list'),
+    path('paper-ratios/create/', views.SubjectPaperRatioCreateView.as_view(), name='subject_paper_ratio_create'),
+    path('paper-ratios/<int:pk>/edit/', views.SubjectPaperRatioUpdateView.as_view(), name='subject_paper_ratio_update'),
+    path('paper-ratios/<int:pk>/delete/', views.SubjectPaperRatioDeleteView.as_view(), name='subject_paper_ratio_delete'),
 ]

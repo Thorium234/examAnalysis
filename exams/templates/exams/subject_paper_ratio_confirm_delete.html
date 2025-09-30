@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Paper Ratio - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">Delete Paper Ratio</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Warning!</strong> Are you sure you want to delete the paper ratio configuration for <strong>{{ object.subject.name }}</strong>?
+                        This action cannot be undone.
+                    </div>
+
+                    <div class="mt-4">
+                        <h5>Current Configuration:</h5>
+                        <ul class="list-group">
+                            {% if object.paper1_max_marks %}
+                                <li class="list-group-item">
+                                    <strong>Paper 1:</strong> {{ object.paper1_max_marks }} marks ({{ object.paper1_contribution }}% contribution)
+                                </li>
+                            {% endif %}
+                            {% if object.paper2_max_marks %}
+                                <li class="list-group-item">
+                                    <strong>Paper 2:</strong> {{ object.paper2_max_marks }} marks ({{ object.paper2_contribution }}% contribution)
+                                </li>
+                            {% endif %}
+                            {% if object.paper3_max_marks %}
+                                <li class="list-group-item">
+                                    <strong>Paper 3:</strong> {{ object.paper3_max_marks }} marks ({{ object.paper3_contribution }}% contribution)
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Yes, Delete Paper Ratio
+                        </button>
+                        <a href="{% url 'exams:paper_ratios_list' %}" class="btn btn-secondary ml-2">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

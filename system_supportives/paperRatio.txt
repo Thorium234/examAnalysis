@@ -1,0 +1,82 @@
+this is very repetitive 
+the teacher should have to set himself what the would be the marks in each paper 
+an what the student should contribute 
+and the subjet should be on drop dow from subjects so that we wont be creating anyother subjects ap
+rt from the ones we have in the system
+Subject Paper Ratios
+Subject	Paper max	Contribution Percentage,action
+Agriculture	1 100	50.00%edit,delete
+Agriculture	1 100	50.00% edit,delete
+
+Biology	1 80	33.33%
+Biology	2 80	33.33%
+Biology	3	33.33%
+Business Studies	1	50.00%
+Business Studies	2	50.00%
+Chemistry	1	33.33%
+Chemistry	2	33.33%
+Chemistry	3	33.33%
+Christian Religious Education	1	50.00%
+Christian Religious Education	2	50.00%
+Computer Studies	1	50.00%
+Computer Studies	2	50.00%
+English	1	33.33%
+English	1	33.33%
+English	2	33.33%
+English	3	33.33%
+Geography	1	50.00%
+Geography	2	50.00%
+History and Government	1	50.00%
+
+History and Government	2	50.00%
+Kiswahili	1	33.33%
+Kiswahili	1	33.33%
+Kiswahili	2	33.33%
+Kiswahili	3	33.33%
+Mathematics	1	50.00%
+Mathematics	2	50.00%
+Physics	1	33.33%
+
+Physics	2	33.33%
+
+Physics	3	33.33%
+
+here is some how clean logic of what i want to implement and should have action button for edit or delete
+other subjects dont have 3 papers but the user will choose what to do 
+Subject Paper Ratios
+Subject	Paper Out Of	Paper Contribution percentage
+Paper 1 (Out of X)	Paper 2 (Out of X)	Paper 3 (Out of X)	Paper 1 (%)	Paper 2 (%)	Paper 3 (%)
+Mathematics	100	100		50	50		
+English	60	80	80	30	40	80	
+Kiswahili	40	80	80	20	40	80	
+Biology	80	80	40	40	40	20	
+Physics	80	80	40	40	40	20	
+Chemistry	80	80	40	40	40	20	
+History and Government	100	100		50	50		
+Geography	100	100		50	50		
+C.R.E.	100	100		50	50		
+Agriculture	90	90		50	50		
+Computer Studies	100	100		50	50		
+Business Studies	100	100		50	50		
+
+refined csv 
+note:
+I've created a clean CSV file with your subject paper ratios data. The file includes:
+
+7 columns: Subject name, three "Out Of" columns for each paper, and three contribution percentage columns
+12 subjects: All your subjects from Mathematics to Business Studies
+Empty cells where papers don't exist (like Paper 3 for Mathematics, History, etc.)
+
+Subject,Paper 1 Out Of,Paper 2 Out Of,Paper 3 Out Of,Paper 1 Contribution %,Paper 2 Contribution %,Paper 3 Contribution %
+Mathematics,100,100,,50,50,
+English,60,80,80,30,40,80
+Kiswahili,40,80,80,20,40,80
+Biology,80,80,40,40,40,20
+Physics,80,80,40,40,40,20
+Chemistry,80,80,40,40,40,20
+History and Government,100,100,,50,50,
+Geography,100,100,,50,50,
+C.R.E.,100,100,,50,50,
+Agriculture,90,90,,50,50,
+Computer Studies,100,100,,50,50,
+Business Studies,100,100,,50,50,

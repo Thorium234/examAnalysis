@@ -4,6 +4,7 @@ from .models import (
     Exam, ExamResult, SubjectCategory,
     GradingSystem, GradingRange, PaperResult
 )
+from subjects.models import SubjectPaperRatio, Subject
 from school.models import FormLevel
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -82,3 +83,52 @@ class PaperResultForm(forms.ModelForm):
     class Meta:
         model = PaperResult
         fields = ['exam', 'student', 'subject_paper', 'marks']
+
+class SubjectPaperRatioForm(forms.ModelForm):
+    subject = forms.ModelChoiceField(
+        queryset=Subject.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        help_text="Select the subject for which to configure paper ratios"
+    )
+
+    class Meta:
+        model = SubjectPaperRatio
+        fields = [
+            'subject',
+            'paper1_max_marks', 'paper1_contribution',
+            'paper2_max_marks', 'paper2_contribution',
+            'paper3_max_marks', 'paper3_contribution',
+        ]
+        widgets = {
+            'paper1_max_marks': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 100'}),
+            'paper1_contribution': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 50.00', 'step': '0.01'}),
+            'paper2_max_marks': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 100'}),
+            'paper2_contribution': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 50.00', 'step': '0.01'}),
+            'paper3_max_marks': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 80'}),
+            'paper3_contribution': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 33.33', 'step': '0.01'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user and not user.is_superuser:
+            self.fields['subject'].queryset = Subject.objects.filter(school=user.school)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        subject = cleaned_data.get('subject')
+
+        # Check if subject already has paper ratios
+        if subject and SubjectPaperRatio.objects.filter(subject=subject).exists():
+            if not self.instance.pk:  # Only for new instances
+                raise forms.ValidationError("This subject already has paper ratios configured.")
+
+        # Validate that if max_marks is provided, contribution is also provided and vice versa
+        for paper_num in ['1', '2', '3']:
+            max_marks = cleaned_data.get(f'paper{paper_num}_max_marks')
+            contribution = cleaned_data.get(f'paper{paper_num}_contribution')
+
+            if (max_marks and not contribution) or (contribution and not max_marks):
+                raise forms.ValidationError(f"Paper {paper_num}: Both max marks and contribution percentage must be provided together.")
+
+        return cleaned_data

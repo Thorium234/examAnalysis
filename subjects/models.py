@@ -28,6 +28,7 @@ class Subject(models.Model):
     )
     form_levels = models.ManyToManyField('school.FormLevel', related_name='subjects', blank=True)
     is_optional = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ('school', 'name', 'code')
@@ -50,3 +51,72 @@ class SubjectPaper(models.Model):
     
     def __str__(self):
         return f"{self.subject.name} - {self.paper_number}"
+
+class SubjectPaperRatio(models.Model):
+    subject = models.OneToOneField(Subject, on_delete=models.CASCADE, related_name='paper_ratio')
+
+    # Paper 1 configuration
+    paper1_max_marks = models.IntegerField(
+        validators=[MinValueValidator(0)],
+        help_text="Maximum marks for Paper 1",
+        blank=True,
+        null=True
+    )
+    paper1_contribution = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="Percentage contribution of Paper 1 to final marks",
+        blank=True,
+        null=True
+    )
+
+    # Paper 2 configuration
+    paper2_max_marks = models.IntegerField(
+        validators=[MinValueValidator(0)],
+        help_text="Maximum marks for Paper 2",
+        blank=True,
+        null=True
+    )
+    paper2_contribution = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="Percentage contribution of Paper 2 to final marks",
+        blank=True,
+        null=True
+    )
+
+    # Paper 3 configuration
+    paper3_max_marks = models.IntegerField(
+        validators=[MinValueValidator(0)],
+        help_text="Maximum marks for Paper 3",
+        blank=True,
+        null=True
+    )
+    paper3_contribution = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="Percentage contribution of Paper 3 to final marks",
+        blank=True,
+        null=True
+    )
+
+    class Meta:
+        verbose_name = "Subject Paper Ratio"
+        verbose_name_plural = "Subject Paper Ratios"
+
+    def __str__(self):
+        return f"{self.subject.name} Paper Ratios"
+
+    def get_paper_configs(self):
+        """Return a list of (max_marks, contribution) tuples for papers that are configured"""
+        configs = []
+        if self.paper1_max_marks is not None and self.paper1_contribution is not None:
+            configs.append((self.paper1_max_marks, self.paper1_contribution))
+        if self.paper2_max_marks is not None and self.paper2_contribution is not None:
+            configs.append((self.paper2_max_marks, self.paper2_contribution))
+        if self.paper3_max_marks is not None and self.paper3_contribution is not None:
+            configs.append((self.paper3_max_marks, self.paper3_contribution))
+        return configs

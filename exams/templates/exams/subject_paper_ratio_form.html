@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if object %}Edit{% else %}Create{% endif %} Paper Ratio - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        {% if object %}Edit{% else %}Create{% endif %} Paper Ratio
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.subject.id_for_label }}">Subject</label>
+                                    {{ form.subject }}
+                                    {% if form.subject.errors %}
+                                        <div class="text-danger">
+                                            {{ form.subject.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <h5 class="mt-4 mb-3">Paper 1 Configuration</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.paper1_max_marks.id_for_label }}">Paper 1 Max Marks</label>
+                                    {{ form.paper1_max_marks }}
+                                    {% if form.paper1_max_marks.errors %}
+                                        <div class="text-danger">
+                                            {{ form.paper1_max_marks.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.paper1_contribution.id_for_label }}">Paper 1 Contribution (%)</label>
+                                    {{ form.paper1_contribution }}
+                                    {% if form.paper1_contribution.errors %}
+                                        <div class="text-danger">
+                                            {{ form.paper1_contribution.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <h5 class="mt-4 mb-3">Paper 2 Configuration</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.paper2_max_marks.id_for_label }}">Paper 2 Max Marks</label>
+                                    {{ form.paper2_max_marks }}
+                                    {% if form.paper2_max_marks.errors %}
+                                        <div class="text-danger">
+                                            {{ form.paper2_max_marks.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.paper2_contribution.id_for_label }}">Paper 2 Contribution (%)</label>
+                                    {{ form.paper2_contribution }}
+                                    {% if form.paper2_contribution.errors %}
+                                        <div class="text-danger">
+                                            {{ form.paper2_contribution.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <h5 class="mt-4 mb-3">Paper 3 Configuration (Optional)</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.paper3_max_marks.id_for_label }}">Paper 3 Max Marks</label>
+                                    {{ form.paper3_max_marks }}
+                                    {% if form.paper3_max_marks.errors %}
+                                        <div class="text-danger">
+                                            {{ form.paper3_max_marks.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.paper3_contribution.id_for_label }}">Paper 3 Contribution (%)</label>
+                                    {{ form.paper3_contribution }}
+                                    {% if form.paper3_contribution.errors %}
+                                        <div class="text-danger">
+                                            {{ form.paper3_contribution.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger mt-3">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> {% if object %}Update{% else %}Create{% endif %} Paper Ratio
+                            </button>
+                            <a href="{% url 'exams:paper_ratios_list' %}" class="btn btn-secondary ml-2">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

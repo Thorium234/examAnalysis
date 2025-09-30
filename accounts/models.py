@@ -98,3 +98,28 @@ class TeacherSubject(models.Model):
         
     def __str__(self):
         return f"{self.teacher.get_full_name() or self.teacher.username} teaches {self.subject.name}"
+
+class TeacherGroup(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+    school = models.ForeignKey(
+        'school.School',
+        on_delete=models.CASCADE,
+        related_name='teacher_groups'
+    )
+
+    class Meta:
+        unique_together = ('name', 'school')
+
+    def __str__(self):
+        return f"{self.school.name} - {self.name}"
+
+class TeacherGroupMembership(models.Model):
+    teacher = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='group_memberships')
+    group = models.ForeignKey(TeacherGroup, on_delete=models.CASCADE, related_name='memberships')
+
+    class Meta:
+        unique_together = ('teacher', 'group')
+
+    def __str__(self):
+        return f"{self.teacher.get_full_name()} in {self.group.name}"

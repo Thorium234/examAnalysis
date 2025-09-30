@@ -18,7 +18,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER
 
 from students.models import Student
-from subjects.models import Subject, SubjectPaper
+from subjects.models import Subject, SubjectPaper, SubjectPaperRatio
 from school.models import School # This is the corrected import
 from .models import (
     Exam,
@@ -29,7 +29,7 @@ from .models import (
     GradingRange,
     PaperResult
 )
-from .forms import GradingSystemForm, GradingRangeForm
+from .forms import GradingSystemForm, GradingRangeForm, SubjectPaperRatioForm
 
 # Mixins for permissions
 class TeacherRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
@@ -337,6 +337,71 @@ class GradingRangeDeleteView(TeacherRequiredMixin, DeleteView):
     template_name = 'exams/gradingrange_confirm_delete.html'
     success_url = reverse_lazy('exams:gradingsystem_list')
 
+class SubjectPaperRatioListView(TeacherRequiredMixin, ListView):
+    model = Subject
+    template_name = 'exams/subject_paper_ratio_list.html'
+    context_object_name = 'subjects'
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return Subject.objects.all().select_related('paper_ratio').order_by('name')
+        return Subject.objects.filter(school=self.request.user.school).select_related('paper_ratio').order_by('name')
+
+class SubjectPaperRatioCreateView(TeacherRequiredMixin, CreateView):
+    model = SubjectPaperRatio
+    form_class = SubjectPaperRatioForm
+    template_name = 'exams/subject_paper_ratio_form.html'
+    success_url = reverse_lazy('exams:paper_ratios_list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_initial(self):
+        initial = super().get_initial()
+        subject_id = self.request.GET.get('subject')
+        if subject_id:
+            try:
+                subject = Subject.objects.get(pk=subject_id)
+                if self.request.user.is_superuser or subject.school == self.request.user.school:
+                    initial['subject'] = subject
+            except Subject.DoesNotExist:
+                pass
+        return initial
+
+    def form_valid(self, form):
+        if not self.request.user.school and not self.request.user.is_superuser:
+            form.add_error(None, "You must be associated with a school to create paper ratios.")
+            return self.form_invalid(form)
+        return super().form_valid(form)
+
+class SubjectPaperRatioUpdateView(TeacherRequiredMixin, UpdateView):
+    model = SubjectPaperRatio
+    form_class = SubjectPaperRatioForm
+    template_name = 'exams/subject_paper_ratio_form.html'
+    success_url = reverse_lazy('exams:paper_ratios_list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return SubjectPaperRatio.objects.all()
+        return SubjectPaperRatio.objects.filter(subject__school=self.request.user.school)
+
+class SubjectPaperRatioDeleteView(TeacherRequiredMixin, DeleteView):
+    model = SubjectPaperRatio
+    template_name = 'exams/subject_paper_ratio_confirm_delete.html'
+    success_url = reverse_lazy('exams:paper_ratios_list')
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return SubjectPaperRatio.objects.all()
+        return SubjectPaperRatio.objects.filter(subject__school=self.request.user.school)
+
 # Exam Results Upload Choice View
 #----------------------------------------------------------------------
 @login_required
@@ -566,7 +631,6 @@ def exam_results_entry(request, pk):
                         )
 
                         # Update or create subject paper ratio
-                        from subjects.models import SubjectPaperRatio
                         SubjectPaperRatio.objects.update_or_create(
                             subject=subject,
                             paper=paper,

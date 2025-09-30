@@ -18,6 +18,9 @@ class GradingService:
         """
         from subjects.models import SubjectPaperRatio
 
+        # Get the paper ratio configuration for this subject
+        paper_ratio = SubjectPaperRatio.objects.filter(subject=subject).first()
+
         # Get all paper results for this exam, student, and subject
         paper_results = PaperResult.objects.filter(
             exam=exam,
@@ -28,22 +31,30 @@ class GradingService:
         if not paper_results.exists():
             return 0
 
+        # If no paper ratio configured, use simple average
+        if not paper_ratio:
+            return sum(p.marks for p in paper_results) / len(paper_results)
+
         total_weighted_marks = 0
         total_weight = 0
 
         for paper_result in paper_results:
-            # Get the contribution ratio for this paper
-            ratio = SubjectPaperRatio.objects.filter(
-                subject=subject,
-                paper=paper_result.subject_paper
-            ).first()
+            paper_number = paper_result.subject_paper.paper_number
 
-            if ratio:
-                weight = ratio.contribution_percentage / 100.0
-                total_weighted_marks += paper_result.marks * weight
-                total_weight += weight
+            # Get the contribution percentage based on paper number
+            if paper_number == 1 and paper_ratio.paper1_contribution:
+                weight = paper_ratio.paper1_contribution / 100.0
+            elif paper_number == 2 and paper_ratio.paper2_contribution:
+                weight = paper_ratio.paper2_contribution / 100.0
+            elif paper_number == 3 and paper_ratio.paper3_contribution:
+                weight = paper_ratio.paper3_contribution / 100.0
+            else:
+                continue  # Skip papers without configured ratios
 
-        # If no ratios defined, use simple average
+            total_weighted_marks += paper_result.marks * weight
+            total_weight += weight
+
+        # If no valid ratios found, fall back to simple average
         if total_weight == 0:
             return sum(p.marks for p in paper_results) / len(paper_results)
 

@@ -199,7 +199,7 @@ def class_dashboard(request, form_level):
     exams = Exam.objects.filter(
         participating_forms=form_level,
         is_active=True
-    ).order_by('-date_created')[:5]
+    ).order_by('-created_at')[:5]
 
     # Get subject performance data for cards
     subject_stats = []
@@ -209,12 +209,12 @@ def class_dashboard(request, form_level):
             subject=subject,
             exam__participating_forms=form_level,
             exam__is_active=True
-        ).select_related('student').order_by('-total_marks')[:3]
+        ).select_related('student').order_by('-final_marks')[:3]
 
         subject_stats.append({
             'subject': subject,
             'top_students': recent_results,
-            'avg_marks': recent_results.aggregate(Avg('total_marks'))['total_marks__avg'] or 0
+            'avg_marks': recent_results.aggregate(Avg('final_marks'))['final_marks__avg'] or 0
         })
 
     context = {
@@ -250,7 +250,7 @@ def stream_dashboard(request, form_level, stream):
     exams = Exam.objects.filter(
         participating_forms=form_level,
         is_active=True
-    ).order_by('-date_created')[:5]
+    ).order_by('-created_at')[:5]
 
     # Get subject performance data for cards
     subject_stats = []
@@ -261,12 +261,12 @@ def stream_dashboard(request, form_level, stream):
             student__stream=stream,
             exam__participating_forms=form_level,
             exam__is_active=True
-        ).select_related('student').order_by('-total_marks')[:3]
+        ).select_related('student').order_by('-final_marks')[:3]
 
         subject_stats.append({
             'subject': subject,
             'top_students': recent_results,
-            'avg_marks': recent_results.aggregate(Avg('total_marks'))['total_marks__avg'] or 0
+            'avg_marks': recent_results.aggregate(Avg('final_marks'))['final_marks__avg'] or 0
         })
 
     context = {
@@ -301,7 +301,7 @@ def subject_dashboard(request, form_level=None, stream=None, subject_id=None):
     exam_results = ExamResult.objects.filter(
         subject=subject,
         student__in=students
-    ).select_related('student', 'exam').order_by('-exam__date_created')[:20]
+    ).select_related('student', 'exam').order_by('-exam__created_at')[:20]
 
     context = {
         'subject': subject,
@@ -344,15 +344,15 @@ def school_wide_dashboard(request):
         exam__is_active=True,
         student__school=school
     ).values('subject__name').annotate(
-        avg_marks=Avg('total_marks'),
-        max_marks=Max('total_marks'),
+        avg_marks=Avg('final_marks'),
+        max_marks=Max('final_marks'),
         student_count=Count('id')
     ).order_by('-avg_marks')[:10]
 
     # Recent exams
     recent_exams = Exam.objects.filter(
         is_active=True
-    ).order_by('-date_created')[:10]
+    ).order_by('-created_at')[:10]
 
     context = {
         'stream_performance': stream_performance,
@@ -360,6 +360,8 @@ def school_wide_dashboard(request):
         'subject_performance': subject_performance,
         'recent_exams': recent_exams,
     }
+    return render(request, 'school/school_wide_dashboard.html', context)
+
 @login_required
 def department_dashboard(request, category_id):
     """
@@ -389,18 +391,18 @@ def department_dashboard(request, category_id):
         ).select_related('student', 'exam', 'subject')
 
         if results.exists():
-            avg_marks = results.aggregate(Avg('total_marks'))['total_marks__avg'] or 0
-            top_students = results.order_by('-total_marks')[:5]
+            avg_marks = results.aggregate(Avg('final_marks'))['final_marks__avg'] or 0
+            top_students = results.order_by('-final_marks')[:5]
 
             # Calculate deviations
             class_avg = avg_marks
             deviations = []
-            for result in results.order_by('-exam__date_created')[:10]:
-                deviation = result.total_marks - class_avg
+            for result in results.order_by('-exam__created_at')[:10]:
+                deviation = result.final_marks - class_avg
                 deviations.append({
                     'student': result.student,
                     'subject': result.subject,
-                    'marks': result.total_marks,
+                    'marks': result.final_marks,
                     'deviation': deviation,
                     'exam': result.exam
                 })
@@ -424,9 +426,9 @@ def department_dashboard(request, category_id):
     department_stats = {
         'total_students': Student.objects.filter(school=school).count(),
         'total_subjects': subjects.count(),
-        'avg_performance': all_results.aggregate(Avg('total_marks'))['total_marks__avg'] or 0,
+        'avg_performance': all_results.aggregate(Avg('final_marks'))['final_marks__avg'] or 0,
         'top_performers': all_results.values('student').annotate(
-            avg_marks=Avg('total_marks')
+            avg_marks=Avg('final_marks')
         ).order_by('-avg_marks')[:10]
     }
 
@@ -437,4 +439,3 @@ def department_dashboard(request, category_id):
         'department_stats': department_stats,
     }
     return render(request, 'school/department_dashboard.html', context)
-    return render(request, 'school/school_wide_dashboard.html', context)

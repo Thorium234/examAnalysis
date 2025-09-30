@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Paper Ratios - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">Subject Paper Ratios</h4>
+                    <a href="{% url 'exams:subject_paper_ratio_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Paper Ratio
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if subjects %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Paper 1 (Out of)</th>
+                                        <th>Paper 2 (Out of)</th>
+                                        <th>Paper 3 (Out of)</th>
+                                        <th>Paper 1 (%)</th>
+                                        <th>Paper 2 (%)</th>
+                                        <th>Paper 3 (%)</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for subject in subjects %}
+                                        <tr>
+                                            <td>{{ subject.name }}</td>
+                                            <td>
+                                                {% if subject.paper_ratio.paper1_max_marks %}
+                                                    {{ subject.paper_ratio.paper1_max_marks }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if subject.paper_ratio.paper2_max_marks %}
+                                                    {{ subject.paper_ratio.paper2_max_marks }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if subject.paper_ratio.paper3_max_marks %}
+                                                    {{ subject.paper_ratio.paper3_max_marks }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if subject.paper_ratio.paper1_contribution %}
+                                                    {{ subject.paper_ratio.paper1_contribution }}%
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if subject.paper_ratio.paper2_contribution %}
+                                                    {{ subject.paper_ratio.paper2_contribution }}%
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if subject.paper_ratio.paper3_contribution %}
+                                                    {{ subject.paper_ratio.paper3_contribution }}%
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if subject.paper_ratio %}
+                                                    <a href="{% url 'exams:subject_paper_ratio_update' subject.paper_ratio.pk %}" class="btn btn-sm btn-warning">
+                                                        <i class="fas fa-edit"></i> Edit
+                                                    </a>
+                                                    <a href="{% url 'exams:subject_paper_ratio_delete' subject.paper_ratio.pk %}" class="btn btn-sm btn-danger">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </a>
+                                                {% else %}
+                                                    <a href="{% url 'exams:subject_paper_ratio_create' %}?subject={{ subject.pk }}" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-plus"></i> Add
+                                                    </a>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> No subjects found.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

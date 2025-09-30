@@ -6,6 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.conf import settings
+from django.core.mail import send_mail
 from datetime import datetime
 import random
 import string
@@ -36,7 +37,7 @@ class CustomLoginView(LoginView):
     template_name = 'accounts/login.html'
 
 class CustomLogoutView(LogoutView):
-    next_page = reverse_lazy('login')
+    pass
 
 class TeacherDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'accounts/teacher_dashboard.html'
@@ -103,21 +104,21 @@ class TeacherDashboardView(LoginRequiredMixin, TemplateView):
                 subject=subject,
                 student__in=accessible_students,
                 exam__is_published=True
-            ).select_related('student', 'exam').order_by('-exam__date_created')[:10]
+            ).select_related('student', 'exam').order_by('-exam__created_at')[:10]
 
             # Calculate analytics
             if recent_results.exists():
-                avg_marks = recent_results.aggregate(Avg('total_marks'))['total_marks__avg'] or 0
-                top_students = recent_results.order_by('-total_marks')[:3]
+                avg_marks = recent_results.aggregate(Avg('final_marks'))['final_marks__avg'] or 0
+                top_students = recent_results.order_by('-final_marks')[:3]
 
                 # Calculate deviations (simplified: difference from class average)
-                class_avg = recent_results.aggregate(Avg('total_marks'))['total_marks__avg'] or 0
+                class_avg = recent_results.aggregate(Avg('final_marks'))['final_marks__avg'] or 0
                 deviations = []
                 for result in recent_results[:5]:  # Show for top 5 recent
-                    deviation = result.total_marks - class_avg
+                    deviation = result.final_marks - class_avg
                     deviations.append({
                         'student': result.student,
-                        'marks': result.total_marks,
+                        'marks': result.final_marks,
                         'deviation': deviation
                     })
 

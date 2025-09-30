@@ -1,0 +1,22 @@
+ Teacher Login Credentials
+Here are the login details for all teachers in the system:
+
+Teacher Name	Username	Password	Assigned Subjects/Groups
+Amira Amara	amiraamara@kikaiboys	password123	LANGUAGES, English
+Andrew Asiba	andrewasiba@kikaiboys	password123	SCIENCE, Biology, Chemistry
+Biketi Clerkson	biketiclerkson@kikaiboys	password123	HUMANITIES, History and Government
+Charles B.wanyonyi	charlesbwanyonyi@kikaiboys	password123	SCIENCE, Chemistry
+Christine Wekesa	christinewekesa@kikaiboys	password123	HUMANITIES, Christian Religious Education
+Fastine Wafula	fastinewafula@kikaiboys	password123	TECHNICALS, Agriculture
+Fastine Wafula Wanjala	fastinewafula1@kikaiboys	password123	-
+Kevin Sakula Muchwang'i	kevinsakula@kikaiboys	password123	TECHNICALS, Computer Studies
+Machoka Simion M.machoka	msimion@kikaiboys	password123	SCIENCE, Physics
+Masafu Wafula	masafuwafula@kikaiboys	password123	CLASS TEACHERS
+Paul Inyangala Ijendi	paulinyangala@kikaiboys	password123	SCIENCE, Biology
+Paul Wanduyu Wanjala	paulwanduyu@kikaiboys	password123	HUMANITIES, Geography
+Samuel Maina	samuelmaina@kikaiboys	password123	MATHS, Mathematics
+Saul Kituyi	saulkutuyi@kikaiboys	password123	LANGUAGES, Kiswahili
+🔐 Default Login Information:
+All passwords: password123
+Username format: Based on email addresses from teacher records
+Access: Teachers can log in and access their assigned subjects and classes
