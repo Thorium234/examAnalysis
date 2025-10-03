@@ -316,11 +316,11 @@ def reports_and_analysis(request):
     # Get form levels with exam data
     form_levels = []
     for form_level in range(1, 5):
-        student_count = Student.objects.filter(school=school, form_level=form_level).count()
+        student_count = Student.objects.filter(school=school, form_level__number=form_level).count()
         exam_count = Exam.objects.filter(
             school=school,
             is_active=True,
-            exam_results__student__form_level=form_level
+            exam_results__student__form_level__number=form_level
         ).distinct().count()
 
         if exam_count > 0:
@@ -423,7 +423,7 @@ def stream_dashboard(request, form_level, stream):
         results = ExamResult.objects.filter(
             subject=subject,
             student__school=school,
-            student__form_level=form_level,
+            student__form_level__number=form_level,
             student__stream=stream,
             exam__is_active=True
         ).select_related('student', 'exam')
@@ -515,7 +515,7 @@ def subject_dashboard(request, form_level=None, stream=None, subject_id=None):
         # Show streams for this form and subject
         streams = Student.objects.filter(
             school=school,
-            form_level=form_level
+            form_level__number=form_level
         ).values_list('stream', flat=True).distinct().order_by('stream')
 
         context = {
@@ -603,7 +603,7 @@ def department_dashboard(request, category_id):
     for form_level in range(1, 5):  # Forms 1-4
         students_in_form = Student.objects.filter(
             school=school,
-            form_level=form_level
+            form_level__number=form_level
         )
 
         # Get exam results for subjects in this category
@@ -673,7 +673,7 @@ def subject_entry(request, form_level, stream, subject_id):
 
     students = Student.objects.filter(
         school=school,
-        form_level=form_level,
+        form_level__number=form_level,
         stream=stream
     ).order_by('admission_number')
 
@@ -743,7 +743,7 @@ def stream_students(request, form_level, stream):
 
     students = Student.objects.filter(
         school=school,
-        form_level=form_level,
+        form_level__number=form_level,
         stream=stream
     ).order_by('admission_number')
 
@@ -862,21 +862,21 @@ def exam_upload_streams(request, form_level, exam_id):
     # Get streams for this form
     streams = Student.objects.filter(
         school=school,
-        form_level=form_level
+        form_level__number=form_level
     ).values_list('stream', flat=True).distinct().order_by('stream')
 
     stream_data = []
     for stream in streams:
         student_count = Student.objects.filter(
             school=school,
-            form_level=form_level,
+            form_level__number=form_level,
             stream=stream
         ).count()
 
         # Check completion for this stream
         existing_results = ExamResult.objects.filter(
             exam=exam,
-            student__form_level=form_level,
+            student__form_level__number=form_level,
             student__stream=stream,
             student__school=school
         ).count()
@@ -906,11 +906,11 @@ def form_report_card(request, form_level):
     # Get streams for this form
     streams = Student.objects.filter(
         school=school,
-        form_level=form_level
+        form_level__number=form_level
     ).values_list('stream', flat=True).distinct().order_by('stream')
 
     # Get student count for whole form
-    total_students = Student.objects.filter(school=school, form_level=form_level).count()
+    total_students = Student.objects.filter(school=school, form_level__number=form_level).count()
 
     context = {
         'form_level': form_level,
@@ -937,13 +937,13 @@ def form_upload_exam(request, form_level):
         # Check if results already exist for this form
         existing_results = ExamResult.objects.filter(
             exam=exam,
-            student__form_level=form_level,
+            student__form_level__number=form_level,
             student__school=school
         ).count()
 
         total_students = Student.objects.filter(
             school=school,
-            form_level=form_level
+            form_level__number=form_level
         ).count()
 
         exam_data.append({
@@ -968,7 +968,7 @@ def student_report_card(request):
     # Get form levels with student counts
     form_levels = []
     for form_level in range(1, 5):
-        student_count = Student.objects.filter(school=school, form_level=form_level).count()
+        student_count = Student.objects.filter(school=school, form_level__number=form_level).count()
         if student_count > 0:
             form_levels.append({
                 'form_level': form_level,
@@ -990,11 +990,11 @@ def upload_exam(request):
     # Get form levels with exam data
     form_levels = []
     for form_level in range(1, 5):
-        student_count = Student.objects.filter(school=school, form_level=form_level).count()
+        student_count = Student.objects.filter(school=school, form_level__number=form_level).count()
         exam_count = Exam.objects.filter(
             school=school,
             is_active=True,
-            exam_results__student__form_level=form_level
+            exam_results__student__form_level__number=form_level
         ).distinct().count()
 
         if exam_count > 0:
@@ -1019,7 +1019,7 @@ def exam_merit_list(request, form_level, exam_id):
     # Get student summaries for this exam and form
     summaries = StudentExamSummary.objects.filter(
         exam=exam,
-        student__form_level=form_level,
+        student__form_level__number=form_level,
         student__school=school
     ).select_related('student').order_by('-total_marks')
 

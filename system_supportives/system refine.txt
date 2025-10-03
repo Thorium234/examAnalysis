@@ -1,0 +1,35 @@
+Yes, **major redundancies**:
+
+1. **Duplicate dashboard views** - `school_dashboard.html` AND `forms_dashboard.html` doing the same thing
+
+2. **Multiple student list templates**:
+   - `students_list.html` 
+   - `student_list.html` (in both students/ and school/)
+   - Likely showing same data
+
+3. **Duplicate stream student views**:
+   - `stream_students.html` (in students/)
+   - `stream_students.html` (in school/)
+
+4. **Multiple report card templates**:
+   - `report_card.html` (students/)
+   - `student_report_card.html` (school/)
+   - `student_report_card.html` (reports/)
+   - `pdf_template_report_card.html` (reports/)
+
+5. **Student detail redundancy**:
+   - `student_detail.html`
+   - `student_subjects.html`
+   - Likely overlapping info
+
+6. **Dashboard overload**:
+   - `admin_dashboard.html`
+   - `teacher_dashboard.html`
+   - `student_dashboard.html`
+   - `school_dashboard.html`
+   - `department_dashboard.html`
+   - `stream_dashboard.html`
+   - `subject_dashboard.html`
+   - `school_wide_dashboard.html`
+
+**Recommendation**: Consolidate into ONE main dashboard with role-based sections, ONE student list, ONE report card system.

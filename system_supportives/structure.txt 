@@ -1,0 +1,101 @@
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji$ ls
+accounts         Documentation.txt  manage.py  requirements.txt  students            utils
+attached_assets  events             media      school            subjects
+billing          exams              README.md  scrShots          system_supportives
+db.sqlite3       exam_system        reports    static            templates
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji$ cd accounts/
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/accounts$ ls
+admin.py  authentication.py  migrations  __pycache__  tests.py  views.py
+apps.py   __init__.py        models.py   templates    urls.py
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/accounts$ cd templates/
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/accounts/templates$ cd accounts/
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/accounts/templates/accounts$ ls
+account_found.html    password_reset_confirm.html        teacher_class_form.html
+admin_dashboard.html  password_reset_request.html        teacher_dashboard.html
+change_password.html  profile_form.html                  teacher_form_streams.html
+find_account.html     profile.html                       teacher_stream_subjects.html
+goodbye.html          student_dashboard.html             teacher_subject_students.html
+login.html            student_login.html
+logout.html           teacher_class_confirm_delete.html
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/accounts/templates/accounts$ cd ..
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/accounts/templates$ cd ..
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/accounts$ cd ..
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji$ cd students/
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/students$ ls
+admin.py  forms.py     management  models.py    templates  urls.py  utils.py
+apps.py   __init__.py  migrations  __pycache__  tests.py   utils    views.py
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/students$ cd templates/students/
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/students/templates/students$ ls
+advancement_bulk_upload.html   form_dashboard.html            student_confirm_delete.html
+advancement_form.html          merit_list.html                student_detail.html
+advancement_list.html          performance_graph.html         student_form.html
+bulk_advancement.html          report_card.html               student_list.html
+bulk_advancement_upload.html   stream_students.html           students_list.html
+bulk_student_advancement.html  student_advancement_form.html  student_subject_enrollment.html
+dashboard.html                 student_advancement_list.html  student_subjects.html
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/students/templates/students$ cd ..
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/students/templates$ cd ..
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/students$ cd ..
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji$ ls
+accounts         Documentation.txt  manage.py  requirements.txt  students            utils
+attached_assets  events             media      school            subjects
+billing          exams              README.md  scrShots          system_supportives
+db.sqlite3       exam_system        reports    static            templates
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji$ cd events/
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/events$ ls
+admin.py  forms.py     migrations  __pycache__  templatetags  urls.py
+apps.py   __init__.py  models.py   templates    tests.py      views.py
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/events$ cd templates/events/
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/events/templates/events$ ls
+calendar.html
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/events/templates/events$ cd ..
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/events/templates$ cd ..
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/events$ cd ..
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji$ ls
+accounts         Documentation.txt  manage.py  requirements.txt  students            utils
+attached_assets  events             media      school            subjects
+billing          exams              README.md  scrShots          system_supportives
+db.sqlite3       exam_system        reports    static            templates
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji$ cd school/
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/school$ ls
+admin.py  forms.py     migrations  __pycache__  templatetags  urls.py
+apps.py   __init__.py  models.py   templates    tests.py      views.py
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/school$ cd templates/school/
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/school/templates/school$ ls
+add_teacher_to_subject.html  form_level_form.html        school_wide_dashboard.html
+category_subjects.html       form_level_list.html        stream_dashboard.html
+class_dashboard.html         form_report_card.html       stream_students.html
+department_dashboard.html    forms_dashboard.html        student_list.html
+departments_dashboard.html   form_upload_exam.html       student_report_card.html
+exam_form_analysis.html      principal_control.html      subject_dashboard.html
+exam_management.html         reports_and_analysis.html   subject_teachers.html
+exam_merit_list.html         school_confirm_delete.html  teacher_detail.html
+exam_upload_streams.html     school_dashboard.html       teacher_list.html
+exam_upload_subjects.html    school_form.html            upload_exam.html
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/school/templates/school$ cd ..
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/school/templates$ cd ..
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/school$ cd ..
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji$ cd subjects/
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/subjects$ ls
+admin.py  __init__.py  models.py    templates  urls.py
+apps.py   migrations   __pycache__  tests.py   views.py
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/subjects$ cd templates/subjects/
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/subjects/templates/subjects$ ls
+subject_confirm_delete.html  subject_list.html         teacher_subjects_form.html
+subject_detail.html          subject_paper_form.html
+subject_form.html            subject_papers_form.html
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/subjects/templates/subjects$ cd ..
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/subjects/templates$ cd ..
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/subjects$ cd ..
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji$ cd reports/
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/reports$ ls
+admin.py  forms.py     migrations  __pycache__  tests.py  views.py
+apps.py   __init__.py  models.py   templates    urls.py
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/reports$ cd templates/reports/
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/reports/templates/reports$ ls
+pdf_template_merit_list.html   report_dashboard.html             report_settings_form.html
+pdf_template_report_card.html  report_generation_dashboard.html  student_report_card.html
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/reports/templates/reports$ cd ..
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/reports/templates$ cd ..
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji/reports$ cd ..
+(env) (base) thorium@thorium-HP-ProBook-x360-11-G2-EE:~/Desktop/programming/django/oct2/SchoolCheng-Ji$ 
