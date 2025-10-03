@@ -6,6 +6,7 @@ from django.contrib import messages
 from .models import Student, StudentAdvancement
 from .forms import StudentForm
 from subjects.models import Subject
+from school.models import FormLevel, Stream
 
 # Mixin to restrict views to school admins, HODs, and teachers
 class SchoolAdminOrHODRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
@@ -52,6 +53,23 @@ class StudentCreateView(SchoolAdminOrHODRequiredMixin, CreateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
+        return kwargs
+    def get_initial(self):
+        initial = super().get_initial()
+        form_level_id = self.request.GET.get('form_level')
+        stream_name = self.request.GET.get('stream')
+        if form_level_id:
+            try:
+                initial['form_level'] = FormLevel.objects.get(number=int(form_level_id), school=self.request.user.school)
+            except (FormLevel.DoesNotExist, ValueError):
+                pass
+        if stream_name:
+            try:
+                initial['stream'] = Stream.objects.get(name=stream_name, school=self.request.user.school)
+            except Stream.DoesNotExist:
+                pass
+        return initial
+
         return kwargs
     success_url = reverse_lazy('students:student_list')
     

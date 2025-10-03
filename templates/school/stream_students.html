@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}
+  Form {{ form_level }} {{ stream }} Students
+{% endblock %}
+{% block content %}
+  <div class="container-fluid py-5">
+    <div class="row justify-content-center">
+      <div class="col-md-10">
+        <h1 class="display-4 text-center mb-4 font-weight-bold text-dark">Form {{ form_level }} {{ stream }} Students</h1>
+        <p class="lead text-center mb-5 text-muted">View and manage students in Form {{ form_level }} {{ stream }}.</p>
+      </div>
+    </div>
+    <div class="row">
+      <!-- Sidebar Navigation -->
+      <div class="col-md-3">
+        <div class="list-group shadow-sm rounded-lg">
+          <a href="{% url 'school:class_dashboard' form_level %}" class="list-group-item list-group-item-action">
+            <i class="fas fa-arrow-left me-2"></i> Back to Form {{ form_level }}
+          </a>
+          <a href="{% url 'school:stream_dashboard' form_level stream %}" class="list-group-item list-group-item-action">
+            <i class="fas fa-chart-bar me-2"></i> Stream Dashboard
+          </a>
+        </div>
+      </div>
+
+      <!-- Main Content Area -->
+      <div class="col-md-9">
+        <div class="card shadow-sm mb-4 border-0 rounded-lg">
+          <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center rounded-top-lg">
+            <h5 class="card-title mb-0">Students in Form {{ form_level }} {{ stream }} ({{ students.count }})</h5>
+            <div>
+              <a href="{% url 'students:student_create' %}?form_level={{ form_level }}&stream={{ stream }}&next={{ request.get_full_path|urlencode }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Add Student
+              </a>
+              <i class="fas fa-users-class fa-lg ml-2"></i>
+            </div>
+          </div>
+          <div class="card-body p-4">
+            {% if students %}
+              <div class="table-responsive">
+                <table class="table table-striped table-hover rounded-lg">
+                  <thead class="table-light">
+                    <tr>
+                      <th scope="col">Admission No.</th>
+                      <th scope="col">Full Name</th>
+                      <th scope="col">KCPE Marks</th>
+                      <th scope="col">Phone</th>
+                      <th scope="col">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for student in students %}
+                      <tr>
+                        <td>{{ student.admission_number }}</td>
+                        <td>{{ student.full_name }}</td>
+                        <td>{{ student.kcpe_marks }}</td>
+                        <td>{{ student.phone_contact }}</td>
+                        <td>
+                          <a href="{% url 'students:update_student' student.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit"></i> Edit
+                          </a>
+                          <a href="{% url 'students:delete_student' student.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-trash"></i> Delete
+                          </a>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              <p class="text-center text-muted py-4">No students found in Form {{ form_level }} {{ stream }}.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+{% block title %}{{ subject.name }} - Marks Entry{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ subject.name }} - Marks Entry</h1>
+        <a href="{% url 'school:subject_dashboard_stream' form_level stream subject.id %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Options
+        </a>
+    </div>
+
+    <!-- Subject Info Card -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-left-info shadow">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h5>{{ subject.name }}</h5>
+                            <p class="text-muted">Code: {{ subject.code }}</p>
+                            <p class="text-muted">Category: {{ subject.category.name|default:"N/A" }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6>Max Marks: {{ subject.max_marks|default:100 }}</h6>
+                            <p class="text-muted">Form {{ form_level }} - {{ stream }} Stream</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Quick Stats</h6>
+                            <div class="row">
+                                <div class="col-4">
+                                    <div class="text-center">
+                                        <span class="h4 text-primary">{{ students|length }}</span>
+                                        <br><small class="text-muted">Students</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-center">
+                                        <span class="h4 text-success">{{ exam_results|length }}</span>
+                                        <br><small class="text-muted">Results</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-center">
+                                        <span class="h4 text-warning">-</span>
+                                        <br><small class="text-muted">Avg Score</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exam Selection -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">Select Exam for {{ subject.name }}</h6>
+                </div>
+                <div class="card-body">
+                    {% if exams %}
+                    <form method="get" class="mb-3">
+                        <div class="form-row">
+                            <div class="col-md-8">
+                                <select name="exam_id" class="form-control" onchange="this.form.submit()">
+                                    <option value="">-- Select Exam --</option>
+                                    {% for exam in exams %}
+                                    <option value="{{ exam.id }}" {% if selected_exam and selected_exam.id == exam.id %}selected{% endif %}>
+                                        {{ exam.name }} ({{ exam.year }} Term {{ exam.term }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary">Load Exam</button>
+                            </div>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        No active exams found for Form {{ form_level }}. Please create an exam first.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if selected_exam %}
+    <!-- Marks Entry Form -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">Enter Marks for {{ subject.name }} - {{ stream }} Stream ({{ selected_exam.name }})</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="marks-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="exam_id" value="{{ selected_exam.id }}">
+                        <div class="form-row mb-3">
+                            <div class="col-md-4">
+                                <label for="max_marks">Maximum Marks for Entry:</label>
+                                <input type="number" id="max_marks" name="max_marks" class="form-control"
+                                       value="100" min="1" max="200" step="1">
+                                <small class="form-text text-muted">Marks will be converted to 100 scale</small>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Adm No</th>
+                                        <th>Student Name</th>
+                                        <th>Current Marks</th>
+                                        <th>New Marks</th>
+                                        <th>Grade</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student in students %}
+                                    {% with current_result=exam_results_dict|get_item:student.id %}
+                                    <tr>
+                                        <td>{{ student.admission_number }}</td>
+                                        <td>{{ student.full_name }}</td>
+                                        <td>
+                                            {% for result in exam_results %}
+                                                {% if result.student == student %}
+                                                    {{ result.final_marks }}
+                                                {% endif %}
+                                            {% empty %}
+                                            -
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control form-control-sm"
+                                                   name="marks_{{ student.id }}" min="0" max="100" step="0.5"
+                                                   value="{% for result in exam_results %}{% if result.student == student %}{{ result.final_marks }}{% endif %}{% endfor %}">
+                                        </td>
+                                        <td id="grade_{{ student.id }}">
+                                            {% for result in exam_results %}
+                                                {% if result.student == student %}{{ result.grade }}{% endif %}
+                                            {% empty %}
+                                            -
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-primary btn-sm save-marks"
+                                                    data-student-id="{{ student.id }}">
+                                                Save
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endwith %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Save All Marks
+                            </button>
+                            <a href="#" class="btn btn-info">
+                                <i class="fas fa-download"></i> Export to Excel
+                            </a>
+                            <a href="{% url 'school:subject_dashboard_stream' form_level stream subject.id %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Options
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Exam Results -->
+    {% if selected_exam %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-success">Results for {{ selected_exam.name }}</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Marks</th>
+                                    <th>Grade</th>
+                                    <th>Points</th>
+                                    <th>Date Entered</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in exam_results %}
+                                <tr>
+                                    <td>{{ result.student.full_name }}</td>
+                                    <td>{{ result.final_marks }}</td>
+                                    <td>{{ result.grade }}</td>
+                                    <td>{{ result.points }}</td>
+                                    <td>{{ result.created_at|date:"M d, Y" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No results entered yet for this exam.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Auto-calculate grades
+document.querySelectorAll('input[name^="marks_"]').forEach(input => {
+    input.addEventListener('input', function() {
+        const marks = parseFloat(this.value);
+        const studentId = this.name.split('_')[1];
+        const gradeCell = document.getElementById(`grade_${studentId}`);
+
+        if (marks >= 80) gradeCell.textContent = 'A';
+        else if (marks >= 75) gradeCell.textContent = 'A-';
+        else if (marks >= 70) gradeCell.textContent = 'B+';
+        else if (marks >= 65) gradeCell.textContent = 'B';
+        else if (marks >= 60) gradeCell.textContent = 'B-';
+        else if (marks >= 55) gradeCell.textContent = 'C+';
+        else if (marks >= 50) gradeCell.textContent = 'C';
+        else if (marks >= 45) gradeCell.textContent = 'C-';
+        else if (marks >= 40) gradeCell.textContent = 'D+';
+        else if (marks >= 35) gradeCell.textContent = 'D';
+        else if (marks >= 30) gradeCell.textContent = 'D-';
+        else gradeCell.textContent = 'E';
+    });
+});
+</script>
+{% endblock %}

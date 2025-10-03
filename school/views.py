@@ -668,6 +668,7 @@ def subject_entry(request, form_level, stream, subject_id):
     """
     Show marks entry form for a specific subject, form, and stream.
     """
+    from exams.models import GradingSystem
     school = request.user.school
     subject = get_object_or_404(Subject, id=subject_id, school=school)
 
@@ -677,19 +678,88 @@ def subject_entry(request, form_level, stream, subject_id):
         stream=stream
     ).order_by('admission_number')
 
-    # Get recent exam results for this subject and stream
-    exam_results = ExamResult.objects.filter(
-        subject=subject,
-        student__in=students
-    ).select_related('student', 'exam').order_by('-exam__created_at')[:20]
+    # Get active exams for this form level
+    exams = Exam.objects.filter(
+        school=school,
+        form_level=form_level,
+        is_active=True
+    ).order_by('-created_at')
+
+    exam_id = request.GET.get('exam_id') or request.POST.get('exam_id')
+    selected_exam = None
+    exam_results = []
+    exam_results_dict = {}
+
+    if exam_id:
+        try:
+            selected_exam = Exam.objects.get(id=exam_id, school=school, is_active=True)
+            # Get existing results for this exam, subject, and students
+            exam_results = ExamResult.objects.filter(
+                exam=selected_exam,
+                subject=subject,
+                student__in=students
+            ).select_related('student', 'exam')
+            exam_results_dict = {result.student.id: result for result in exam_results}
+        except Exam.DoesNotExist:
+            selected_exam = None
+            exam_results = []
+            exam_results_dict = {}
+
+    if request.method == 'POST' and selected_exam:
+        max_marks = float(request.POST.get('max_marks', 100))
+        # Process marks submission
+        for student in students:
+            marks_key = f'marks_{student.id}'
+            marks_value = request.POST.get(marks_key)
+            if marks_value:
+                try:
+                    marks = float(marks_value)
+                    # Convert to 100 scale if max_marks is different
+                    if max_marks != 100:
+                        marks = (marks / max_marks) * 100
+
+                    # Get or create exam result
+                    exam_result, created = ExamResult.objects.get_or_create(
+                        exam=selected_exam,
+                        student=student,
+                        subject=subject,
+                        defaults={'final_marks': marks, 'teacher': request.user}
+                    )
+                    if not created:
+                        exam_result.final_marks = marks
+                        exam_result.teacher = request.user
+
+                    # Assign grade using grading system
+                    grading_system = GradingSystem.objects.filter(
+                        school=school,
+                        is_active=True
+                    ).first()  # Use default grading system
+
+                    if grading_system:
+                        grade, points = grading_system.get_grade_and_points(marks)
+                        exam_result.grade = grade
+                        exam_result.points = points
+
+                    exam_result.save()
+
+                except (ValueError, TypeError):
+                    continue
+
+        messages.success(request, 'Marks saved successfully!')
+        return redirect(request.path + f'?exam_id={selected_exam.id}')
 
     context = {
         'subject': subject,
         'students': students,
+        'exams': exams,
+        'selected_exam': selected_exam,
         'exam_results': exam_results,
+        'exam_results_dict': exam_results_dict,
         'form_level': form_level,
         'stream': stream,
     }
+    return render(request, 'school/subject_entry.html', context)
+
 @login_required
 def departments_dashboard(request):
     """
