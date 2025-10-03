@@ -10,7 +10,7 @@
         </a>
     </div>
 
-    <!-- Subject Cards -->
+    <!-- Subject Cards for Result Entry -->
     <div class="row mb-4">
         {% for subject_stat in subject_stats %}
         <div class="col-xl-3 col-md-6 mb-4">
@@ -22,19 +22,15 @@
                                 {{ subject_stat.subject.name }}
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                Avg: {{ subject_stat.avg_marks|floatformat:1 }}%
+                                {{ subject_stat.student_count }} Students
                             </div>
                             <div class="text-xs text-muted">
-                                Top Students:
-                                {% for result in subject_stat.top_students %}
-                                    {{ result.student.admission_number }} ({{ result.total_marks }}%)
-                                    {% if not forloop.last %}, {% endif %}
-                                {% endfor %}
+                                Avg: {{ subject_stat.avg_marks|floatformat:1 }}%
                             </div>
                         </div>
                         <div class="col-auto">
                             <a href="{% url 'school:subject_dashboard_stream' form_level stream subject_stat.subject.id %}" class="btn btn-success btn-sm">
-                                <i class="fas fa-edit"></i>
+                                <i class="fas fa-upload"></i> Upload Results
                             </a>
                         </div>
                     </div>
@@ -44,56 +40,39 @@
         {% endfor %}
     </div>
 
-    <!-- Student List with Horizontal Marks -->
+    <!-- Subject Performance Table -->
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-success">{{ stream }} Stream Students & Performance</h6>
+            <h6 class="m-0 font-weight-bold text-success">{{ stream }} Stream Subject Performance</h6>
         </div>
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-striped table-hover">
                     <thead>
                         <tr>
-                            <th>Adm No</th>
-                            <th>Name</th>
-                            <th>KCPE</th>
-                            {% for subject in subjects %}
-                            <th>{{ subject.name|truncatechars:6 }}</th>
-                            {% endfor %}
-                            <th>Total</th>
-                            <th>Avg</th>
-                            <th>Grade</th>
-                            <th>Rank</th>
-                            <th>Actions</th>
+                            <th>Subject</th>
+                            <th>Average Marks</th>
+                            <th>Total Marks</th>
+                            <th>Max Marks</th>
+                            <th>Min Marks</th>
+                            <th>Average Grade</th>
+                            <th>Students</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for student in students %}
+                        {% for perf in subject_performance_data %}
                         <tr>
-                            <td>{{ student.admission_number }}</td>
-                            <td>{{ student.full_name }}</td>
-                            <td>{{ student.kcpe_marks }}</td>
-                            {% for subject in subjects %}
-                            <td>
-                                {% comment %} Get latest result for this subject {% endcomment %}
-                                {% for result in student.examresult_set.all %}
-                                    {% if result.subject == subject and result.exam == exams.0 %}
-                                        {{ result.total_marks }}
-                                    {% endif %}
-                                {% endfor %}
-                            </td>
-                            {% endfor %}
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>
-                                <a href="#" class="btn btn-sm btn-info">View</a>
-                            </td>
+                            <td>{{ perf.subject.name }}</td>
+                            <td>{{ perf.average_marks }}</td>
+                            <td>{{ perf.total_marks }}</td>
+                            <td>{{ perf.max_marks }}</td>
+                            <td>{{ perf.min_marks }}</td>
+                            <td>{{ perf.average_grade }}</td>
+                            <td>{{ perf.student_count }}</td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="{{ subjects|length|add:10 }}" class="text-center">No students found in {{ stream }} stream.</td>
+                            <td colspan="7" class="text-center">No performance data available.</td>
                         </tr>
                         {% endfor %}
                     </tbody>

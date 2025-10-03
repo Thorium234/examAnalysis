@@ -28,63 +28,19 @@ class StudentForm(forms.ModelForm):
             'stream',
             'kcpe_marks',
             'phone_contact',
-            'is_active',
         ]
     
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         # Apply form-control class to all fields for consistent styling
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
+        if self.user and self.user.school:
+            self.fields['form_level'].queryset = FormLevel.objects.filter(school=self.user.school)
+            self.fields['stream'].queryset = Stream.objects.filter(school=self.user.school)
 
-class StudentAdvancementForm(forms.ModelForm):
-    """
-    Form for advancing a student.
-    """
-    # These fields are pre-populated and should be read-only for the user.
-    current_form = forms.CharField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'class': 'form-control-plaintext'})
-    )
-    current_stream = forms.CharField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'class': 'form-control-plaintext'})
-    )
 
-    class Meta:
-        model = StudentAdvancement
-        fields = [
-            'academic_year',
-            'student',
-            'current_form',
-            'current_stream',
-            'next_form',
-            'next_stream',
-            'status',
-            'remarks',
-        ]
-        widgets = {
-            'student': forms.HiddenInput(),
-        }
-
-    def clean(self):
-        cleaned_data = super().clean()
-        current_form = cleaned_data.get('current_form')
-        next_form = cleaned_data.get('next_form')
-        status = cleaned_data.get('status')
-        
-        if status == 'promoted' and next_form <= current_form:
-            raise forms.ValidationError(
-                "For promotion, the next form must be higher than the current form."
-            )
-        elif status == 'retained' and next_form != current_form:
-            raise forms.ValidationError(
-                "For retention, the next form must be the same as the current form."
-            )
-        elif status == 'graduated' and current_form != 'Form 4': # Assuming Form 4 is the final form
-            raise forms.ValidationError(
-                "Only Form 4 students can be marked as graduated."
-            )
-            
-        return cleaned_data
 
 class StudentAdvancementBulkUploadForm(forms.Form):
     """

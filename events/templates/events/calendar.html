@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Calendar - {{ month_name }} {{ year }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">School Calendar - {{ month_name }} {{ year }}</h1>
+    </div>
+
+    <div class="row">
+        <!-- Calendar Section -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <div class="calendar-nav">
+                        <button class="btn btn-outline-primary btn-sm" onclick="previousMonth()">❮ Previous</button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="nextMonth()">Next ❯</button>
+                        <button class="btn btn-primary btn-sm" onclick="goToToday()">Today</button>
+                        <h4 class="mb-0 mx-3">{{ month_name }} {{ year }}</h4>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="calendar-grid">
+                        <!-- Day headers -->
+                        <div class="calendar-day-header">Mon</div>
+                        <div class="calendar-day-header">Tue</div>
+                        <div class="calendar-day-header">Wed</div>
+                        <div class="calendar-day-header">Thu</div>
+                        <div class="calendar-day-header">Fri</div>
+                        <div class="calendar-day-header">Sat</div>
+                        <div class="calendar-day-header">Sun</div>
+
+                        <!-- Calendar days -->
+                        {% for week in calendar %}
+                            {% for day in week %}
+                                <div class="calendar-day {% if day == today.day and month == today.month and year == today.year %}today{% endif %}">
+                                    {% if day != 0 %}
+                                        <div class="day-number">{{ day }}</div>
+                                        {% with events=events_by_day|get_item:day %}
+                                            {% for event in events %}
+                                                <div class="event-item">{{ event.name }}</div>
+                                            {% endfor %}
+                                        {% endwith %}
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar: Add Event Form -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Add Event</h6>
+                </div>
+                <div class="card-body">
+                    <form id="eventForm">
+                        {% csrf_token %}
+                        <div class="form-group mb-3">
+                            <label>Event Name</label>
+                            <input type="text" name="name" class="form-control" placeholder="Event Name" required>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label>Participants Type</label>
+                            <select name="participants_type" class="form-control">
+                                <option value="all">All</option>
+                                <option value="teachers">Teachers</option>
+                                <option value="parents">Parents</option>
+                                <option value="students">Students</option>
+                                <option value="staff">Staff</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label>Event Type</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="event_type" value="single" checked>
+                                <label class="form-check-label">Single Date</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="event_type" value="range">
+                                <label class="form-check-label">Date Range</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label>Start Date</label>
+                            <input type="datetime-local" name="start_date" class="form-control" required>
+                        </div>
+
+                        <div class="form-group mb-3" id="endDateGroup" style="display: none;">
+                            <label>End Date</label>
+                            <input type="datetime-local" name="end_date" class="form-control">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">Create Event</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: #e0e0e0;
+    border: 1px solid #e0e0e0;
+}
+
+.calendar-day-header {
+    background: #f8f9fc;
+    padding: 10px;
+    text-align: center;
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.calendar-day {
+    background: white;
+    min-height: 100px;
+    padding: 8px;
+    position: relative;
+}
+
+.calendar-day.today {
+    background: #fff3cd;
+}
+
+.day-number {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.event-item {
+    background: #007bff;
+    color: white;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 12px;
+    margin-bottom: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show/hide end date based on event type
+    document.querySelectorAll('input[name="event_type"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const endDateGroup = document.getElementById('endDateGroup');
+            if (this.value === 'range') {
+                endDateGroup.style.display = 'block';
+            } else {
+                endDateGroup.style.display = 'none';
+            }
+        });
+    });
+
+    // Form submission
+    document.getElementById('eventForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+
+        try {
+            const response = await fetch('{% url "events:create_event" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert('Event created successfully!');
+                location.reload();
+            } else {
+                alert('Error creating event: ' + JSON.stringify(data.errors));
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred');
+        }
+    });
+});
+
+function previousMonth() {
+    const currentMonth = {{ month }};
+    const currentYear = {{ year }};
+    let newMonth = currentMonth - 1;
+    let newYear = currentYear;
+
+    if (newMonth < 1) {
+        newMonth = 12;
+        newYear -= 1;
+    }
+
+    window.location.href = `?year=${newYear}&month=${newMonth}`;
+}
+
+function nextMonth() {
+    const currentMonth = {{ month }};
+    const currentYear = {{ year }};
+    let newMonth = currentMonth + 1;
+    let newYear = currentYear;
+
+    if (newMonth > 12) {
+        newMonth = 1;
+        newYear += 1;
+    }
+
+    window.location.href = `?year=${newYear}&month=${newMonth}`;
+}
+
+function goToToday() {
+    const today = new Date();
+    window.location.href = `?year=${today.getFullYear()}&month=${today.getMonth() + 1}`;
+}
+</script>
+{% endblock %}

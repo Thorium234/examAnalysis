@@ -4,6 +4,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.conf import settings
 from django.core.mail import send_mail
@@ -15,6 +16,7 @@ from school.models import School
 from students.models import Student
 from exams.models import ExamResult, Exam, GradingSystem, SubjectCategory, GradingRange
 from subjects.models import Subject, SubjectPaper
+from django.db.models import Count, Q, Avg, Max
 from django.db.models import Count, Q, Avg
 from django.contrib.auth import get_user_model
 from django.http import HttpResponseForbidden
@@ -32,6 +34,13 @@ class TeacherRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
 class HODRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self):
         return self.request.user.profile.roles.filter(name='HOD').exists()
+# Mixin to ensure a user is an admin (Principal or superuser)
+class AdminRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
+    def test_func(self):
+        if self.request.user.is_superuser:
+            return True
+        return self.request.user.profile.roles.filter(name='Principal').exists()
+
 
 class CustomLoginView(LoginView):
     template_name = 'accounts/login.html'
@@ -49,101 +58,71 @@ class TeacherDashboardView(LoginRequiredMixin, TemplateView):
         user = self.request.user
         school = user.school
 
-        # Get total number of exams, students, and subjects for the current school
-        total_exams = Exam.objects.filter(school=school).count()
-        total_students = Student.objects.filter(school=school).count()
-        total_subjects = Subject.objects.filter(school=school).count()
+        # Get teacher's assigned classes
+        assigned_classes = TeacherClass.objects.filter(teacher=user).order_by('form_level', 'stream')
 
-        # Get streams and their student counts
-        streams = Student.objects.filter(school=school).values('form_level', 'stream').annotate(student_count=Count('stream')).order_by('form_level', 'stream')
+        # Get unique form levels assigned to this teacher
+        assigned_forms = assigned_classes.values_list('form_level', flat=True).distinct().order_by('form_level')
 
         # Get subjects taught by this teacher
         taught_subjects = Subject.objects.filter(
             teacher_assignments__teacher=user
         ).distinct().order_by('name')
 
-        # Get teacher's assigned classes
-        assigned_classes = TeacherClass.objects.filter(teacher=user).order_by('form_level', 'stream')
-
-        # Determine teacher type
-        is_class_teacher = assigned_classes.filter(is_class_teacher=True).exists()
-        is_subject_teacher = taught_subjects.exists()
-
-        # Get accessible classes and students based on teacher type
-        accessible_students = Student.objects.filter(school=school)
-        accessible_classes = []
-
-        if is_class_teacher:
-            # Class teachers can see all students in their assigned classes
-            class_assignments = assigned_classes.filter(is_class_teacher=True)
-            for assignment in class_assignments:
-                accessible_classes.append(assignment)
-                class_students = Student.objects.filter(
-                    school=school,
-                    form_level=assignment.form_level,
-                    stream=assignment.stream
+        # Get exam management data - exams where teacher has subjects
+        teacher_exams = []
+        for form_level in assigned_forms:
+            streams_in_form = assigned_classes.filter(form_level=form_level).values_list('stream', flat=True).distinct()
+            for stream in streams_in_form:
+                subjects_in_stream = taught_subjects.filter(
+                    teacher_assignments__teacher=user,
+                    teacher_assignments__form_level=form_level,
+                    teacher_assignments__stream=stream
                 )
-                accessible_students = accessible_students.filter(
-                    Q(form_level=assignment.form_level, stream=assignment.stream)
-                )
-        elif is_subject_teacher:
-            # Subject teachers can only see students in their assigned classes
-            for assignment in assigned_classes:
-                accessible_classes.append(assignment)
-            teacher_class_forms = assigned_classes.values_list('form_level', 'stream')
-            accessible_students = accessible_students.filter(
-                form_level__in=[cls[0] for cls in teacher_class_forms],
-                stream__in=[cls[1] for cls in teacher_class_forms]
-            )
 
-        # Get subject analytics (only for accessible students)
-        subject_analytics = []
-        for subject in taught_subjects:
-            # Get recent exam results for this subject and accessible students
-            recent_results = ExamResult.objects.filter(
-                subject=subject,
-                student__in=accessible_students,
-                exam__is_published=True
-            ).select_related('student', 'exam').order_by('-exam__created_at')[:10]
+                for subject in subjects_in_stream:
+                    # Get exams for this subject/form/stream
+                    exams = Exam.objects.filter(
+                        school=school,
+                        exam_results__subject=subject,
+                        exam_results__student__form_level=form_level,
+                        exam_results__student__stream=stream
+                    ).distinct().order_by('-created_at')
 
-            # Calculate analytics
-            if recent_results.exists():
-                avg_marks = recent_results.aggregate(Avg('final_marks'))['final_marks__avg'] or 0
-                top_students = recent_results.order_by('-final_marks')[:3]
+                    for exam in exams:
+                        # Check completion status
+                        total_students = Student.objects.filter(
+                            school=school,
+                            form_level=form_level,
+                            stream=stream
+                        ).count()
 
-                # Calculate deviations (simplified: difference from class average)
-                class_avg = recent_results.aggregate(Avg('final_marks'))['final_marks__avg'] or 0
-                deviations = []
-                for result in recent_results[:5]:  # Show for top 5 recent
-                    deviation = result.final_marks - class_avg
-                    deviations.append({
-                        'student': result.student,
-                        'marks': result.final_marks,
-                        'deviation': deviation
-                    })
+                        existing_results = ExamResult.objects.filter(
+                            exam=exam,
+                            subject=subject,
+                            student__form_level=form_level,
+                            student__stream=stream
+                        ).count()
 
-                subject_analytics.append({
-                    'subject': subject,
-                    'student_count': accessible_students.count(),
-                    'avg_marks': round(avg_marks, 2),
-                    'top_students': top_students,
-                    'deviations': deviations,
-                    'recent_results': recent_results[:5]
-                })
+                        completion_percentage = (existing_results / total_students * 100) if total_students > 0 else 0
+
+                        teacher_exams.append({
+                            'exam': exam,
+                            'form_level': form_level,
+                            'stream': stream,
+                            'subject': subject,
+                            'total_students': total_students,
+                            'existing_results': existing_results,
+                            'completion_percentage': completion_percentage,
+                            'status': 'Published' if exam.is_published else 'Draft',
+                        })
 
         # Add the data to the context dictionary
         context.update({
-            'total_exams': total_exams,
-            'total_students': total_students,
-            'total_subjects': total_subjects,
-            'streams': streams,
-            'taught_subjects': taught_subjects,
-            'subject_analytics': subject_analytics,
+            'assigned_forms': assigned_forms,
             'assigned_classes': assigned_classes,
-            'is_class_teacher': is_class_teacher,
-            'is_subject_teacher': is_subject_teacher,
-            'accessible_students': accessible_students.distinct(),
-            'accessible_classes': accessible_classes,
+            'taught_subjects': taught_subjects,
+            'teacher_exams': teacher_exams,
         })
         return context
 
@@ -478,10 +457,247 @@ class StudentDashboardView(LoginRequiredMixin, TemplateView):
                     student=student
                 ).select_related('exam', 'subject').order_by('-exam__year', '-exam__term')[:10]
 
-                context['recent_results'] = recent_results
-
             except Student.DoesNotExist:
                 messages.error(self.request, 'Student information not found.')
                 return redirect('accounts:student_login')
 
         return context
+# Admin Dashboard Views
+class AdminDashboardView(AdminRequiredMixin, TemplateView):
+    template_name = 'accounts/admin_dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        school = user.school
+
+        # Get all school users with their profiles and roles
+        school_users = User.objects.filter(school=school).select_related('profile').prefetch_related('profile__roles')
+
+        # Prepare user data with roles
+        users_data = []
+        for user_obj in school_users:
+            roles = list(user_obj.profile.roles.all()) if hasattr(user_obj, 'profile') else []
+            role_names = [role.name for role in roles]
+
+            # Get additional info for teachers
+            teacher_classes = []
+            teacher_subjects = []
+            if 'Teacher' in role_names or 'Class Teacher' in role_names:
+                teacher_classes = TeacherClass.objects.filter(teacher=user_obj).select_related('school')
+                teacher_subjects = Subject.objects.filter(teacher_assignments__teacher=user_obj).distinct()
+
+            users_data.append({
+                'user': user_obj,
+                'roles': roles,
+                'role_names': role_names,
+                'teacher_classes': teacher_classes,
+                'teacher_subjects': teacher_subjects,
+            })
+
+        # Get all available roles
+        all_roles = Role.objects.all().order_by('name')
+
+        context.update({
+            'school_users': users_data,
+            'school_info': school,
+            'total_users': len(users_data),
+            'all_roles': all_roles,
+        })
+        return context
+# Teacher Navigation Views
+@login_required
+def teacher_form_streams(request, form_level):
+    """
+    Show streams for a specific form that the teacher is assigned to.
+    """
+    user = request.user
+    school = user.school
+
+    # Check if teacher is assigned to this form
+    assigned_classes = TeacherClass.objects.filter(
+        teacher=user,
+        form_level=form_level
+    )
+
+    if not assigned_classes.exists():
+        messages.error(request, 'You are not assigned to this form.')
+        return redirect('accounts:teacher_dashboard')
+
+    # Get unique streams for this form that teacher is assigned to
+    streams = assigned_classes.values_list('stream', flat=True).distinct().order_by('stream')
+
+    context = {
+        'form_level': form_level,
+        'streams': streams,
+    }
+    return render(request, 'accounts/teacher_form_streams.html', context)
+
+@login_required
+def teacher_stream_subjects(request, form_level, stream):
+    """
+    Show subjects for a specific stream/form that the teacher teaches.
+    """
+    user = request.user
+    school = user.school
+
+    # Check if teacher is assigned to this form/stream
+    if not TeacherClass.objects.filter(
+        teacher=user,
+        form_level=form_level,
+        stream=stream
+    ).exists():
+        messages.error(request, 'You are not assigned to this form/stream.')
+        return redirect('accounts:teacher_dashboard')
+
+    # Get subjects taught by this teacher in this form/stream
+    subjects = Subject.objects.filter(
+        teacher_assignments__teacher=user,
+        teacher_assignments__form_level=form_level,
+        teacher_assignments__stream=stream
+    ).distinct().order_by('name')
+
+    context = {
+        'form_level': form_level,
+        'stream': stream,
+        'subjects': subjects,
+    }
+    return render(request, 'accounts/teacher_stream_subjects.html', context)
+
+@login_required
+def teacher_subject_students(request, form_level, stream, subject_id):
+    """
+    Show students and exam options for a specific subject/stream/form.
+    """
+    user = request.user
+    school = user.school
+    subject = get_object_or_404(Subject, id=subject_id, school=school)
+
+    # Check if teacher teaches this subject in this form/stream
+    if not TeacherSubject.objects.filter(
+        teacher=user,
+        subject=subject,
+        form_level=form_level,
+        stream=stream
+    ).exists():
+        messages.error(request, 'You do not teach this subject in this form/stream.')
+        return redirect('accounts:teacher_dashboard')
+
+    # Get students in this form/stream
+    students = Student.objects.filter(
+        school=school,
+        form_level=form_level,
+        stream=stream
+    ).order_by('admission_number')
+
+    # Get exams for this subject/form/stream
+    exams = Exam.objects.filter(
+        school=school,
+        exam_results__subject=subject,
+        exam_results__student__form_level=form_level,
+        exam_results__student__stream=stream
+    ).distinct().order_by('-created_at')
+
+    # Get exam data with analytics
+    exam_data = []
+    for exam in exams:
+        # Get results for this exam/subject/stream
+        results = ExamResult.objects.filter(
+            exam=exam,
+            subject=subject,
+            student__form_level=form_level,
+            student__stream=stream
+        )
+
+        if results.exists():
+            avg_marks = results.aggregate(Avg('final_marks'))['final_marks__avg'] or 0
+            max_marks = results.aggregate(Max('final_marks'))['final_marks__max'] or 0
+            min_marks = results.aggregate(Min('final_marks'))['final_marks__min'] or 0
+            student_count = results.count()
+
+            exam_data.append({
+                'exam': exam,
+                'avg_marks': round(avg_marks, 2),
+                'max_marks': max_marks,
+                'min_marks': min_marks,
+                'student_count': student_count,
+                'mean_points': round(avg_marks / 10, 2) if avg_marks else 0,  # Assuming 10-point scale
+                'mean_grade': 'A' if avg_marks >= 80 else 'B' if avg_marks >= 70 else 'C' if avg_marks >= 60 else 'D' if avg_marks >= 50 else 'E',
+            })
+
+    context = {
+        'form_level': form_level,
+        'stream': stream,
+        'subject': subject,
+        'students': students,
+        'exam_data': exam_data,
+    }
+    return render(request, 'accounts/teacher_subject_students.html', context)
+
+# Admin API Views for managing users
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.views import View
+
+@method_decorator(csrf_exempt, name='dispatch')
+class UserDetailAPIView(AdminRequiredMixin, View):
+    def get(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id, school=request.user.school)
+            roles = list(user.profile.roles.values_list('id', flat=True))
+            return JsonResponse({
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'email': user.email,
+                    'get_full_name': user.get_full_name(),
+                },
+                'roles': roles,
+            })
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ManageUserAPIView(AdminRequiredMixin, View):
+    def post(self, request):
+        user_id = request.POST.get('user_id')
+        role_ids = request.POST.getlist('roles[]')
+        form_level = request.POST.get('form_level')
+        stream = request.POST.get('stream')
+        is_class_teacher = request.POST.get('is_class_teacher') == 'on'
+
+        try:
+            user = User.objects.get(id=user_id, school=request.user.school)
+            profile = user.profile
+
+            # Update roles
+            profile.roles.clear()
+            for role_id in role_ids:
+                try:
+                    role = Role.objects.get(id=role_id)
+                    profile.roles.add(role)
+                except Role.DoesNotExist:
+                    pass
+
+            # Handle teacher-specific assignments
+            if 'Teacher' in [role.name for role in profile.roles.all()]:
+                # Create or update teacher class assignment
+                if form_level and stream:
+                    TeacherClass.objects.get_or_create(
+                        teacher=user,
+                        school=user.school,
+                        form_level=int(form_level),
+                        stream=stream,
+                        defaults={'is_class_teacher': is_class_teacher}
+                    )
+
+            profile.save()
+            return JsonResponse({'success': True, 'message': 'User roles updated successfully'})
+
+        except User.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'User not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}{% load static %}{% block title %}Form {{ form_level }} Streams{% endblock %}{% block content %}<div class="container-fluid"><div class="row mb-4"><div class="col"><h1 class="h3 mb-0 text-gray-800">Form {{ form_level }} Streams</h1><p class="text-muted">Select a stream to view subjects</p></div></div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'accounts:teacher_dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item active">Form {{ form_level }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    {% for stream in streams %}
+    <div class="col-md-4 mb-4">
+        <a href="{% url 'accounts:teacher_stream_subjects' form_level stream %}" class="card border-left-info text-decoration-none">
+            <div class="card-body">
+                <h5 class="card-title text-info">{{ stream|upper }}</h5>
+                <p class="card-text text-muted">Click to view subjects</p>
+            </div>
+        </a>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-warning">
+            No streams assigned for this form.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+</div>{% endblock %}

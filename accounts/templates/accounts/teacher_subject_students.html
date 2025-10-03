@@ -1,0 +1,92 @@
+{% extends 'base.html' %}{% load static %}{% block title %}Form {{ form_level }} {{ stream|upper }} - {{ subject.name }}{% endblock %}{% block content %}<div class="container-fluid"><div class="row mb-4"><div class="col"><h1 class="h3 mb-0 text-gray-800">Form {{ form_level }} {{ stream|upper }} - {{ subject.name }}</h1><p class="text-muted">Students and exam analytics</p></div></div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'accounts:teacher_dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'accounts:teacher_form_streams' form_level %}">Form {{ form_level }}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'accounts:teacher_stream_subjects' form_level stream %}">{{ stream|upper }}</a></li>
+                <li class="breadcrumb-item active">{{ subject.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+{# Exam Analytics Cards #}
+{% if exam_data %}
+<div class="row mb-4">
+    {% for exam in exam_data %}
+    <div class="col-md-3 mb-3">
+        <div class="card border-left-primary">
+            <div class="card-header">
+                <h6 class="card-title">{{ exam.exam.name }}</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-primary">{{ exam.mean_points }}</h4>
+                        <small class="text-muted">Mean Points</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-success">{{ exam.avg_marks }}</h4>
+                        <small class="text-muted">Mean Marks</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-info">{{ exam.mean_grade }}</h4>
+                        <small class="text-muted">Mean Grade</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-warning">{{ exam.student_count }}</h4>
+                        <small class="text-muted">Students</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{# Students List #}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Students in Form {{ form_level }} {{ stream|upper }}</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Admission No.</th>
+                                <th>Name</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td>{{ student.admission_number }}</td>
+                                <td>{{ student.get_full_name }}</td>
+                                <td>
+                                    <a href="#" class="btn btn-sm btn-info">View Details</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">No students found in this class.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>{% endblock %}

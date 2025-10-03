@@ -34,6 +34,8 @@ INSTALLED_APPS = [
     'exams',
     'reports',
     'subjects',
+    'billing',
+    'events',
 
 ]
 
@@ -139,12 +141,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CSRF_TRUSTED_ORIGINS = [
     "https://*.replit.dev",  # allow all replit subdomains
-    "https://*.repl.co"  # some repls still use repl.co
-    "https://*.ngrok-free.app"
-]
-CSRF_TRUSTED_ORIGINS = [
+    "https://*.repl.co",  # some repls still use repl.co
+    "https://*.ngrok-free.app",
+    "https://d514b8cadffb.ngrok-free.app",
     "https://5be8ebb1-4746-465c-b7f7-36ec71143d72-00-2j708bqpqtkkb.picard.replit.dev",
-    "https://*.ngrok-free.app"
 ]
 
 # Email settings for password reset

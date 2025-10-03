@@ -1,7 +1,8 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model 
-from students.models import (
-    Student, Subject, ClassSubjectAvailability, 
+from students.models import Student
+from subjects.models import (
+    Subject, ClassSubjectAvailability,
     StudentSubjectEnrollment, SubjectPaper, SubjectPaperRatio
 )
 from exams.models import (

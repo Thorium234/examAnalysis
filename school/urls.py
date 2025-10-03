@@ -42,10 +42,32 @@ urlpatterns = [
 
     # New Dashboard URLs
     path('class/<int:form_level>/', views.class_dashboard, name='class_dashboard'),
+    path('class/<int:form_level>/<str:stream>/students/', views.stream_students, name='stream_students'),
     path('stream/<int:form_level>/<str:stream>/', views.stream_dashboard, name='stream_dashboard'),
     path('subject/<int:subject_id>/', views.subject_dashboard, name='subject_dashboard'),
     path('subject/<int:form_level>/<int:subject_id>/', views.subject_dashboard, name='subject_dashboard_form'),
     path('subject/<int:form_level>/<str:stream>/<int:subject_id>/', views.subject_dashboard, name='subject_dashboard_stream'),
+    path('subject/<int:form_level>/<str:stream>/<int:subject_id>/entry/', views.subject_entry, name='subject_entry'),
     path('school-wide/', views.school_wide_dashboard, name='school_wide_dashboard'),
+    path('departments/', views.departments_dashboard, name='departments_dashboard'),
+    path('department/<int:category_id>/subjects/', views.category_subjects, name='category_subjects'),
+    path('subject/<int:subject_id>/teachers/', views.subject_teachers, name='subject_teachers'),
+    path('subject/<int:subject_id>/teachers/add/', views.add_teacher_to_subject, name='add_teacher_to_subject'),
+    path('subject/<int:subject_id>/teachers/<int:teacher_id>/remove/', views.remove_teacher_from_subject, name='remove_teacher_from_subject'),
+    # Exam Analysis URLs
+    path('exam-analysis/<int:form_level>/<int:exam_id>/', views.exam_merit_list, name='exam_merit_list'),
+    path('upload-exam/<int:form_level>/<int:exam_id>/<str:stream>/', views.exam_upload_subjects, name='exam_upload_subjects'),
+    path('upload-exam/<int:form_level>/<int:exam_id>/', views.exam_upload_streams, name='exam_upload_streams'),
+    path('student-report-card/<int:form_level>/', views.form_report_card, name='form_report_card'),
+
+    # Upload Exam URLs
+    path('upload-exam/<int:form_level>/', views.form_upload_exam, name='form_upload_exam'),
+    # Student Report Card URLs
+    path('student-report-card/', views.student_report_card, name='student_report_card'),
+
+    # Upload Exam URLs
+    path('upload-exam/', views.upload_exam, name='upload_exam'),
+    path('exam-analysis/<int:form_level>/', views.exam_form_analysis, name='exam_form_analysis'),
     path('grading-systems/', GradingSystemListView.as_view(), name='gradingsystem_list'),
+    path('teacher/<int:teacher_id>/', views.teacher_detail, name='teacher_detail'),
 ]

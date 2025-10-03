@@ -18,7 +18,8 @@
 
     <style>
         :root {
-            --primary-green: #4CAF50;
+            --primary-navy: #263238;
+            --primary-green: #263238; /* Updated to navy */
             --light-blue: #E3F2FD;
             --red-alert: #FF5252;
             --orange-payment: #FF6B35;
@@ -174,9 +175,9 @@
         }
 
         .sidebar .nav-link.active {
-            background-color: var(--primary-green);
+            background-color: var(--primary-navy);
             color: white;
-            border-left: 4px solid #2e7d32;
+            border-left: 4px solid #37474F;
         }
 
         .sidebar .nav-link i {
@@ -239,7 +240,7 @@
                 top: 10px;
                 left: 10px;
                 z-index: 1001;
-                background-color: var(--primary-green);
+                background-color: var(--primary-navy);
                 color: white;
                 border: none;
                 padding: 8px;
@@ -267,8 +268,8 @@
         }
 
         .btn-primary:hover {
-            background-color: #2e7d32;
-            border-color: #2e7d32;
+            background-color: #37474F; /* Lighter navy */
+            border-color: #37474F;
         }
     </style>
 </head>
@@ -405,8 +406,19 @@
                     <div class="collapse collapse-menu" id="reports-sub">
                         <a class="nav-link" href="{% url 'school:reports_and_analysis' %}"><i class="fas fa-chart-pie"></i> Dashboard</a>
                         <a class="nav-link" href="#"><i class="fas fa-flask"></i> Subject Analysis</a>
-                        <a class="nav-link" href="#"><i class="fas fa-id-card"></i> Student Report Card</a>
+                        <a class="nav-link" href="{% url 'school:student_report_card' %}"><i class="fas fa-id-card"></i> Student Report Card</a>
+                        <a class="nav-link" href="{% url 'school:upload_exam' %}"><i class="fas fa-upload"></i> Upload Exam</a>
                     </div>
+                 <!-- Billing Menu -->
+                 <li class="nav-item">
+                     <a class="nav-link collapsed" href="#billing-sub" data-toggle="collapse" role="button" aria-expanded="false" aria-controls="billing-sub">
+                         <i class="fas fa-money-bill-wave"></i> Billing
+                     </a>
+                     <div class="collapse collapse-menu" id="billing-sub">
+                         <a class="nav-link" href="{% url 'billing:invoice_list' %}"><i class="fas fa-file-invoice"></i> Invoices</a>
+                         <a class="nav-link" href="{% url 'billing:receipt_list' %}"><i class="fas fa-receipt"></i> Receipts</a>
+                     </div>
+                 </li>
                 </li>
             </ul>
 

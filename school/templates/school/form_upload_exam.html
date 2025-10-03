@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Form {{ form_level }} Exam Upload{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3">Form {{ form_level }} Exam Upload</h1>
+            <p class="text-muted">Select an exam to upload results</p>
+        </div>
+    </div>
+
+    <div class="exam-upload-grid">
+        {% for data in exam_data %}
+        <div class="exam-upload-card">
+            <div class="exam-header">
+                <h4>{{ data.exam.name }}</h4>
+                <span class="badge badge-{% if data.completion_percentage == 100 %}success{% elif data.completion_percentage > 0 %}warning{% else %}secondary{% endif %}">
+                    {{ data.completion_percentage|floatformat:0 }}% Complete
+                </span>
+            </div>
+            <div class="exam-details">
+                <p><strong>Term:</strong> {{ data.exam.term|title }}</p>
+                <p><strong>Year:</strong> {{ data.exam.year }}</p>
+                <p><strong>Students:</strong> {{ data.existing_results }}/{{ data.total_students }}</p>
+            </div>
+            <div class="exam-actions">
+                <a href="{% url 'school:exam_upload_streams' form_level data.exam.id %}" class="btn btn-primary btn-block">
+                    <i class="fas fa-upload mr-2"></i>Upload Results
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="no-data">
+            <p>No exams available for upload</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.exam-upload-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.exam-upload-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.exam-upload-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.exam-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.exam-header h4 {
+    margin: 0;
+    color: var(--dark-text);
+    font-size: 1.2rem;
+}
+
+.badge {
+    font-size: 0.8rem;
+}
+
+.exam-details p {
+    margin: 5px 0;
+    color: var(--gray-text);
+    font-size: 0.9rem;
+}
+
+.exam-actions {
+    margin-top: 20px;
+}
+
+.btn-block {
+    width: 100%;
+}
+
+.no-data {
+    text-align: center;
+    padding: 40px;
+    color: var(--gray-text);
+    grid-column: 1 / -1;
+}
+</style>
+{% endblock %}

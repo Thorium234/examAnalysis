@@ -7,6 +7,7 @@ from django.views.generic import CreateView, UpdateView, DeleteView, ListView, T
 from django.urls import reverse_lazy
 from django.http import HttpResponse, JsonResponse
 from django.db import transaction
+from django.core.exceptions import PermissionDenied
 
 import csv
 from io import TextIOWrapper
@@ -29,6 +30,7 @@ from .models import (
     GradingRange,
     PaperResult
 )
+from accounts.models import TeacherClass, TeacherSubject
 from .forms import GradingSystemForm, GradingRangeForm, SubjectPaperRatioForm
 
 # Mixins for permissions
@@ -405,11 +407,12 @@ class SubjectPaperRatioDeleteView(TeacherRequiredMixin, DeleteView):
 # Exam Results Upload Choice View
 #----------------------------------------------------------------------
 @login_required
-@permission_required('exams.add_examresult', raise_exception=True)
 def exam_results_upload_choice(request, pk):
     if request.user.is_superuser:
         exam = get_object_or_404(Exam, pk=pk)
     else:
+        if not request.user.profile.roles.filter(name='Teacher').exists():
+            raise PermissionDenied
         exam = get_object_or_404(Exam, pk=pk, school=request.user.school)
 
     context = {
@@ -532,7 +535,7 @@ def stream_results(request, exam_pk, form_level, stream):
         result.subject_results = subject_results
 
     # Get class teacher
-    from accounts.models import TeacherClass
+    from accounts.models import TeacherClass, TeacherSubject
     class_teacher = None
     try:
         teacher_class = TeacherClass.objects.filter(
@@ -823,5 +826,187 @@ def exam_results_summary(request, pk):
         'total_results': total_results,
         'subject_summaries': subject_summaries,
     }
+
+    return render(request, 'exams/exam_results_summary.html', context)
+
+@login_required
+def my_classes_exam_management(request):
+    """View for teachers to manage exams for their classes"""
+    if not request.user.is_superuser and not request.user.profile.roles.filter(name='Teacher').exists():
+        messages.error(request, "You do not have permission to access this page.")
+        return redirect('home')
+
+    # Get active exams for the school
+    if request.user.is_superuser:
+        available_exams = Exam.objects.filter(is_active=True).order_by('-year', '-term')
+    else:
+        available_exams = Exam.objects.filter(school=request.user.school, is_active=True).order_by('-year', '-term')
+
+    # Get selected exam from query params or default to first
+    selected_exam_id = request.GET.get('exam')
+    if selected_exam_id:
+        try:
+            selected_exam = available_exams.get(pk=selected_exam_id)
+        except Exam.DoesNotExist:
+            selected_exam = available_exams.first()
+    else:
+        selected_exam = available_exams.first()
+
+    # Get teacher's classes
+    teacher_classes = TeacherClass.objects.filter(teacher=request.user).select_related('school')
+
+    # Prepare subject classes data (classes where teacher teaches subjects)
+    subject_classes = []
+    for tc in teacher_classes:
+        # Check if teacher has subjects in this class
+        has_subjects = TeacherSubject.objects.filter(
+            teacher=request.user,
+            subject__form_levels=tc.form_level
+        ).exists()
+
+        if has_subjects:
+            # Determine status based on exam participation
+            if selected_exam and tc.form_level in selected_exam.participating_forms.all().values_list('id', flat=True):
+                status = 'active'
+                status_text = 'Active'
+                action_button = {
+                    'text': 'Manage Results',
+                    'class': 'btn-primary btn-sm',
+                    'url': f'/exams/results/form/{tc.form_level}/subjects/'
+                }
+            else:
+                status = 'not_active'
+                status_text = 'Not Participating'
+                action_button = None
+
+            subject_classes.append({
+                'id': tc.id,
+                'name': tc.class_name,
+                'status': status,
+                'status_text': status_text,
+                'action_button': action_button
+            })
+
+    # Prepare supervised classes data (classes where teacher is class teacher)
+    supervised_classes = []
+    for tc in teacher_classes:
+        if tc.is_class_teacher:
+            # Similar logic for supervised classes
+            if selected_exam and tc.form_level in selected_exam.participating_forms.all().values_list('id', flat=True):
+                status = 'active'
+                status_text = 'Active'
+                action_button = {
+                    'text': 'View Class',
+                    'class': 'btn-success btn-sm',
+                    'url': f'/school/stream/{tc.form_level}/{tc.stream}/'
+                }
+            else:
+                status = 'not_active'
+                status_text = 'Not Participating'
+                action_button = None
+
+            supervised_classes.append({
+                'id': tc.id,
+                'name': tc.class_name,
+                'status': status,
+                'status_text': status_text,
+                'action_button': action_button
+            })
+
+    context = {
+        'available_exams': available_exams,
+        'selected_exam': selected_exam,
+        'subject_classes': subject_classes,
+        'supervised_classes': supervised_classes,
+    }
+
+    return render(request, 'exams/my_classes_exam_management.html', context)
+
+@login_required
+def update_exam_selection(request):
+    """Handle updating exam selections for teacher's classes"""
+    if not request.user.is_superuser and not request.user.profile.roles.filter(name='Teacher').exists():
+        return JsonResponse({'error': 'Permission denied'}, status=403)
+
+    if request.method == 'POST':
+        exam_id = request.POST.get('exam_id')
+        if not exam_id:
+            return JsonResponse({'error': 'Exam ID required'}, status=400)
+
+        try:
+            # Get the exam
+            if request.user.is_superuser:
+                exam = Exam.objects.get(pk=exam_id, is_active=True)
+            else:
+                exam = Exam.objects.get(pk=exam_id, school=request.user.school, is_active=True)
+
+            # Get teacher's classes
+            teacher_classes = TeacherClass.objects.filter(teacher=request.user).select_related('school')
+
+            # Prepare subject classes data
+            subject_classes = []
+            for tc in teacher_classes:
+                has_subjects = TeacherSubject.objects.filter(
+                    teacher=request.user,
+                    subject__form_levels=tc.form_level
+                ).exists()
+
+                if has_subjects:
+                    if exam and tc.form_level in exam.participating_forms.all().values_list('id', flat=True):
+                        status = 'active'
+                        status_text = 'Active'
+                        action_button = {
+                            'text': 'Manage Results',
+                            'class': 'btn-primary btn-sm',
+                            'url': f'/exams/results/form/{tc.form_level}/subjects/'
+                        }
+                    else:
+                        status = 'not_active'
+                        status_text = 'Not Participating'
+                        action_button = None
+
+                    subject_classes.append({
+                        'id': tc.id,
+                        'name': tc.class_name,
+                        'status': status,
+                        'status_text': status_text,
+                        'action_button': action_button
+                    })
+
+            # Prepare supervised classes data
+            supervised_classes = []
+            for tc in teacher_classes:
+                if tc.is_class_teacher:
+                    if exam and tc.form_level in exam.participating_forms.all().values_list('id', flat=True):
+                        status = 'active'
+                        status_text = 'Active'
+                        action_button = {
+                            'text': 'View Class',
+                            'class': 'btn-success btn-sm',
+                            'url': f'/school/stream/{tc.form_level}/{tc.stream}/'
+                        }
+                    else:
+                        status = 'not_active'
+                        status_text = 'Not Participating'
+                        action_button = None
+
+                    supervised_classes.append({
+                        'id': tc.id,
+                        'name': tc.class_name,
+                        'status': status,
+                        'status_text': status_text,
+                        'action_button': action_button
+                    })
+
+            return JsonResponse({
+                'success': True,
+                'subject_classes': subject_classes,
+                'supervised_classes': supervised_classes
+            })
+
+        except Exam.DoesNotExist:
+            return JsonResponse({'error': 'Invalid exam'}, status=400)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
 
     return render(request, 'exams/exam_summary_report.html', context)

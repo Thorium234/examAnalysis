@@ -3,6 +3,10 @@ from . import views
 
 app_name = 'exams'
 urlpatterns = [
+    # My Classes - Exam Management Page
+    path('my-classes/', views.my_classes_exam_management, name='my_classes_exam_management'),
+    path('update-exam-selection/', views.update_exam_selection, name='update_exam_selection'),
+
     # New hierarchical result entry URLs
     path('results/form-levels/', views.exam_form_levels, name='exam_form_levels'),
     path('results/form/<int:form_level>/subjects/', views.exam_form_subjects, name='exam_form_subjects'),

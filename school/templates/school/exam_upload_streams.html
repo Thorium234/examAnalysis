@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block title %}Upload {{ exam.name }} - Form {{ form_level }}{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3">Upload {{ exam.name }} Results</h1>
+            <p class="text-muted">Form {{ form_level }} - Select a stream to upload results</p>
+        </div>
+    </div>
+
+    <div class="stream-upload-grid">
+        {% for data in stream_data %}
+        <div class="stream-upload-card">
+            <div class="stream-header">
+                <h4>{{ data.stream }} Stream</h4>
+                <span class="badge badge-{% if data.completion_percentage == 100 %}success{% elif data.completion_percentage > 0 %}warning{% else %}secondary{% endif %}">
+                    {{ data.completion_percentage|floatformat:0 }}% Complete
+                </span>
+            </div>
+            <div class="stream-details">
+                <p><strong>Students:</strong> {{ data.existing_results }}/{{ data.student_count }}</p>
+                <div class="progress mb-3">
+                    <div class="progress-bar bg-{% if data.completion_percentage == 100 %}success{% elif data.completion_percentage > 0 %}warning{% else %}secondary{% endif %}"
+                         style="width: {{ data.completion_percentage }}%"></div>
+                </div>
+            </div>
+            <div class="stream-actions">
+                <a href="{% url 'school:exam_upload_subjects' form_level exam.id data.stream %}" class="btn btn-primary btn-block">
+                    <i class="fas fa-upload mr-2"></i>Upload Results
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.stream-upload-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.stream-upload-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stream-upload-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.stream-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.stream-header h4 {
+    margin: 0;
+    color: var(--dark-text);
+    font-size: 1.2rem;
+}
+
+.badge {
+    font-size: 0.8rem;
+}
+
+.stream-details p {
+    margin: 5px 0;
+    color: var(--gray-text);
+    font-size: 0.9rem;
+}
+
+.progress {
+    height: 8px;
+}
+
+.stream-actions {
+    margin-top: 20px;
+}
+
+.btn-block {
+    width: 100%;
+}
+</style>
+{% endblock %}

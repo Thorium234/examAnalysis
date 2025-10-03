@@ -1,0 +1,4482 @@
+Hey Kilocode, now I need you to build the **My Classes - Exam Management Page**. This page shows all the classes a teacher teaches and allows them to upload or view exam results. Let me explain every single part:
+
+---
+
+## **PROJECT: My Classes - Exam Results Management Page**
+
+### **STEP 1: Top Navigation Bar (Same as before)**
+- Green navigation bar (#4CAF50)
+- Left side: Zeraki logo + "Friends Kikai Boys High School"
+- Navigation menu items: "My Classes" (currently selected/highlighted with darker green background), "Manage exams", "+ Create Exam", "Grading Systems", "Subject Paper Ratios", "More"
+- Right side: Language "English", search icon, mail icon, notification bell with red badge "3", user profile "Paul Ijendi Inyangala" with photo
+
+---
+
+### **STEP 2: Exam Selector Section**
+Create a white section at the top with:
+
+**Label:** "Exam" (dark text, 16px)
+
+**Dropdown field:**
+- Full width dropdown box
+- Currently shows: "AVERAGE EXAM"
+- White background with border
+- Dropdown arrow on the right
+- When clicked: Shows list of all available exams to select from
+- Border: 1px solid light gray (#E0E0E0)
+- Padding: 12px
+- Border radius: 4px
+
+---
+
+### **STEP 3: Subject Classes Table**
+
+Create a section with heading and table:
+
+**Section Heading:** "Subject Classes" (bold, 20px, dark text)
+
+**Table structure with 4 columns:**
+
+**Column Headers:**
+1. # (row number)
+2. Name (class name)
+3. Status (current status)
+4. Action (buttons)
+
+**Table has 8 rows of data:**
+
+| # | Name | Status | Action |
+|---|------|--------|--------|
+| 1 | Form 2 East - Geography | Upload Results (pink text) | Upload (blue/gray button) |
+| 2 | Form 2 East - Computer Studies | Upload Results (pink text) | Upload (blue/gray button) |
+| 3 | Form 2 West - Geography | Upload Results (pink text) | Upload (blue/gray button) |
+| 4 | Form 2 West - Computer Studies | Upload Results (pink text) | Upload (blue/gray button) |
+| 5 | Form 3 E - Geography | Upload Results (pink text) | Upload (blue/gray button) |
+| 6 | Form 3 W - Geography | Upload Results (pink text) | Upload (blue/gray button) |
+| 7 | Form 4 E - Computer Studies | This class did not sit for the specified exam (pink text) | (no button) |
+| 8 | Form 4 W - Computer Studies | This class did not sit for the specified exam (pink text) | (no button) |
+
+---
+
+### **STEP 4: Classes Supervised Table**
+
+Create another section below with heading and table:
+
+**Section Heading:** "Classes Supervised" (bold, 20px, dark text)
+
+**Table structure with 4 columns (same as above):**
+
+**Column Headers:**
+1. # (row number)
+2. Name (class name)
+3. Status (current status)
+4. Action (buttons)
+
+**Table has 3 rows of data:**
+
+| # | Name | Status | Action |
+|---|------|--------|--------|
+| 1 | Form 2 | View Results (pink text) | View (blue/gray button) |
+| 2 | Form 3 | View Results (pink text) | View (blue/gray button) |
+| 3 | Form 4 | This class did not sit for the specified exam (pink text) | (no button) |
+
+---
+
+### **DETAILED TABLE SPECIFICATIONS:**
+
+**Table styling:**
+- Full width within container
+- White background
+- Border: 1px solid light gray (#E0E0E0)
+- Border radius: 4px on corners
+
+**Header row:**
+- Background: light gray (#F5F5F5)
+- Text: Bold, dark gray (#333333), 14px
+- Padding: 16px
+- Border bottom: 2px solid #E0E0E0
+- Text aligned: 
+  - # column: Center
+  - Name column: Left
+  - Status column: Left
+  - Action column: Right
+
+**Data rows:**
+- Background: White
+- Alternating rows: Very light gray (#FAFAFA) for better readability
+- Padding: 16px per cell
+- Border between rows: 1px solid #E0E0E0
+- Hover effect: Light blue/gray background (#F0F4F8)
+
+**Column widths:**
+- # column: 60px (narrow)
+- Name column: 35% of table width
+- Status column: 45% of table width
+- Action column: 150px (fixed width for buttons)
+
+---
+
+### **TEXT AND STATUS STYLING:**
+
+**Row numbers (#):**
+- Center aligned
+- Dark gray text (#424242)
+- Regular weight
+
+**Class names (Name column):**
+- Left aligned
+- Dark text (#212121)
+- Regular weight, 15px
+- Example format: "Form 2 East - Geography"
+
+**Status text:**
+- Two types of status messages:
+
+**Type 1 - "Upload Results" or "View Results":**
+- Color: Pink/magenta (#E91E63 or #D81B60)
+- Regular weight, 14px
+- Clickable (acts as a link)
+- Underline on hover
+
+**Type 2 - "This class did not sit for the specified exam":**
+- Color: Pink/magenta (#E91E63)
+- Regular weight, 14px
+- Italic style
+- Not clickable
+
+---
+
+### **BUTTON SPECIFICATIONS:**
+
+**"Upload" buttons:**
+- Background: Light blue/gray (#CFD8DC or #B0BEC5)
+- Text: Dark gray (#424242)
+- Icon: Cloud with up arrow (☁↑) before text
+- Padding: 8px 16px
+- Border radius: 4px
+- Border: none
+- Font size: 14px
+- Hover effect: Darker blue/gray (#90A4AE)
+- Cursor: pointer
+
+**"View" buttons:**
+- Same styling as Upload buttons
+- Text: "View"
+- No icon needed (or use eye icon 👁)
+- Same hover and click behavior
+
+---
+
+### **SPACING AND LAYOUT:**
+
+**Page container:**
+- Background: Light gray (#F5F5F5)
+- Max width: 1200px
+- Center aligned
+- Padding: 24px
+
+**Between sections:**
+- Gap between "Exam selector" and "Subject Classes": 32px
+- Gap between tables: 40px
+- Gap between heading and table: 16px
+
+**Table margins:**
+- Top margin: 16px below heading
+- Bottom margin: 40px before next section
+
+---
+
+### **INTERACTIVE FUNCTIONALITY:**
+
+**1. Exam Dropdown:**
+- When clicked: Opens dropdown with list of all exams
+- When exam is selected: 
+  - Page refreshes/updates
+  - Status column updates for all classes
+  - Shows which classes have/haven't uploaded results for that exam
+
+**2. "Upload Results" status text:**
+- Clickable link
+- When clicked: Either opens upload modal OR triggers the Upload button action
+
+**3. "Upload" buttons:**
+- When clicked: Opens file upload dialog
+- Accepts: Excel files (.xlsx, .xls) or CSV files
+- After upload: 
+  - Status changes from "Upload Results" to "View Results"
+  - Button changes from "Upload" to "View"
+  - Shows success message
+
+**4. "View Results" status text:**
+- Clickable link
+- When clicked: Navigates to the class analysis page (like the Form 3 page we built earlier)
+
+**5. "View" buttons:**
+- When clicked: Navigates to class analysis dashboard
+- Shows exam results, subject performance, grade breakdown
+
+---
+
+### **DATA STRUCTURE:**
+
+**Subject Classes array should contain:**
+```
+{
+  id: 1,
+  name: "Form 2 East - Geography",
+  status: "upload_needed", // or "uploaded" or "not_sat"
+  hasResults: false,
+  examId: "average_exam_2025"
+}
+```
+
+**Classes Supervised array should contain:**
+```
+{
+  id: 1,
+  name: "Form 2",
+  status: "uploaded", // or "upload_needed" or "not_sat"
+  hasResults: true,
+  examId: "average_exam_2025",
+  isClassTeacher: true
+}
+```
+
+---
+
+### **STATUS LOGIC:**
+
+**The status column should show:**
+
+1. **"Upload Results"** - When:
+   - The exam has been created
+   - Results haven't been uploaded yet for this class
+   - The class sat for this exam
+   - Action: Show "Upload" button
+
+2. **"View Results"** - When:
+   - Results have been uploaded
+   - Data is available to view
+   - Action: Show "View" button
+
+3. **"This class did not sit for the specified exam"** - When:
+   - The selected exam wasn't taken by this class
+   - Maybe they're a different form/stream that doesn't take this exam
+   - Action: No button, just message
+
+---
+
+### **DIFFERENCE BETWEEN THE TWO TABLES:**
+
+**Subject Classes Table:**
+- Shows classes where THIS teacher teaches a specific SUBJECT
+- Example: Teacher teaches Geography to Form 2 East, Form 2 West, Form 3 E, Form 3 W
+- Teacher uploads results for THEIR subject only
+- More granular (class + subject level)
+
+**Classes Supervised Table:**
+- Shows classes where THIS teacher is the CLASS TEACHER (homeroom teacher)
+- They supervise the ENTIRE class across ALL subjects
+- They can view overall class performance
+- Less granular (class level only)
+- Fewer entries because one teacher is class teacher for only 2-3 classes
+
+---
+
+### **RESPONSIVE BEHAVIOR:**
+
+**Desktop (>1024px):**
+- Tables show all columns side by side
+- Full width layout
+
+**Tablet (768px-1024px):**
+- Tables might need slight column width adjustment
+- Buttons remain same size
+
+**Mobile (<768px):**
+- Convert table to card layout
+- Stack each row as a card with:
+  - Class name at top
+  - Status below
+  - Button at bottom
+- Or make table horizontally scrollable
+
+---
+
+### **ERROR HANDLING:**
+
+**If upload fails:**
+- Show error message: "Failed to upload results. Please try again."
+- Keep status as "Upload Results"
+- Keep Upload button active
+
+**If no exams exist:**
+- Show message: "No exams created yet. Create an exam to get started."
+- Disable all upload functionality
+
+**If file format is wrong:**
+- Show error: "Invalid file format. Please upload .xlsx or .csv files only"
+
+---
+
+### **COLOR PALETTE:**
+
+- **Primary green:** #4CAF50 (navigation)
+- **Pink/Magenta:** #E91E63 or #D81B60 (status text)
+- **Blue/Gray:** #CFD8DC (buttons)
+- **Background gray:** #F5F5F5
+- **Border gray:** #E0E0E0
+- **Text dark:** #212121, #333333
+- **Text medium:** #424242
+- **Hover blue:** #F0F4F8
+
+---
+
+### **FOOTER:**
+- Text: "© 2025 Zeraki. All Rights Reserved."
+- Centered or left-aligned
+- Small gray text
+- 40px margin from bottom
+
+---
+
+**Kilocode, build this page exactly as I described. Start with the exam selector dropdown at the top, then build the "Subject Classes" table with all 8 rows, then build the "Classes Supervised" table with 3 rows. Make sure the status text colors are pink/magenta and the buttons are that blue/gray color. The Upload buttons should have the cloud icon.**
+
+**Key point: "Subject Classes" = classes where teacher teaches a subject. "Classes Supervised" = classes where teacher is the homeroom/class teacher and can see overall performance.**
+
+Do you understand? Start building section by section and test the dropdown and buttons work correctly.
+Hey Kilocode, now I need you to build the **Upload Results Page**. This is the page that opens when a teacher clicks the "Upload" button from the My Classes page. This page allows teachers to manually enter student marks. Let me explain every part:
+
+---
+
+## **PROJECT: Upload Results - Manual Entry Page**
+
+### **STEP 1: Top Navigation Bar (Same as before)**
+- Green navigation bar (#4CAF50)
+- Left side: Zeraki logo + "Friends Kikai Boys High School"
+- Navigation menu items: "My Classes" (highlighted), "Manage exams", "+ Create Exam", "Grading Systems", "Subject Paper Ratios", "More"
+- Right side: Language "English", search icon, mail icon (red badge "1"), user profile "Paul Ijendi Inyangala" with photo
+
+---
+
+### **STEP 2: Page Header**
+Create a white/light gray header bar with:
+- Text: "Upload Results - 2 East - Geography" (bold, 20px, dark text)
+- This shows: Action + Class Name + Subject
+
+---
+
+### **STEP 3: Upload Type Selection**
+Create a section with two radio button options:
+
+**Label:** "Upload Type" (dark text, 14px)
+
+**Two radio buttons (horizontal layout):**
+
+**Option 1 (selected by default):**
+- Radio button: Filled/selected
+- Text: "Key in marks"
+
+**Option 2:**
+- Radio button: Empty/unselected  
+- Text: "Upload results from a spreadsheet"
+
+---
+
+### **STEP 4: Exam and Maximum Marks Section**
+
+Create a row with two fields side by side:
+
+**Left field (60% width):**
+- Label: "Exam"
+- Dropdown showing: "AVERAGE EXAM"
+- Full width of its container
+- Border: 1px solid light gray
+- Background: White
+- Padding: 10px
+- Border radius: 4px
+
+**Right field (40% width):**
+- Label: "Maximum Marks *" (asterisk for required field)
+- Text input box
+- Placeholder: "Out of value e.g. 30"
+- Border: 1px solid light gray
+- Background: White
+- Padding: 10px
+- Border radius: 4px
+- Text aligned: Left
+
+---
+
+### **STEP 5: Students Table**
+
+Create a large section with heading and table:
+
+**Section Heading:** "Students Without Results" (bold, 16px, dark text)
+
+**Table with 3 columns:**
+
+**Column Headers:**
+1. Adm No. (Admission Number)
+2. Name (Student Name)
+3. Marks (Input field + button)
+
+**Styling for header row:**
+- Background: Light gray (#F5F5F5)
+- Text: Bold, 14px
+- Padding: 12px
+- Border bottom: 2px solid #E0E0E0
+
+---
+
+### **STUDENT ROWS (40 students shown in the image):**
+
+Each row contains:
+1. **Admission Number** (left column)
+   - Example: 4399, 4401, 4403, etc.
+   - Left aligned
+   - Dark text
+   - Regular weight
+
+2. **Student Name** (middle column)
+   - Example: WANYONYI ERYSAI, DANIEL SIMIYU, JOSHUA KIPLASAT
+   - Left aligned
+   - Dark text
+   - Regular weight
+   - UPPERCASE letters
+
+3. **Marks Input + Button** (right column)
+   - Wide text input field for entering marks
+   - Background: Very light green (#F1F8F4) or white with light green tint
+   - Border: 1px solid light gray
+   - Right side: Small green circular button with checkmark icon (✓)
+   - Button background: Green (#4CAF50)
+   - Button size: 32px diameter circle
+   - Button positioned at the right edge of input field
+
+**The 40 students are:**
+1. 4399 - WANYONYI ERYSAI
+2. 4401 - DANIEL SIMIYU
+3. 4403 - JOSHUA KIPLASAT
+4. 4405 - IBRARY KIMATIA
+5. 4407 - LUIS SIMIYU WANJALA
+6. 4411 - MORDAN SURAI KIPSAMBU
+7. 4413 - Yonah Kipling at Masai
+8. 4415 - BRIGHTON WANJALA
+9. 4417 - Kibet Ndiema Allan
+10. 4418 - BRAVIN KIPTOO
+11. 4419 - SETH OSIYA
+12. 4421 - BRAVINE WEKESA
+13. 4426 - ANTONY WANYAMA WALUBENHO
+14. 4429 - ONESIMUS SIMIYU
+15. 4431 - Stephen Wafulis
+16. 4433 - Victor Simiyu
+17. 4437 - IAN SIMIYU
+18. 4439 - STEWARD WANJALA
+19. 4441 - IGNACIOUS KIPUTO RENDA
+20. 4443 - Solomon Pepela
+21. 4447 - Eugine Barasa
+22. 4449 - CALEB LUMBASI
+23. 4450 - Kiptoo Alvin
+24. 4451 - Wafula Mosolo Amos
+25. 4453 - BRAVIN WANYONYI
+26. 4455 - SAMMY WAFULA
+27. 4461 - BRIAN SICHANGI
+28. 4463 - Edwin Mukoma
+29. 4465 - ELISHA BARASA
+30. 4468 - SIMON WAFULA
+31. 4475 - Job Nabiswa
+32. 4476 - ALVINE SIMIYU WEKESA
+33. 4481 - FORIAN WANYONYI
+34. 4483 - Jafned Barasa
+35. 4485 - Amos Barasa Wanyonyi
+36. 4499 - Emmanuel Wamalwa
+37. 4500 - Edwin Chenwel Tuikeny
+38. 4507 - David Kibet
+39. 4605 - Victor Kundu
+40. 44450 - KIBET PETER CHESEPITE
+
+---
+
+### **TABLE STYLING:**
+
+**Row styling:**
+- Alternating rows: White and very light gray (#FAFAFA)
+- Padding: 12px vertical, 16px horizontal
+- Border between rows: 1px solid #E0E0E0
+- Hover effect: Light blue/gray background (#F0F4F8)
+
+**Column widths:**
+- Adm No: 15% width
+- Name: 35% width
+- Marks: 50% width (this is the widest to accommodate input field)
+
+**Input field in Marks column:**
+- Width: 100% of column minus button width
+- Height: 40px
+- Background: White or very light green tint
+- Border: 1px solid #E0E0E0
+- Border radius: 4px on left side
+- Padding: 8px 12px
+- Font size: 14px
+
+**Green check button:**
+- Circular button
+- Diameter: 36px
+- Background: Green (#4CAF50)
+- White checkmark icon (✓)
+- No border
+- Positioned on the right edge of the input field
+- Cursor: pointer
+- Hover: Darker green (#45A049)
+- Click: Saves the mark for that student
+
+---
+
+### **STEP 6: Bottom Action Buttons**
+
+At the bottom of the page, create two buttons:
+
+**Left button:**
+- Text: "Back"
+- Background: Light gray (#E0E0E0)
+- Text color: Dark gray (#424242)
+- Padding: 10px 24px
+- Border radius: 4px
+- Border: 1px solid #BDBDBD
+- Hover: Slightly darker gray
+- Function: Returns to previous page (My Classes)
+
+**Middle button:**
+- Text: "+ Add Student"
+- Background: Green (#4CAF50)
+- Text color: White
+- Padding: 10px 24px
+- Border radius: 4px
+- Border: none
+- Hover: Darker green (#45A049)
+- Function: Opens modal to add a new student to this class
+
+**Right button:**
+- Text: "Upload Subject Results"
+- Background: Blue (#2196F3)
+- Text color: White
+- Padding: 10px 32px
+- Border radius: 4px
+- Border: none
+- Hover: Darker blue (#1976D2)
+- Float to the right side
+- Function: Submits all entered marks
+
+**Button layout:**
+- "Back" on the left
+- "+ Add Student" next to Back
+- "Upload Subject Results" on the far right
+
+---
+
+### **FUNCTIONALITY REQUIREMENTS:**
+
+**1. Upload Type Radio Buttons:**
+- When "Key in marks" is selected (default):
+  - Show the student table with input fields
+  - Hide file upload section
+  
+- When "Upload results from a spreadsheet" is selected:
+  - Hide the student table
+  - Show file upload dropzone/button
+  - Allow uploading .xlsx, .xls, .csv files
+  - Parse file and auto-fill marks
+
+**2. Maximum Marks Input:**
+- Required field (has asterisk *)
+- Must be a number
+- Must be greater than 0
+- Typical values: 30, 40, 50, 100
+- Validation: Show error if empty or invalid when submitting
+
+**3. Individual Mark Entry:**
+- Teacher can type marks in each input field
+- Valid range: 0 to [Maximum Marks value]
+- Validation: 
+  - Must be a number
+  - Cannot exceed maximum marks
+  - Can be decimal (e.g., 27.5)
+  - Cannot be negative
+  
+**4. Green Check Button (per student):**
+- When clicked: 
+  - Saves that specific student's mark
+  - Shows success indicator (maybe input turns light green)
+  - Or shows small checkmark next to input
+  - Keeps mark even if page refreshes
+
+**5. Add Student Button:**
+- Opens a modal/popup
+- Form to add new student:
+  - Admission number
+  - Student name
+  - Other details
+- After adding: Student appears at bottom of list
+
+**6. Upload Subject Results Button:**
+- Validates all fields:
+  - Maximum marks is filled
+  - At least one student has marks entered
+- Shows confirmation dialog: "Are you sure you want to upload these results?"
+- If confirmed:
+  - Submits all marks to backend
+  - Shows success message
+  - Redirects to My Classes page
+  - Updates status from "Upload Results" to "View Results"
+
+**7. Back Button:**
+- Returns to My Classes page
+- If marks were entered but not saved, show warning:
+  - "You have unsaved changes. Are you sure you want to leave?"
+
+---
+
+### **DATA VALIDATION:**
+
+**Before submission, check:**
+1. Maximum marks field is not empty
+2. Maximum marks is a valid positive number
+3. All entered marks are valid numbers
+4. No mark exceeds maximum marks
+5. No mark is negative
+6. At least one student has a mark entered
+
+**Error messages:**
+- "Please enter maximum marks"
+- "Maximum marks must be greater than 0"
+- "Mark for [Student Name] exceeds maximum marks"
+- "Mark for [Student Name] must be a positive number"
+- "Please enter marks for at least one student"
+
+---
+
+### **LOADING STATES:**
+
+**When page loads:**
+- Show loading spinner
+- Fetch student list from backend
+- Populate table with students who don't have marks yet
+
+**When submitting:**
+- Disable "Upload Subject Results" button
+- Show loading spinner
+- Button text changes to "Uploading..."
+- Prevent multiple submissions
+
+---
+
+### **SUCCESS STATE:**
+
+**After successful upload:**
+- Show green success toast: "Results uploaded successfully for 2 East - Geography"
+- Wait 2 seconds
+- Redirect to My Classes page
+- On My Classes page, status should now show "View Results"
+
+---
+
+### **SPREADSHEET UPLOAD (Alternative Method):**
+
+**When "Upload results from a spreadsheet" is selected:**
+
+Show instead of the table:
+- Large dropzone area
+- Text: "Drag and drop your file here, or click to browse"
+- Accepted formats: .xlsx, .xls, .csv
+- Download template button: "Download Template"
+- Template should have columns:
+  - Admission Number
+  - Student Name
+  - Marks
+
+**After file is selected:**
+- Parse the file
+- Validate data
+- Show preview table
+- Allow teacher to review before submitting
+- Show "Upload" button to confirm
+
+---
+
+### **RESPONSIVE DESIGN:**
+
+**Desktop (>1024px):**
+- Table shows all columns normally
+- Input fields are wide
+
+**Tablet (768px-1024px):**
+- Table might need slight adjustment
+- Input fields remain usable
+
+**Mobile (<768px):**
+- Convert table to card layout
+- Each student is a card:
+  - Adm No at top
+  - Name below
+  - Input field below
+  - Check button on right
+- Stack cards vertically
+- Buttons stack vertically too
+
+---
+
+### **ACCESSIBILITY:**
+
+- All input fields have proper labels
+- Tab navigation works through all inputs
+- Enter key in input field triggers the check button
+- Keyboard shortcuts:
+  - Ctrl+S: Save current progress
+  - Esc: Cancel/go back
+- Screen reader friendly
+
+---
+
+### **COLOR PALETTE:**
+
+- **Green (buttons, checkmarks):** #4CAF50
+- **Blue (submit button):** #2196F3
+- **Light green (input backgrounds):** #F1F8F4
+- **Gray (back button):** #E0E0E0
+- **Border gray:** #E0E0E0
+- **Background:** #FAFAFA
+- **Text dark:** #212121
+- **Success green:** #4CAF50
+- **Error red:** #F44336
+
+---
+
+### **FOOTER:**
+- Text: "© 2025 Zeraki. All Rights Reserved."
+- Small gray text
+- Left or center aligned
+
+---
+
+**Kilocode, build this upload results page exactly as described. The key features are:**
+1. **Radio buttons to choose manual entry or spreadsheet upload**
+2. **Exam dropdown and Maximum Marks input at the top**
+3. **Large scrollable table with all 40 students**
+4. **Each student has an input field for marks plus a green check button**
+5. **Bottom buttons: Back, Add Student, Upload Subject Results**
+
+**The table should be able to handle many students (scrollable). The input fields should validate marks properly. The green check buttons save individual marks. The blue "Upload Subject Results" button submits everything.**
+
+Start building and test that:
+- Marks input validation works
+- Individual check buttons save marks
+- Final upload button submits all data
+- Back button shows warning if unsaved changes exist
+
+Do you understand? Begin coding now!
+Hey Kilocode, now I need you to build the **Upload Results - Spreadsheet Upload View**. This is what shows when a teacher selects the "Upload results from a spreadsheet" radio button instead of manual entry. Let me explain every part:
+
+---
+
+## **PROJECT: Upload Results - Spreadsheet Upload Interface**
+
+### **STEP 1: Left Sidebar Navigation**
+Create a collapsible left sidebar with green background (#4CAF50):
+
+**Top Section - Main Navigation:**
+1. 📊 Dashboard
+2. 📅 Calendar
+3. 📈 Classes
+4. 🔀 Subjects
+5. 👥 Students
+6. 👨‍🏫 Teachers
+7. 💻 BOM/PA
+8. 👤 Staff
+9. 🎓 Exams
+10. ✅ Attendance
+11. 💬 Messages
+12. 📄 Printouts
+13. 💰 Billing
+
+**Middle Section - "ZERAKI PRODUCTS":**
+14. 📚 Learning
+
+**Bottom Section - "OTHERS":**
+15. Ⓗ Opportunities
+
+**Sidebar styling:**
+- Background: Green (#4CAF50)
+- Width: 200px (expanded) or 60px (collapsed)
+- Icons: White
+- Text: White, 14px
+- Hover: Slightly lighter green background (#5CB85C)
+- Active item: Darker green or highlighted
+- Each item has icon on left, text on right
+- Padding: 12px per item
+
+---
+
+### **STEP 2: Top Header Bar (Same as before)**
+- White background
+- Zeraki Analytics logo on left
+- School name: "Friends Kikai Boys High School"
+- Right side: Language "English", search icon, mail icon (red badge "4"), user profile
+
+---
+
+### **STEP 3: Green Navigation Bar (Same as before)**
+- Green navigation bar (#4CAF50)
+- Items: "My Classes" (highlighted), "Manage exams", "+ Create Exam", "Grading Systems", "Subject Paper Ratios", "More"
+
+---
+
+### **STEP 4: Page Header**
+White/light gray bar with:
+- Text: "Upload Results - 2 East - Geography" (bold, 20px, dark navy #263238)
+
+---
+
+### **STEP 5: Upload Type Radio Buttons**
+Create section with two radio button options:
+
+**Label:** "Upload Type" (dark text, 14px)
+
+**Two radio buttons (horizontal layout):**
+
+**Option 1 (NOT selected):**
+- Radio button: Empty circle
+- Text: "Key in marks"
+
+**Option 2 (SELECTED - this is the current view):**
+- Radio button: Filled blue circle with dot inside
+- Text: "Upload results from a spreadsheet"
+- This option is currently selected
+
+---
+
+### **STEP 6: Exam and Maximum Marks Row**
+
+Create a row with two fields side by side:
+
+**Left field (50% width):**
+- Label: "Exam" (dark text, 14px)
+- Dropdown/input showing: "AVERAGE EXAM"
+- Background: Light gray (#F5F5F5)
+- Border: 1px solid light gray (#E0E0E0)
+- Padding: 12px
+- Border radius: 4px
+- Font: 14px
+
+**Right field (50% width):**
+- Label: "Maximum Marks *" (asterisk indicates required)
+- Text input box
+- Placeholder: "out of value e.g. 30"
+- Background: White
+- Border: 1px solid light gray (#E0E0E0)
+- Padding: 12px
+- Border radius: 4px
+- Font: 14px
+
+---
+
+### **STEP 7: Template Download and Instructions**
+
+Create a section with download link and instructions:
+
+**Text line:**
+- Blue clickable link: "Download ⬇" (with download icon)
+- Color: Blue (#2196F3)
+- Font weight: Medium
+- Underline on hover
+- Followed by regular black text: "and fill the template then upload it below. (Please leave the column headers intact)"
+
+**Important note styling:**
+- Link is clickable
+- "(Please leave the column headers intact)" is in parentheses - important instruction
+- Regular text color: Dark gray (#424242)
+- Font size: 14px
+
+---
+
+### **STEP 8: File Upload Section**
+
+Create a file upload input:
+
+**File input field:**
+- Button on left: "Choose File" 
+  - Background: Light gray (#E0E0E0)
+  - Text: Dark gray
+  - Padding: 10px 20px
+  - Border: 1px solid gray
+  - Border radius: 4px on left side only
+  - Cursor: pointer
+
+- Text area on right: "No file chosen"
+  - Background: White
+  - Border: 1px solid light gray (#E0E0E0)
+  - Padding: 10px
+  - Border radius: 4px on right side only
+  - Text: Gray (#757575)
+  - When file is selected, shows filename
+
+**Full width:** Takes up the entire width of the content area
+
+---
+
+### **STEP 9: Bottom Action Buttons**
+
+At the bottom of the page, create two buttons:
+
+**Left button:**
+- Text: "Back"
+- Background: Light blue-gray (#CFD8DC)
+- Text color: Dark gray (#424242)
+- Padding: 10px 24px
+- Border radius: 4px
+- Border: none
+- Hover: Slightly darker gray
+- Function: Returns to My Classes page
+
+**Right button:**
+- Text: "Upload Subject Results"
+- Background: Bright blue (#00BCD4 or #2196F3)
+- Text color: White
+- Padding: 10px 32px
+- Border radius: 4px
+- Border: none
+- Float to the right side
+- Hover: Darker blue
+- Function: Submits the uploaded file
+
+---
+
+### **LAYOUT SPECIFICATIONS:**
+
+**Main content area:**
+- Background: White or very light gray (#FAFAFA)
+- Padding: 32px
+- Max width: 1200px
+- Margin: auto (centered)
+
+**Spacing between sections:**
+- Upload Type to Exam/Marks row: 24px
+- Exam/Marks row to Download instructions: 24px
+- Download instructions to File upload: 16px
+- File upload to Bottom buttons: 40px
+
+**Content width:**
+- Takes full width within main container
+- Left sidebar: 200px fixed
+- Main content: Remaining space (calc(100% - 200px))
+
+---
+
+### **FUNCTIONALITY REQUIREMENTS:**
+
+**1. Radio Button Toggle:**
+- Clicking "Key in marks" radio button:
+  - Switches to manual entry view (the previous page with the student table)
+  - Hides spreadsheet upload section
+  
+- "Upload results from a spreadsheet" is currently selected:
+  - Shows this current view
+  - Shows file upload section
+  - Hides student table
+
+**2. Download Template Link:**
+- When clicked: Downloads an Excel template file
+- Template should contain:
+  - Column headers: Admission Number | Student Name | Marks
+  - Pre-filled with all students from the class
+  - Empty Marks column for teacher to fill
+- File format: .xlsx (Excel)
+- Filename: "2_East_Geography_AVERAGE_EXAM_Template.xlsx"
+
+**3. Choose File Button:**
+- When clicked: Opens file browser dialog
+- Accepted file types:
+  - .xlsx (Excel 2007+)
+  - .xls (Excel 97-2003)
+  - .csv (Comma Separated Values)
+- File size limit: 10MB
+- After file selection: Shows filename in the text area
+
+**4. File Validation:**
+After file is selected, validate:
+- File format is correct (.xlsx, .xls, or .csv)
+- File has required columns (Admission Number, Name, Marks)
+- Column headers match exactly (case-insensitive)
+- Admission numbers match students in the class
+- Marks are valid numbers
+- Marks don't exceed Maximum Marks value
+- No duplicate admission numbers
+
+**5. Maximum Marks Field:**
+- Required field
+- Must be filled before upload
+- Must be a positive number
+- Validation on blur and on submit
+
+**6. Upload Subject Results Button:**
+When clicked:
+- Validates Maximum Marks field is filled
+- Validates a file has been selected
+- Parses the file
+- Shows loading spinner
+- Button text changes to "Uploading..."
+- Disables button to prevent double-click
+- If validation fails: Shows error messages
+- If validation passes: Uploads data to backend
+
+**7. Back Button:**
+- Returns to My Classes page
+- If file is selected but not uploaded: Show warning
+  - "You have selected a file but haven't uploaded it. Are you sure you want to leave?"
+
+---
+
+### **ERROR HANDLING:**
+
+**Show error messages for:**
+
+1. **No file selected:**
+   - "Please select a file to upload"
+   - Red text below file input
+
+2. **Invalid file format:**
+   - "Invalid file format. Please upload .xlsx, .xls, or .csv files only"
+   - Red text below file input
+
+3. **Missing maximum marks:**
+   - "Please enter maximum marks"
+   - Red border around Maximum Marks field
+
+4. **File parsing errors:**
+   - "Error reading file. Please check the file format and try again"
+   - Red alert box at top of section
+
+5. **Invalid data in file:**
+   - "Row 5: Mark exceeds maximum marks"
+   - "Row 8: Invalid admission number"
+   - "Row 12: Mark must be a number"
+   - Red alert box listing all errors
+
+6. **Missing required columns:**
+   - "File is missing required columns: [list columns]"
+   - Red alert box
+
+7. **Column headers modified:**
+   - "Column headers have been modified. Please download a fresh template and don't change the headers"
+   - Red alert box
+
+---
+
+### **SUCCESS FLOW:**
+
+**After successful upload:**
+1. Show green success message: "Results uploaded successfully for 2 East - Geography"
+2. Show summary: "40 students' marks uploaded"
+3. Wait 2 seconds
+4. Redirect to My Classes page
+5. Status changes from "Upload Results" to "View Results"
+
+---
+
+### **TEMPLATE FILE SPECIFICATIONS:**
+
+**The downloadable Excel template should have:**
+
+**Column headers (Row 1):**
+- Admission Number
+- Student Name  
+- Marks
+
+**Pre-filled data (Rows 2-41):**
+- All 40 students from the class
+- Admission numbers already filled
+- Names already filled
+- Marks column is EMPTY for teacher to fill
+
+**Example template content:**
+```
+Admission Number | Student Name           | Marks
+4399            | WANYONYI ERYSAI        |
+4401            | DANIEL SIMIYU          |
+4403            | JOSHUA KIPLASAT        |
+4405            | IBRARY KIMATIA         |
+...             | ...                    |
+```
+
+**Formatting:**
+- Headers in bold
+- Headers row has light gray background
+- All columns have borders
+- Marks column has number format (2 decimal places)
+- Column widths auto-fit to content
+
+---
+
+### **FILE PARSING LOGIC:**
+
+**When file is uploaded:**
+1. Read file (handle .xlsx, .xls, .csv)
+2. Check for required columns
+3. Verify column headers match template
+4. For each row:
+   - Check admission number exists in class
+   - Check mark is a valid number
+   - Check mark is between 0 and Maximum Marks
+   - Check mark format (allow decimals like 27.5)
+5. Collect all validation errors
+6. If errors exist: Show all errors, don't upload
+7. If no errors: Upload to backend
+
+---
+
+### **LOADING STATES:**
+
+**During file upload:**
+- Show loading overlay on the form
+- Button shows: "Uploading..." with spinner icon
+- Disable all inputs
+- Show progress bar if file is large
+
+**After upload starts:**
+- Cannot cancel
+- Must wait for completion
+- Show "Please wait, uploading results..." message
+
+---
+
+### **RESPONSIVE DESIGN:**
+
+**Desktop (>1024px):**
+- Sidebar visible
+- Exam and Maximum Marks fields side by side (50/50)
+- File upload full width
+
+**Tablet (768px-1024px):**
+- Sidebar collapses to icons only
+- Fields might stack vertically
+- File upload remains full width
+
+**Mobile (<768px):**
+- Sidebar hidden, hamburger menu
+- All fields stack vertically
+- File upload button full width
+- Bottom buttons stack vertically
+
+---
+
+### **SIDEBAR INTERACTION:**
+
+**Collapse/Expand behavior:**
+- Click hamburger icon to toggle
+- When collapsed: Shows only icons (60px width)
+- When expanded: Shows icons + text (200px width)
+- Smooth animation (0.3s transition)
+- User preference saved in browser
+
+**Bottom icons (below sidebar):**
+- Settings icon (gear)
+- User profile icon
+- Help/Info icon
+
+---
+
+### **COLOR PALETTE:**
+
+- **Sidebar green:** #4CAF50
+- **Hover green:** #5CB85C
+- **Navigation green:** #4CAF50
+- **Blue (upload button):** #00BCD4 or #2196F3
+- **Gray (back button):** #CFD8DC
+- **Download link blue:** #2196F3
+- **Background:** #FAFAFA
+- **Border gray:** #E0E0E0
+- **Text dark:** #263238
+- **Text medium:** #424242
+- **Text light:** #757575
+- **Error red:** #F44336
+- **Success green:** #4CAF50
+
+---
+
+### **FOOTER:**
+- Text: "© 2025 Zeraki. All Rights Reserved."
+- Small gray text (#757575)
+- Left aligned
+- 40px margin from bottom
+- Visible below all content
+
+---
+
+**Kilocode, build this spreadsheet upload interface exactly as described. Key features:**
+
+1. **Left sidebar with all navigation items** (Dashboard, Calendar, Classes, etc.)
+2. **Radio buttons with "Upload results from a spreadsheet" selected**
+3. **Exam dropdown and Maximum Marks input side by side**
+4. **Blue "Download" link** with instructions text
+5. **File upload button** showing "Choose File" and "No file chosen"
+6. **Bottom buttons:** Back (gray) on left, Upload Subject Results (blue) on right
+
+**Important functionality:**
+- Download link generates and downloads Excel template with all students
+- File upload accepts .xlsx, .xls, .csv only
+- Validate file format, data, and marks before uploading
+- Show clear error messages for any issues
+- Success message and redirect after successful upload
+
+**The template MUST have the exact column headers and all 40 students pre-filled with empty Marks column.**
+
+Start building the sidebar first, then the main content area. Test the download template function and file upload validation thoroughly.
+
+Do you understand? Begin coding now!Hey Kilocode, now I need you to build the **Upload Results - Spreadsheet Upload View**. This is what shows when a teacher selects the "Upload results from a spreadsheet" radio button instead of manual entry. Let me explain every part:
+
+---
+
+## **PROJECT: Upload Results - Spreadsheet Upload Interface**
+
+### **STEP 1: Left Sidebar Navigation**
+Create a collapsible left sidebar with green background (#4CAF50):
+
+**Top Section - Main Navigation:**
+1. 📊 Dashboard
+2. 📅 Calendar
+3. 📈 Classes
+4. 🔀 Subjects
+5. 👥 Students
+6. 👨‍🏫 Teachers
+7. 💻 BOM/PA
+8. 👤 Staff
+9. 🎓 Exams
+10. ✅ Attendance
+11. 💬 Messages
+12. 📄 Printouts
+13. 💰 Billing
+
+**Middle Section - "ZERAKI PRODUCTS":**
+14. 📚 Learning
+
+**Bottom Section - "OTHERS":**
+15. Ⓗ Opportunities
+
+**Sidebar styling:**
+- Background: Green (#4CAF50)
+- Width: 200px (expanded) or 60px (collapsed)
+- Icons: White
+- Text: White, 14px
+- Hover: Slightly lighter green background (#5CB85C)
+- Active item: Darker green or highlighted
+- Each item has icon on left, text on right
+- Padding: 12px per item
+
+---
+
+### **STEP 2: Top Header Bar (Same as before)**
+- White background
+- Zeraki Analytics logo on left
+- School name: "Friends Kikai Boys High School"
+- Right side: Language "English", search icon, mail icon (red badge "4"), user profile
+
+---
+
+### **STEP 3: Green Navigation Bar (Same as before)**
+- Green navigation bar (#4CAF50)
+- Items: "My Classes" (highlighted), "Manage exams", "+ Create Exam", "Grading Systems", "Subject Paper Ratios", "More"
+
+---
+
+### **STEP 4: Page Header**
+White/light gray bar with:
+- Text: "Upload Results - 2 East - Geography" (bold, 20px, dark navy #263238)
+
+---
+
+### **STEP 5: Upload Type Radio Buttons**
+Create section with two radio button options:
+
+**Label:** "Upload Type" (dark text, 14px)
+
+**Two radio buttons (horizontal layout):**
+
+**Option 1 (NOT selected):**
+- Radio button: Empty circle
+- Text: "Key in marks"
+
+**Option 2 (SELECTED - this is the current view):**
+- Radio button: Filled blue circle with dot inside
+- Text: "Upload results from a spreadsheet"
+- This option is currently selected
+
+---
+
+### **STEP 6: Exam and Maximum Marks Row**
+
+Create a row with two fields side by side:
+
+**Left field (50% width):**
+- Label: "Exam" (dark text, 14px)
+- Dropdown/input showing: "AVERAGE EXAM"
+- Background: Light gray (#F5F5F5)
+- Border: 1px solid light gray (#E0E0E0)
+- Padding: 12px
+- Border radius: 4px
+- Font: 14px
+
+**Right field (50% width):**
+- Label: "Maximum Marks *" (asterisk indicates required)
+- Text input box
+- Placeholder: "out of value e.g. 30"
+- Background: White
+- Border: 1px solid light gray (#E0E0E0)
+- Padding: 12px
+- Border radius: 4px
+- Font: 14px
+
+---
+
+### **STEP 7: Template Download and Instructions**
+
+Create a section with download link and instructions:
+
+**Text line:**
+- Blue clickable link: "Download ⬇" (with download icon)
+- Color: Blue (#2196F3)
+- Font weight: Medium
+- Underline on hover
+- Followed by regular black text: "and fill the template then upload it below. (Please leave the column headers intact)"
+
+**Important note styling:**
+- Link is clickable
+- "(Please leave the column headers intact)" is in parentheses - important instruction
+- Regular text color: Dark gray (#424242)
+- Font size: 14px
+
+---
+
+### **STEP 8: File Upload Section**
+
+Create a file upload input:
+
+**File input field:**
+- Button on left: "Choose File" 
+  - Background: Light gray (#E0E0E0)
+  - Text: Dark gray
+  - Padding: 10px 20px
+  - Border: 1px solid gray
+  - Border radius: 4px on left side only
+  - Cursor: pointer
+
+- Text area on right: "No file chosen"
+  - Background: White
+  - Border: 1px solid light gray (#E0E0E0)
+  - Padding: 10px
+  - Border radius: 4px on right side only
+  - Text: Gray (#757575)
+  - When file is selected, shows filename
+
+**Full width:** Takes up the entire width of the content area
+
+---
+
+### **STEP 9: Bottom Action Buttons**
+
+At the bottom of the page, create two buttons:
+
+**Left button:**
+- Text: "Back"
+- Background: Light blue-gray (#CFD8DC)
+- Text color: Dark gray (#424242)
+- Padding: 10px 24px
+- Border radius: 4px
+- Border: none
+- Hover: Slightly darker gray
+- Function: Returns to My Classes page
+
+**Right button:**
+- Text: "Upload Subject Results"
+- Background: Bright blue (#00BCD4 or #2196F3)
+- Text color: White
+- Padding: 10px 32px
+- Border radius: 4px
+- Border: none
+- Float to the right side
+- Hover: Darker blue
+- Function: Submits the uploaded file
+
+---
+
+### **LAYOUT SPECIFICATIONS:**
+
+**Main content area:**
+- Background: White or very light gray (#FAFAFA)
+- Padding: 32px
+- Max width: 1200px
+- Margin: auto (centered)
+
+**Spacing between sections:**
+- Upload Type to Exam/Marks row: 24px
+- Exam/Marks row to Download instructions: 24px
+- Download instructions to File upload: 16px
+- File upload to Bottom buttons: 40px
+
+**Content width:**
+- Takes full width within main container
+- Left sidebar: 200px fixed
+- Main content: Remaining space (calc(100% - 200px))
+
+---
+
+### **FUNCTIONALITY REQUIREMENTS:**
+
+**1. Radio Button Toggle:**
+- Clicking "Key in marks" radio button:
+  - Switches to manual entry view (the previous page with the student table)
+  - Hides spreadsheet upload section
+  
+- "Upload results from a spreadsheet" is currently selected:
+  - Shows this current view
+  - Shows file upload section
+  - Hides student table
+
+**2. Download Template Link:**
+- When clicked: Downloads an Excel template file
+- Template should contain:
+  - Column headers: Admission Number | Student Name | Marks
+  - Pre-filled with all students from the class
+  - Empty Marks column for teacher to fill
+- File format: .xlsx (Excel)
+- Filename: "2_East_Geography_AVERAGE_EXAM_Template.xlsx"
+
+**3. Choose File Button:**
+- When clicked: Opens file browser dialog
+- Accepted file types:
+  - .xlsx (Excel 2007+)
+  - .xls (Excel 97-2003)
+  - .csv (Comma Separated Values)
+- File size limit: 10MB
+- After file selection: Shows filename in the text area
+
+**4. File Validation:**
+After file is selected, validate:
+- File format is correct (.xlsx, .xls, or .csv)
+- File has required columns (Admission Number, Name, Marks)
+- Column headers match exactly (case-insensitive)
+- Admission numbers match students in the class
+- Marks are valid numbers
+- Marks don't exceed Maximum Marks value
+- No duplicate admission numbers
+
+**5. Maximum Marks Field:**
+- Required field
+- Must be filled before upload
+- Must be a positive number
+- Validation on blur and on submit
+
+**6. Upload Subject Results Button:**
+When clicked:
+- Validates Maximum Marks field is filled
+- Validates a file has been selected
+- Parses the file
+- Shows loading spinner
+- Button text changes to "Uploading..."
+- Disables button to prevent double-click
+- If validation fails: Shows error messages
+- If validation passes: Uploads data to backend
+
+**7. Back Button:**
+- Returns to My Classes page
+- If file is selected but not uploaded: Show warning
+  - "You have selected a file but haven't uploaded it. Are you sure you want to leave?"
+
+---
+
+### **ERROR HANDLING:**
+
+**Show error messages for:**
+
+1. **No file selected:**
+   - "Please select a file to upload"
+   - Red text below file input
+
+2. **Invalid file format:**
+   - "Invalid file format. Please upload .xlsx, .xls, or .csv files only"
+   - Red text below file input
+
+3. **Missing maximum marks:**
+   - "Please enter maximum marks"
+   - Red border around Maximum Marks field
+
+4. **File parsing errors:**
+   - "Error reading file. Please check the file format and try again"
+   - Red alert box at top of section
+
+5. **Invalid data in file:**
+   - "Row 5: Mark exceeds maximum marks"
+   - "Row 8: Invalid admission number"
+   - "Row 12: Mark must be a number"
+   - Red alert box listing all errors
+
+6. **Missing required columns:**
+   - "File is missing required columns: [list columns]"
+   - Red alert box
+
+7. **Column headers modified:**
+   - "Column headers have been modified. Please download a fresh template and don't change the headers"
+   - Red alert box
+
+---
+
+### **SUCCESS FLOW:**
+
+**After successful upload:**
+1. Show green success message: "Results uploaded successfully for 2 East - Geography"
+2. Show summary: "40 students' marks uploaded"
+3. Wait 2 seconds
+4. Redirect to My Classes page
+5. Status changes from "Upload Results" to "View Results"
+
+---
+
+### **TEMPLATE FILE SPECIFICATIONS:**
+
+**The downloadable Excel template should have:**
+
+**Column headers (Row 1):**
+- Admission Number
+- Student Name  
+- Marks
+
+**Pre-filled data (Rows 2-41):**
+- All 40 students from the class
+- Admission numbers already filled
+- Names already filled
+- Marks column is EMPTY for teacher to fill
+
+**Example template content:**
+```
+Admission Number | Student Name           | Marks
+4399            | WANYONYI ERYSAI        |
+4401            | DANIEL SIMIYU          |
+4403            | JOSHUA KIPLASAT        |
+4405            | IBRARY KIMATIA         |
+...             | ...                    |
+```
+
+**Formatting:**
+- Headers in bold
+- Headers row has light gray background
+- All columns have borders
+- Marks column has number format (2 decimal places)
+- Column widths auto-fit to content
+
+---
+
+### **FILE PARSING LOGIC:**
+
+**When file is uploaded:**
+1. Read file (handle .xlsx, .xls, .csv)
+2. Check for required columns
+3. Verify column headers match template
+4. For each row:
+   - Check admission number exists in class
+   - Check mark is a valid number
+   - Check mark is between 0 and Maximum Marks
+   - Check mark format (allow decimals like 27.5)
+5. Collect all validation errors
+6. If errors exist: Show all errors, don't upload
+7. If no errors: Upload to backend
+
+---
+
+### **LOADING STATES:**
+
+**During file upload:**
+- Show loading overlay on the form
+- Button shows: "Uploading..." with spinner icon
+- Disable all inputs
+- Show progress bar if file is large
+
+**After upload starts:**
+- Cannot cancel
+- Must wait for completion
+- Show "Please wait, uploading results..." message
+
+---
+
+### **RESPONSIVE DESIGN:**
+
+**Desktop (>1024px):**
+- Sidebar visible
+- Exam and Maximum Marks fields side by side (50/50)
+- File upload full width
+
+**Tablet (768px-1024px):**
+- Sidebar collapses to icons only
+- Fields might stack vertically
+- File upload remains full width
+
+**Mobile (<768px):**
+- Sidebar hidden, hamburger menu
+- All fields stack vertically
+- File upload button full width
+- Bottom buttons stack vertically
+
+---
+
+### **SIDEBAR INTERACTION:**
+
+**Collapse/Expand behavior:**
+- Click hamburger icon to toggle
+- When collapsed: Shows only icons (60px width)
+- When expanded: Shows icons + text (200px width)
+- Smooth animation (0.3s transition)
+- User preference saved in browser
+
+**Bottom icons (below sidebar):**
+- Settings icon (gear)
+- User profile icon
+- Help/Info icon
+
+---
+
+### **COLOR PALETTE:**
+
+- **Sidebar green:** #4CAF50
+- **Hover green:** #5CB85C
+- **Navigation green:** #4CAF50
+- **Blue (upload button):** #00BCD4 or #2196F3
+- **Gray (back button):** #CFD8DC
+- **Download link blue:** #2196F3
+- **Background:** #FAFAFA
+- **Border gray:** #E0E0E0
+- **Text dark:** #263238
+- **Text medium:** #424242
+- **Text light:** #757575
+- **Error red:** #F44336
+- **Success green:** #4CAF50
+
+---
+
+### **FOOTER:**
+- Text: "© 2025 Zeraki. All Rights Reserved."
+- Small gray text (#757575)
+- Left aligned
+- 40px margin from bottom
+- Visible below all content
+
+---
+
+**Kilocode, build this spreadsheet upload interface exactly as described. Key features:**
+
+1. **Left sidebar with all navigation items** (Dashboard, Calendar, Classes, etc.)
+2. **Radio buttons with "Upload results from a spreadsheet" selected**
+3. **Exam dropdown and Maximum Marks input side by side**
+4. **Blue "Download" link** with instructions text
+5. **File upload button** showing "Choose File" and "No file chosen"
+6. **Bottom buttons:** Back (gray) on left, Upload Subject Results (blue) on right
+
+**Important functionality:**
+- Download link generates and downloads Excel template with all students
+- File upload accepts .xlsx, .xls, .csv only
+- Validate file format, data, and marks before uploading
+- Show clear error messages for any issues
+- Success message and redirect after successful upload
+
+**The template MUST have the exact column headers and all 40 students pre-filled with empty Marks column.**
+
+Start building the sidebar first, then the main content area. Test the download template function and file upload validation thoroughly.
+
+Do you understand? Begin coding now!
+Hey Kilocode, now I need you to build the **Manage Exams Page**. This is a comprehensive exam management dashboard that shows different views based on user roles. Let me explain every part in detail:
+
+---
+
+## **PROJECT: Manage Exams - Multi-Role Dashboard**
+
+### **IMPORTANT: USER ROLE PERMISSIONS**
+
+This page has **THREE different user role views**:
+
+**1. SUBJECT TEACHER (Regular Teacher):**
+- Sees ONLY the subjects they teach
+- Sees ONLY the classes they teach those subjects to
+- Example: If teacher teaches Geography to Form 2 East and Form 3 W, they see only those classes
+- Can upload results for their subjects
+- Can view analysis for their subjects
+- CANNOT see other teachers' subjects
+- CANNOT publish results (only upload)
+
+**2. CLASS TEACHER (Homeroom Teacher):**
+- Sees ALL subjects for the classes they supervise
+- Example: Class teacher for Form 4 sees all Form 4 subjects
+- Can view all subject results for their class
+- Can analyze overall class performance
+- Can publish results for their class
+- Has "Publish Results" button access
+
+**3. HEAD OF DEPARTMENT (HOD) / ADMIN:**
+- Sees ALL exams across ALL classes and subjects
+- Can view, edit, publish, unpublish any exam
+- Full administrative control
+- Can manage all teachers' exams
+- This is what we see in the screenshots
+
+**The page you're building is for the HOD/ADMIN view (full access to everything).**
+
+---
+
+### **STEP 1: Top Header and Navigation (Same as before)**
+
+**White header bar:**
+- Zeraki Analytics logo
+- School name: "Friends Kikai Boys High School"
+- Right side: Language "English", search, mail (badge "3"), user profile
+
+**Green navigation bar:**
+- "My Classes"
+- "Manage exams" (currently selected/highlighted with darker green)
+- "+ Create Exam"
+- "Grading Systems"
+- "Subject Paper Ratios"
+- "More"
+
+---
+
+### **STEP 2: Academic Year Selector**
+
+At the top of the page content:
+
+**Label:** "Academic Year" (dark text, 14px)
+
+**Dropdown field:**
+- Full width dropdown
+- Currently shows: "2025"
+- Background: Very light gray (#F5F5F5)
+- Border: 1px solid light gray (#E0E0E0)
+- Padding: 12px
+- Border radius: 4px
+- Dropdown arrow on right
+- When changed: Filters all exams to show only that academic year
+
+---
+
+### **STEP 3: Term 2 Section (First Table)**
+
+**Section heading:** "Term 2" (bold, 20px, dark text)
+
+**Table structure with 7 columns:**
+
+**Column Headers:**
+1. Exam (exam name)
+2. Class (which class/form)
+3. Status (publication status)
+4. Updated By (who last modified)
+5. Updated On (date of last update)
+6. Action (buttons/actions available)
+7. (Additional action buttons)
+
+**Rows are color-coded based on status:**
+- **Light cyan/turquoise background (#E0F7FA or similar):** Published exams
+- **White background:** Unpublished exams or results not uploaded
+
+---
+
+### **TERM 2 TABLE DATA (11 rows shown):**
+
+**Row 1:**
+- Exam: AVERAGE EXAM
+- Class: Form 2
+- Status: Published (regular text)
+- Updated By: Kevin Muchwangi Sakula
+- Updated On: 29/07/2025
+- Actions: 
+  - ✏️ Edit Exam (button with pen icon)
+  - 📄 Subject Papers (gray button)
+  - 📊 Analyze Results (blue button)
+  - 🗑️ Unpublish Results (orange/yellow button)
+
+**Row 2:**
+- Exam: AVERAGE EXAM
+- Class: Form 3
+- Status: Published
+- Updated By: Kevin Muchwangi Sakula
+- Updated On: 29/07/2025
+- Actions: ✏️ Edit Exam, 📄 Subject Papers, 📊 Analyze Results, 🗑️ Unpublish Results
+
+**Row 3:**
+- Exam: AVERAGE EXAM
+- Class: Form 2
+- Status: Results Not Uploaded (gray/muted text)
+- Updated By: Kevin Muchwangi Muchwangi1
+- Updated On: 29/07/2025
+- Actions: ✏️ Edit Exam, 📄 Subject Papers, ☁️ Upload Results (light blue button)
+
+**Row 4:**
+- Exam: AVERAGE EXAM
+- Class: Form 3
+- Status: Results Not Uploaded
+- Updated By: Kevin Muchwangi Muchwangi1
+- Updated On: 29/07/2025
+- Actions: 📄 Subject Papers, ☁️ Upload Results
+
+**Row 5:**
+- Exam: BUNGOMA WEST JOINT
+- Class: Form 4
+- Status: Published
+- Updated By: Kevin Muchwangi Sakula
+- Updated On: 31/07/2025
+- Actions: ✏️ Edit Exam, 📄 Subject Papers, 📊 Analyze Results, 🗑️ Unpublish Results
+
+**Row 6:**
+- Exam: MID TERM
+- Class: Form 2
+- Status: Published
+- Updated By: Kevin Muchwangi Sakula
+- Updated On: 29/07/2025
+- Actions: ✏️ Edit Exam, 📄 Subject Papers, 📊 Analyze Results
+
+**Row 7:**
+- Exam: MID TERM
+- Class: Form 3
+- Status: Published
+- Updated By: Kevin Muchwangi Sakula
+- Updated On: 29/07/2025
+- Actions: 📄 Subject Papers, 📊 Analyze Results
+
+**Row 8:**
+- Exam: BUNGOMA WEST JOINT EXAM
+- Class: Form 4
+- Status: Results Not Uploaded
+- Updated By: Kevin Muchwangi Muchwangi1
+- Updated On: 16/07/2025
+- Actions: ✏️ Edit Exam, 📄 Subject Papers, ☁️ Upload Results
+
+**Row 9:**
+- Exam: MID YEAR EXAM
+- Class: Form 2
+- Status: Published
+- Updated By: Christine Wekesa
+- Updated On: 09/07/2025
+- Actions: 📄 Subject Papers, 📊 Analyze Results
+
+**Row 10:**
+- Exam: MID YEAR EXAM
+- Class: Form 3
+- Status: Published
+- Updated By: Kevin Muchwangi Sakula
+- Updated On: 07/07/2025
+- Actions: ✏️ Edit Exam, 📄 Subject Papers, 📊 Analyze Results
+
+**Row 11:**
+- Exam: MID YEAR EXAM
+- Class: Form 4
+- Status: Published
+- Updated By: Kevin Muchwangi Sakula
+- Updated On: 03/07/2025
+- Actions: 📄 Subject Papers, 📊 Analyze Results
+
+**Pagination at bottom:**
+- Shows page 1 indicator
+- Horizontal scrollbar for more rows
+- Previous/Next arrows on sides
+
+---
+
+### **STEP 4: Term 1 Section (Second Table)**
+
+**Section heading:** "Term 1" (bold, 20px, dark text)
+
+**Same table structure as Term 2, with these rows:**
+
+**Row 1:**
+- Exam: (Exam name - appears cut off in image)
+- Class: Form 2
+- Status: Pending Publishing (gray text)
+- Updated By: Christine Wekesa
+- Updated On: 02/07/2025
+- Actions: 📄 Subject Papers, 🔖 Publish Results (dark blue/navy button)
+
+**Row 2:**
+- Exam: OF TERM 1
+- Class: Form 3
+- Status: Published
+- Updated By: Christine Wekesa
+- Updated On: 03/04/2025
+- Actions: ✏️ Edit Exam, 📄 Subject Papers, 📊 Analyze Results
+
+**Row 3:**
+- Exam: (Exam name)
+- Class: Form 4
+- Status: Pending Publishing
+- Updated By: Christine Wekesa
+- Updated On: 04/04/2025
+- Actions: 📄 Subject Papers, 🔖 Publish Results
+
+**Pagination at bottom**
+
+---
+
+### **DETAILED TABLE SPECIFICATIONS:**
+
+**Table styling:**
+- Full width
+- White background for table container
+- Border: 1px solid light gray (#E0E0E0)
+- Border radius: 8px
+- Box shadow: subtle (0 2px 4px rgba(0,0,0,0.05))
+
+**Header row:**
+- Background: Light gray (#F5F5F5)
+- Text: Bold, 14px, dark gray (#424242)
+- Padding: 16px
+- Border bottom: 2px solid #E0E0E0
+- Sticky header (stays visible when scrolling)
+
+**Data rows:**
+- **Published exams:** Light cyan/turquoise background (#E0F7FA, #B2EBF2)
+- **Results Not Uploaded / Pending Publishing:** White background
+- Padding: 16px per cell
+- Border between rows: 1px solid #E0E0E0
+- Hover: Slightly darker background
+- Min-height: 60px per row
+
+**Column widths:**
+- Exam: 20%
+- Class: 10%
+- Status: 15%
+- Updated By: 15%
+- Updated On: 12%
+- Action: 28% (for multiple buttons)
+
+---
+
+### **BUTTON SPECIFICATIONS:**
+
+**1. Edit Exam button:**
+- Icon: Pencil/pen ✏️
+- Text: "Edit Exam"
+- Background: White
+- Border: 1px solid gray (#BDBDBD)
+- Text color: Dark gray (#424242)
+- Padding: 6px 12px
+- Border radius: 4px
+- Font size: 13px
+
+**2. Subject Papers button:**
+- Icon: Document/paper 📄
+- Text: "Subject Papers"
+- Background: Light gray (#E0E0E0)
+- Text color: Medium gray (#757575)
+- No border or 1px solid light gray
+- Padding: 6px 12px
+- Border radius: 4px
+- Font size: 13px
+
+**3. Analyze Results button:**
+- Icon: Chart/graph 📊
+- Text: "Analyze Results"
+- Background: Blue (#2196F3 or #00BCD4)
+- Text color: White
+- No border
+- Padding: 6px 16px
+- Border radius: 4px
+- Font size: 13px
+- Hover: Darker blue
+
+**4. Unpublish Results button:**
+- Icon: Delete/trash 🗑️
+- Text: "Unpublish Results"
+- Background: Orange/yellow (#FFA726 or #FFB74D)
+- Text color: White or dark
+- No border
+- Padding: 6px 16px
+- Border radius: 4px
+- Font size: 13px
+- Hover: Darker orange
+
+**5. Upload Results button:**
+- Icon: Cloud with up arrow ☁️↑
+- Text: "Upload Results"
+- Background: Light blue (#B3E5FC or #81D4FA)
+- Text color: Blue (#0288D1) or white
+- Border: 1px solid light blue
+- Padding: 6px 16px
+- Border radius: 4px
+- Font size: 13px
+
+**6. Publish Results button:**
+- Icon: Publish/bookmark 🔖
+- Text: "Publish Results"
+- Background: Dark navy/blue (#263238 or #1A237E)
+- Text color: White
+- No border
+- Padding: 6px 16px
+- Border radius: 4px
+- Font size: 13px
+- Hover: Slightly lighter
+
+---
+
+### **STATUS TEXT STYLING:**
+
+**Three status types:**
+
+**1. "Published":**
+- Text color: Regular dark gray (#424242)
+- Regular weight
+- No special styling
+
+**2. "Results Not Uploaded":**
+- Text color: Medium gray (#757575)
+- Regular or slightly lighter weight
+- Indicates results are pending
+
+**3. "Pending Publishing":**
+- Text color: Gray (#757575)
+- Indicates exam exists but not yet published to students
+
+---
+
+### **BUTTON VISIBILITY LOGIC:**
+
+**When Status = "Published":**
+- Show: Edit Exam (if user is creator or admin)
+- Show: Subject Papers
+- Show: Analyze Results (blue)
+- Show: Unpublish Results (orange) - only for HOD/Class Teacher
+
+**When Status = "Results Not Uploaded":**
+- Show: Edit Exam
+- Show: Subject Papers
+- Show: Upload Results (light blue)
+- Hide: Analyze Results
+- Hide: Unpublish Results
+
+**When Status = "Pending Publishing":**
+- Show: Subject Papers
+- Show: Publish Results (dark blue) - only for HOD/Class Teacher
+- Hide: Edit Exam (depends on workflow)
+- Hide: Analyze Results
+
+---
+
+### **ROLE-BASED BUTTON ACCESS:**
+
+**SUBJECT TEACHER can:**
+- Click Upload Results (for their subjects only)
+- Click Edit Exam (if they created it)
+- Click Analyze Results (for their subjects only)
+- Click Subject Papers (view only)
+- CANNOT click Publish Results
+- CANNOT click Unpublish Results
+
+**CLASS TEACHER can:**
+- Click Upload Results (for subjects they teach)
+- Click Edit Exam
+- Click Analyze Results (all subjects in their class)
+- Click Subject Papers
+- Click Publish Results (for their class)
+- Click Unpublish Results (for their class)
+
+**HOD/ADMIN can:**
+- Click ALL buttons
+- Full control over all exams
+- Can edit, publish, unpublish any exam
+- Can view all analytics
+
+---
+
+### **FUNCTIONALITY FOR EACH BUTTON:**
+
+**1. Edit Exam:**
+- Opens exam edit modal/page
+- Can change:
+  - Exam name
+  - Date
+  - Maximum marks
+  - Grading system
+  - Which classes take it
+- Save changes updates "Updated By" and "Updated On"
+
+**2. Subject Papers:**
+- Shows list of all subjects for that exam
+- For each subject, shows:
+  - Subject name
+  - Number of students
+  - Upload status
+  - Action buttons per subject
+- Example: Geography (40 students) - Upload Results button
+
+**3. Upload Results:**
+- Opens upload page (the one we built earlier)
+- Can choose manual entry or spreadsheet
+- After upload, status changes to "Pending Publishing"
+
+**4. Analyze Results:**
+- Opens analysis dashboard (the Form 3 analysis page we built)
+- Shows:
+  - Class performance
+  - Subject breakdown
+  - Grade distribution
+  - Performance trends
+  - Individual student results
+
+**5. Publish Results:**
+- Confirmation dialog: "Are you sure you want to publish results for [Exam] - [Class]?"
+- If confirmed:
+  - Changes status from "Pending Publishing" to "Published"
+  - Results become visible to students and parents
+  - Updates "Updated By" and "Updated On"
+  - Shows success message
+
+**6. Unpublish Results:**
+- Confirmation dialog: "Are you sure you want to unpublish results? Students will no longer see them."
+- If confirmed:
+  - Changes status from "Published" to "Pending Publishing"
+  - Results hidden from students/parents
+  - Still visible to teachers for editing
+  - Updates "Updated By" and "Updated On"
+
+---
+
+### **DATA STRUCTURE:**
+
+Each exam entry should have:
+
+```javascript
+{
+  id: "exam_001",
+  name: "AVERAGE EXAM",
+  class: "Form 2",
+  term: "Term 2",
+  academicYear: "2025",
+  status: "Published", // or "Results Not Uploaded" or "Pending Publishing"
+  updatedBy: {
+    name: "Kevin Muchwangi Sakula",
+    role: "HOD"
+  },
+  updatedOn: "29/07/2025",
+  createdBy: "Kevin Muchwangi Sakula",
+  createdOn: "15/07/2025",
+  subjects: [
+    {
+      name: "Geography",
+      teacher: "Paul Ijendi Inyangala",
+      studentsCount: 40,
+      resultsUploaded: true
+    },
+    // ... more subjects
+  ],
+  permissions: {
+    canEdit: true,
+    canUpload: true,
+    canPublish: true,
+    canUnpublish: true,
+    canAnalyze: true
+  }
+}
+```
+
+---
+
+### **FILTERING AND SEARCH:**
+
+**Add these features (optional but recommended):**
+
+**Top filters bar:**
+- Search box: "Search exams..." (searches exam names)
+- Filter by class: Dropdown (All, Form 1, Form 2, Form 3, Form 4)
+- Filter by status: Dropdown (All, Published, Pending, Not Uploaded)
+- Filter by term: Dropdown (All, Term 1, Term 2, Term 3)
+
+---
+
+### **PAGINATION:**
+
+**At bottom of each table:**
+- Page numbers: 1, 2, 3, ...
+- Previous/Next arrows
+- Showing: "Showing 1-10 of 45 exams"
+- Items per page: 10 (configurable)
+- Horizontal scroll for overflow
+
+---
+
+### **RESPONSIVE DESIGN:**
+
+**Desktop (>1024px):**
+- Full table layout
+- All columns visible
+- Buttons side by side
+
+**Tablet (768px-1024px):**
+- Slightly narrower columns
+- Buttons might stack
+- Horizontal scroll if needed
+
+**Mobile (<768px):**
+- Convert to card layout
+- Each exam is a card:
+  - Exam name at top (bold)
+  - Class and status below
+  - Updated info
+  - Buttons stacked vertically at bottom
+- Swipe to see more cards
+
+---
+
+### **COLOR CODING SUMMARY:**
+
+- **Published exams:** Light cyan background (#E0F7FA)
+- **Unpublished/Pending:** White background
+- **Analyze button:** Blue (#2196F3)
+- **Upload button:** Light blue (#81D4FA)
+- **Publish button:** Dark navy (#263238)
+- **Unpublish button:** Orange (#FFA726)
+- **Edit button:** White with gray border
+- **Subject Papers:** Light gray (#E0E0E0)
+
+---
+
+### **LOADING AND ERROR STATES:**
+
+**When page loads:**
+- Show skeleton/loading placeholders for tables
+- Fetch exams from backend
+- Group by term
+- Sort by date (newest first)
+
+**If no exams:**
+- Show empty state message: "No exams created yet for 2025"
+- Show "+ Create Exam" button prominently
+
+**If error loading:**
+- Show error message: "Failed to load exams. Please refresh."
+- Show retry button
+
+---
+
+### **NOTIFICATION/TOAST MESSAGES:**
+
+**After actions:**
+- Publish: "Results published successfully for AVERAGE EXAM - Form 2"
+- Unpublish: "Results unpublished for AVERAGE EXAM - Form 2"
+- Edit: "Exam updated successfully"
+- Upload: "Results uploaded successfully. Exam is pending publishing."
+
+---
+
+### **IMPORTANT PERMISSION CHECKS:**
+
+**Before showing each button, check:**
+- User role (Subject Teacher, Class Teacher, HOD)
+- Exam ownership
+- Class assignment
+- Subject assignment
+
+**Example checks:**
+```javascript
+// Can this user publish results for this exam?
+canPublish = (user.role === 'HOD' || user.role === 'ClassTeacher') 
+             && user.classes.includes(exam.class)
+
+// Can this user upload results for this exam?
+canUpload = user.subjects.some(s => 
+  exam.subjects.includes(s.name) && s.class === exam.class
+)
+```
+
+---
+
+### **FOOTER:**
+- Text: "© 2025 Zeraki. All Rights Reserved."
+- Gray text
+- Left aligned
+
+---
+
+**Kilocode, this is a complex multi-role dashboard. Here's what you need to build:**
+
+**1. Academic Year dropdown at top**
+**2. Two sections: "Term 2" and "Term 1"**
+**3. Each section has a table with 7 columns**
+**4. Color-code rows based on status (published = light cyan)**
+**5. Multiple action buttons per row (Edit, Subject Papers, Analyze, Upload, Publish, Unpublish)**
+**6. Button visibility depends on status and user role**
+**7. Implement role-based permissions:**
+   - Subject Teacher: See only their subjects
+   - Class Teacher: See their classes, can publish
+   - HOD: See everything, full control
+
+**Start with the table structure, then add the buttons with conditional visibility. Test with different user roles to ensure teachers only see their assigned classes and subjects.**
+
+Do you understand the role-based access and button logic? Begin coding!
+grading system list 
+Hey Kilocode, now I need you to build the **Grading Systems Management Page**. This is where teachers can view and manage how grades are calculated. Let me explain every part:
+
+---
+
+## **PROJECT: Grading Systems Configuration Page**
+
+### **STEP 1: Top Navigation Bar (Same as previous)**
+- Green navigation bar (#4CAF50)
+- Left side: Zeraki logo + "Friends Kikai Boys High School"
+- Navigation menu items: "My Classes", "Manage exams", "+ Create Exam", "Grading Systems" (currently selected/highlighted), "Subject Paper Ratios", "More"
+- Right side: Language "English", search icon, mail icon, notification bell with red badge "4", user profile "Paul Ijendi Inyangala" with photo
+
+---
+
+### **STEP 2: Page Header**
+Create a white section with:
+
+**Left side:**
+- Large heading: "Grading Systems" (bold, dark text, 32px)
+
+**Right side:**
+- Blue button: "+ Create Grading System" (#2196F3 blue color)
+
+---
+
+### **STEP 3: Grading System Card**
+
+Create a white card with rounded corners and shadow containing:
+
+**Card Header:**
+- Left side: Bold text "MATHS & SCIENCES" (uppercase, dark text)
+- Right side: Dark blue/black button "Close"
+
+**Main Content - Grading Table:**
+
+Create a table with 4 columns and 14 rows:
+
+**Column Headers:**
+1. Low (score range minimum)
+2. High (score range maximum)
+3. Grade (letter grade)
+4. Points (point value)
+
+**Table Data (14 rows):**
+
+| Low | High | Grade | Points |
+|-----|------|-------|--------|
+| 75 | 100 | A | 12 |
+| 70 | 74 | A- | 11 |
+| 65 | 69 | B+ | 10 |
+| 60 | 64 | B | 9 |
+| 55 | 59 | B- | 8 |
+| 50 | 54 | C+ | 7 |
+| 40 | 49 | C | 6 |
+| 35 | 39 | C- | 5 |
+| 25 | 34 | D+ | 4 |
+| 20 | 24 | D | 3 |
+| 15 | 19 | D- | 2 |
+| 0 | 14 | E | 1 |
+| -1 | -1 | X | 0 |
+| -1 | -1 | Y | 0 |
+
+---
+
+### **DETAILED SPECIFICATIONS:**
+
+**Table Styling:**
+- Full width table inside the card
+- 4 equal-width columns
+- Header row:
+  - Background: light gray (#F5F5F5)
+  - Text: Bold, dark gray (#333333)
+  - Padding: 16px
+  - Border bottom: 1px solid #E0E0E0
+
+**Data Rows:**
+- Background: White
+- Alternating rows: very light gray (#FAFAFA) for better readability
+- Text: Regular weight, dark gray (#424242)
+- Padding: 16px per cell
+- Border between rows: 1px solid #E0E0E0
+- Hover effect: Slight background color change (#F0F0F0)
+
+**Cell Alignment:**
+- Low, High, Points columns: Center aligned
+- Grade column: Center aligned
+- All text vertically centered
+
+---
+
+### **CARD SPECIFICATIONS:**
+
+**Card container:**
+- Background: White (#FFFFFF)
+- Border radius: 8px
+- Box shadow: 0 2px 8px rgba(0,0,0,0.1)
+- Margin: 24px from page edges
+- Padding: 0 (padding is in header and table)
+
+**Card Header (MATHS & SCIENCES section):**
+- Background: white
+- Padding: 20px 24px
+- Border bottom: 1px solid #E0E0E0
+- Display flex with space-between alignment
+
+**Close Button:**
+- Background: Dark navy/black (#263238)
+- Text: White
+- Padding: 8px 20px
+- Border radius: 4px
+- No border
+- Cursor: pointer
+- Hover effect: Slightly lighter background
+
+---
+
+### **BUTTON SPECIFICATIONS:**
+
+**"+ Create Grading System" button:**
+- Background: Blue (#2196F3)
+- Text: White, 14px, medium weight
+- Padding: 10px 20px
+- Border radius: 4px
+- Icon: Plus sign (+) before text
+- Hover effect: Darker blue (#1976D2)
+- Cursor: pointer
+
+---
+
+### **PAGE LAYOUT:**
+
+**Overall structure:**
+- Full page background: Light gray (#F5F5F5)
+- Content container: 
+  - Max width: 1200px
+  - Center aligned
+  - Padding: 24px
+
+**Spacing:**
+- Gap between header and card: 32px
+- Card takes full width of container
+
+---
+
+### **FUNCTIONALITY REQUIREMENTS:**
+
+1. **"+ Create Grading System" button:**
+   - When clicked: Opens a modal/form to create a new grading system
+   - Form should allow entering:
+     - System name
+     - Grade ranges (Low-High)
+     - Grade letters
+     - Point values
+
+2. **"Close" button:**
+   - When clicked: Collapses/hides this grading system card
+   - Or navigates back to list view if this is a detail page
+
+3. **Table rows:**
+   - Should be editable (click to edit each cell)
+   - Validation: Low value must be less than High value
+   - Grade ranges should not overlap
+   - Points should be in descending order
+
+4. **Special grades (X and Y):**
+   - These are for absent (X) or cheating/disqualified (Y) students
+   - -1 values indicate "not applicable" for score ranges
+
+---
+
+### **DATA STRUCTURE:**
+
+The grading system object should contain:
+
+```
+{
+  name: "MATHS & SCIENCES",
+  grades: [
+    { low: 75, high: 100, grade: "A", points: 12 },
+    { low: 70, high: 74, grade: "A-", points: 11 },
+    { low: 65, high: 69, grade: "B+", points: 10 },
+    { low: 60, high: 64, grade: "B", points: 9 },
+    { low: 55, high: 59, grade: "B-", points: 8 },
+    { low: 50, high: 54, grade: "C+", points: 7 },
+    { low: 40, high: 49, grade: "C", points: 6 },
+    { low: 35, high: 39, grade: "C-", points: 5 },
+    { low: 25, high: 34, grade: "D+", points: 4 },
+    { low: 20, high: 24, grade: "D", points: 3 },
+    { low: 15, high: 19, grade: "D-", points: 2 },
+    { low: 0, high: 14, grade: "E", points: 1 },
+    { low: -1, high: -1, grade: "X", points: 0 },
+    { low: -1, high: -1, grade: "Y", points: 0 }
+  ]
+}
+```
+
+---
+
+### **ADDITIONAL FEATURES TO CONSIDER:**
+
+1. **Multiple grading systems:**
+   - This page should be able to display multiple grading system cards
+   - Each subject category might have its own grading system
+   - Stack cards vertically with 24px gap between them
+
+2. **Edit functionality:**
+   - Add an "Edit" button next to "Close" button
+   - When clicked, make table cells editable
+   - Show "Save" and "Cancel" buttons
+
+3. **Delete functionality:**
+   - Add option to delete entire grading system
+   - Show confirmation dialog before deleting
+
+4. **Search/Filter:**
+   - If there are many grading systems, add search bar at top
+   - Filter by system name
+
+---
+
+### **RESPONSIVE BEHAVIOR:**
+
+- **Desktop (>1024px):** Table shows all columns normally
+- **Tablet (768px-1024px):** Table might need horizontal scroll or adjust column widths
+- **Mobile (<768px):** 
+  - Stack table differently (card layout for each grade)
+  - Or make table horizontally scrollable
+  - "Create Grading System" button full width
+
+---
+
+### **FOOTER (Bottom of page):**
+- Text: "© 2025 Zeraki. All Rights Reserved."
+- Small gray text
+- Centered or left-aligned
+- 40px margin from bottom
+
+---
+
+### **COLOR PALETTE SUMMARY:**
+
+- **Primary green:** #4CAF50 (navigation)
+- **Primary blue:** #2196F3 (create button)
+- **Dark navy:** #263238 (close button)
+- **Background gray:** #F5F5F5
+- **Card white:** #FFFFFF
+- **Border gray:** #E0E0E0
+- **Text dark:** #333333
+- **Text medium:** #424242
+- **Text light:** #757575
+
+---
+
+**Kilocode, build this grading systems page exactly as described. Start with the header and button, then create the card with the table. Make sure the table is clean, readable, and properly formatted. The grades should follow the Kenyan education system (A through E, plus X and Y for special cases).**
+
+**Important: Each row in the table represents a grade bracket. A student who scores between "Low" and "High" marks gets that "Grade" letter and those "Points" for GPA calculation.**
+
+Do you understand? Start building and show me each section as you complete it.
+Hey Kilocode, now I need you to build the **Class Analysis Dashboard** page. This is what shows when someone clicks "View Analysis" from the main dashboard. Let me explain every single part:
+
+---
+
+## **PROJECT: Form 3 Class Analysis Dashboard**
+
+### **STEP 1: Top Navigation Bar (Same as before)**
+- Green navigation bar (#4CAF50)
+- Left side: Zeraki logo + "Friends Kikai Boys High School"
+- Navigation menu items: "My Classes", "Manage exams", "Create Exam", "Grading Systems", "Subject Paper Ratios", "More"
+- Right side: Language selector "English", search icon, mail icon, notification bell (with red badge "4"), user profile
+
+---
+
+### **STEP 2: Page Header Section**
+Create a white section at the top with:
+
+**Left side:**
+- Large heading: "Form 3" (bold, dark text)
+- Subheading: "Intake level exam analysis" (smaller, gray text)
+
+**Right side (Two dropdown selectors):**
+- Dropdown 1: Shows "Form 3" with X close button
+- Dropdown 2: Shows "AVERAGE EXAM" with dropdown arrow
+
+**Below that:**
+- Text: "Students who sat for the exam"
+- Large number: "58" (bold)
+- Small text: "Out of 88 total students" (gray)
+
+**Top right corner:**
+- Green button: "Downloads" with dropdown arrow
+
+---
+
+### **STEP 3: Summary Card with Graph**
+Create a green card with rounded corners containing:
+
+**Left side of card:**
+- Text: "Mean Grade" (white text)
+- Large letter: "E" (white, bold)
+- Text: "AVERAGE EXAM - (2025 Term 2)" (white text)
+
+**Right side of card:**
+- Small line graph showing declining trend from left to right
+- Y-axis: values from 1.3 to 1.6
+- X-axis: labels "E" and "3 W"
+- Legend dot: "Stream Mean"
+- Graph line: Starts at ~1.55 and slopes down to ~1.3
+
+---
+
+### **STEP 4: Comparison Toggle Section**
+Create a section with:
+- Heading: "Compare analysis using:" (dark text)
+- Two radio button options:
+  - "Previous exam results" (selected/green circle)
+  - "Student targets" (unselected/white circle)
+
+**Below the toggles, show two metric boxes:**
+
+**Box 1 - Mean Marks:**
+- Label: "Mean Marks"
+- Large number: "13.1%" (bold)
+- Change indicator: "-9.8" with red down arrow
+
+**Box 2 - Mean Points:**
+- Label: "Mean Points"
+- Large number: "1.4091" (bold)
+- Change indicator: "-0.0766" with red down arrow
+
+---
+
+### **STEP 5: Subject Performance Table**
+Create a table with header: "Subject Performance"
+
+**Table columns:**
+1. Name (subject name)
+2. Points (numerical value)
+3. Change (with red/green arrows and values)
+4. Mean Grade (letter grade)
+
+**Table rows (11 subjects):**
+
+| Name | Points | Change | Mean Grade |
+|------|--------|--------|------------|
+| C.R.E. | 2.0312 | -0.0674↓ (red) | D- |
+| Kiswahili | 1.6727 | -0.8683↓ (red) | D- |
+| Biology | 1.6296 | 0.6296↑ (green) | D- |
+| History and Government | 1.5769 | -0.2064↓ (red) | D- |
+| English | 1.125 | -1.5089↓ (red) | E |
+| Agriculture | 1.0833 | 0.004↑ (green) | E |
+| Geography | 1.0714 | -0.0781↓ (red) | E |
+| Physics | 1.0455 | -0.7126↓ (red) | E |
+| Chemistry | 1.0189 | -1.227↓ (red) | E |
+| Mathematics | 1.0185 | -1.3202↓ (red) | E |
+| Business Studies | 1.00 | -2.0328↓ (red) | E |
+
+**Styling:**
+- Alternating row colors (white/very light gray)
+- Green up arrows for positive changes
+- Red down arrows for negative changes
+- Hover effect on rows
+
+---
+
+### **STEP 6: Performance Over Time Graph**
+Create a line chart section with:
+
+**Header:** "Performance over time"
+
+**Graph details:**
+- Y-axis: Scale from 1.2 to 2.0
+- X-axis: Three time periods:
+  - "F3 T3, Exam 3, 2023"
+  - "F2 T1, term one average, 2024"
+  - "F3 T2, AVERAGE EXAM, 2025"
+
+**Three lines on the graph:**
+1. **Black line (Form 3):** Starts at ~1.9, drops to ~1.55, then to ~1.5
+2. **Blue line (J E):** Starts at ~1.8, drops to ~1.5, then to ~1.4
+3. **Green line (3 W):** Starts at ~1.6, drops to ~1.35, then to ~1.3
+
+**Legend at bottom:**
+- Blue dot: "Form 3"
+- Black dot: "J E"
+- Green dot: "3 W"
+
+---
+
+### **STEP 7: Grade Breakdown Table**
+Create a comprehensive table with:
+
+**Header:** "Grade breakdown"
+**Dropdown above table:** "Overall" (selected)
+
+**Table columns (from left to right):**
+1. Form
+2. A
+3. A-
+4. B+
+5. B
+6. B-
+7. C+
+8. C
+9. C-
+10. D+
+11. D
+12. D-
+13. E
+14. X
+15. Y
+16. Entries
+17. Mean Marks
+18. MM Dev
+19. Mean Points
+20. MP Dev
+21. Grade
+22. Class Teacher
+
+**Table rows (3 rows of data):**
+
+**Row 1 - Form 3 E:**
+- Grades: 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 5, 16, 7, 0, 31
+- Entries: 31
+- Mean Marks: 13.4
+- MM Dev: -10.277
+- Mean Points: 1.5
+- MP Dev: -0.0652
+- Grade: D-
+- Class Teacher: Christine Wekesa
+
+**Row 2 - Form 3 W:**
+- Grades: 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 3, 16, 7, 0, 27
+- Entries: 27
+- Mean Marks: 12.8
+- MM Dev: -8.6237
+- Mean Points: 1.3
+- MP Dev: -0.0333
+- Grade: E
+- Class Teacher: Christine Wekesa
+
+**Row 3 - Form 3:**
+- Grades: 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 8, 32, 14, 0, 58
+- Entries: 58
+- Mean Marks: 13.1
+- MM Dev: -9.7726
+- Mean Points: 1.4091
+- MP Dev: -0.0786
+- Grade: E
+- Class Teacher: Christine Wekesa
+
+**Table styling:**
+- Fixed header row (stays visible when scrolling)
+- Alternating row colors
+- Right-aligned numbers
+- Horizontal scroll if needed for all columns
+- Bold the "Form 3" total row or highlight it slightly
+
+---
+
+### **DESIGN SPECIFICATIONS:**
+
+**Colors:**
+- Primary green: #4CAF50
+- Light green (for cards): #5CB85C
+- Red (negative): #FF5252 or #E53935
+- Green (positive): #4CAF50
+- Gray text: #757575
+- Background: #F5F5F5
+- White cards: #FFFFFF
+
+**Spacing:**
+- Section gaps: 24px between major sections
+- Card padding: 20px
+- Table cell padding: 12px vertical, 16px horizontal
+
+**Fonts:**
+- Page heading: 32px, bold
+- Section headings: 20px, bold
+- Table headers: 14px, bold, uppercase
+- Numbers: 16px for regular, 24px for large metrics
+- Regular text: 14-16px
+
+**Card styling:**
+- Rounded corners: 8px
+- Shadow: 0 2px 4px rgba(0,0,0,0.1)
+- White background
+
+**Responsive behavior:**
+- Tables should scroll horizontally on smaller screens
+- Keep the page readable on tablets and mobile
+- Stack elements vertically on mobile if needed
+
+---
+
+### **DATA REQUIREMENTS:**
+
+For each element, you need to accept:
+1. **Class identifier**: "Form 3", "Form 3 E", "Form 3 W"
+2. **Exam name**: "AVERAGE EXAM"
+3. **Term**: "2025 Term 2"
+4. **Student counts**: Total students, students who sat
+5. **Mean grade**: Letter grade (A, B+, E, etc.)
+6. **Mean marks**: Percentage value
+7. **Mean points**: Decimal value
+8. **Change values**: For comparison with previous exam
+9. **Subject list**: Array of subjects with points, change, grade
+10. **Historical data**: For the performance over time graph
+11. **Grade distribution**: Count of students in each grade bracket
+12. **Teacher name**: For each class/stream
+
+---
+
+### **INTERACTIVE FEATURES:**
+
+1. **Dropdowns**: Should change data when different form/exam selected
+2. **Downloads button**: Should show options to download reports (PDF, Excel, CSV)
+3. **Radio buttons**: Switching between "Previous exam results" and "Student targets" should update the comparison data
+4. **Table rows**: Hovering should highlight the row
+5. **Graphs**: Should have tooltips showing exact values on hover
+6. **Sorting**: Table columns should be sortable by clicking headers
+
+---
+
+**Kilocode, build this page exactly as described. Start with the header section, then the summary card, then the comparison section, then the tables and graphs. Test each section before moving to the next. Make sure all the numbers align properly in the tables and the graphs render smoothly.**
+
+Do you understand all these requirements? Confirm and start building step by step.
+
+
+
+Add billing app here is some scan fall
+
+---
+
+## **PROJECT: Billing Management Page**
+
+### **STEP 1: Top Navigation Bar (Same as before)**
+- Green navigation bar (#4CAF50)
+- Left side: Zeraki logo + "Friends Kikai Boys High School"
+- Navigation menu items: "My Classes", "Manage exams", "+ Create Exam", "Grading Systems", "Subject Paper Ratios", "More", "Billing" (currently selected/highlighted)
+- Right side: Language "English", search icon, mail icon, notification bell with red badge "2", user profile "Paul Ijendi Inyangala" with photo
+
+---
+
+### **STEP 2: Page Header**
+Create a white section with:
+
+**Left side:**
+- Large heading: "Billing" (bold, dark text, 32px)
+- Subheading: "Manage school fees and payments" (smaller, gray text)
+
+**Right side:**
+- Blue button: "+ Add Payment" (#2196F3 blue color)
+- Gray button: "Export Report" (light gray background)
+
+---
+
+### **STEP 3: Summary Cards**
+Create three summary cards in a row:
+
+**Card 1 - Total Outstanding:**
+- Background: Light red (#FFEBEE)
+- Icon: Money/dollar sign 💰
+- Large number: "$45,230" (bold, red text)
+- Text: "Outstanding fees"
+
+**Card 2 - Paid This Month:**
+- Background: Light green (#E8F5E8)
+- Icon: Check mark ✅
+- Large number: "$12,450" (bold, green text)
+- Text: "Paid this month"
+
+**Card 3 - Overdue Payments:**
+- Background: Light orange (#FFF3E0)
+- Icon: Warning triangle ⚠️
+- Large number: "23" (bold, orange text)
+- Text: "Overdue students"
+
+---
+
+### **STEP 4: Students Table**
+Create a table with header: "Student Payments"
+
+**Table columns:**
+1. Student Name
+2. Class
+3. Total Fees
+4. Paid
+5. Balance
+6. Status
+7. Last Payment
+8. Actions
+
+**Table rows (sample data for 10 students):**
+
+| Student Name | Class | Total Fees | Paid | Balance | Status | Last Payment | Actions |
+|--------------|-------|------------|------|---------|--------|--------------|---------|
+| John Doe | Form 3 E | $1,200 | $800 | $400 | Partial | 15/08/2025 | View Details |
+| Jane Smith | Form 2 W | $1,200 | $1,200 | $0 | Paid | 10/08/2025 | View Details |
+| Bob Johnson | Form 4 E | $1,200 | $0 | $1,200 | Unpaid | - | Send Reminder |
+| Alice Brown | Form 1 | $1,000 | $500 | $500 | Partial | 20/08/2025 | View Details |
+| Charlie Wilson | Form 3 W | $1,200 | $600 | $600 | Partial | 12/08/2025 | View Details |
+| Diana Davis | Form 2 E | $1,200 | $1,200 | $0 | Paid | 08/08/2025 | View Details |
+| Edward Evans | Form 4 W | $1,200 | $200 | $1,000 | Unpaid | 05/08/2025 | Send Reminder |
+| Fiona Garcia | Form 1 | $1,000 | $1,000 | $0 | Paid | 18/08/2025 | View Details |
+| George Harris | Form 3 E | $1,200 | $400 | $800 | Partial | 22/08/2025 | View Details |
+| Helen Ingram | Form 2 W | $1,200 | $1,000 | $200 | Partial | 14/08/2025 | View Details |
+
+**Styling:**
+- Alternating row colors (white/very light gray)
+- Status badges: Green for "Paid", Yellow for "Partial", Red for "Unpaid"
+- Action buttons: Blue "View Details", Orange "Send Reminder"
+- Hover effect on rows
+
+---
+
+### **STEP 5: Payment History Section**
+Create a section with:
+
+**Header:** "Recent Payments"
+
+**Table columns:**
+1. Date
+2. Student
+3. Amount
+4. Method
+5. Reference
+
+**Sample rows:**
+- 25/08/2025 | John Doe | $200 | M-Pesa | REF001
+- 24/08/2025 | Jane Smith | $300 | Bank Transfer | REF002
+- 23/08/2025 | Alice Brown | $500 | Cash | REF003
+
+---
+
+### **FUNCTIONALITY REQUIREMENTS:**
+
+1. **"+ Add Payment" button:**
+   - Opens modal to record new payment
+   - Fields: Student selection, Amount, Payment method, Date, Reference
+
+2. **"Export Report" button:**
+   - Downloads CSV/PDF of current billing data
+
+3. **Status filtering:**
+   - Filter table by payment status (All, Paid, Partial, Unpaid)
+
+4. **Search functionality:**
+   - Search students by name or class
+
+5. **Send Reminder:**
+   - Sends payment reminder to student/parent via SMS/email
+
+---
+
+### **COLOR PALETTE:**
+- Primary green: #4CAF50
+- Blue: #2196F3
+- Red: #F44336
+- Orange: #FF9800
+- Light backgrounds: #FFEBEE, #E8F5E8, #FFF3E0
+
+---
+
+### **FOOTER:**
+- Text: "© 2025 Zeraki. All Rights Reserved."
+- Small gray text
+- Centered
+
+---
+
+**Kilocode, build this billing page exactly as described. Start with the header and summary cards, then the main table. Make sure the status colors and action buttons work correctly.**
+
+Do you understand? Start building now!
+
+Hey Kilocode, now I need you to build a **Billing and Payment Management System** that integrates with the school analytics platform. This system handles subscription payments, invoices, and receipts. Let me break down everything comprehensively:
+
+---
+
+## **PROJECT: Billing & Payment Management System**
+
+### **BUSINESS CONTEXT:**
+
+**From the documents provided:**
+- School pays for "Zeraki Analytics" subscription
+- Provider: Litemore Limited
+- Payment structure: Annual subscription
+- Current subscription: KSH 24,792.00 (including 16% VAT)
+- Previous payments: Setup fee KSH 35,000 (2021), Annual subscriptions KSH 18,568 - KSH 24,792
+- Payment methods: Bank transfer, Cheque (currently), need to add M-Pesa and bank APIs
+
+---
+
+## **SYSTEM OVERVIEW:**
+
+You need to build **4 main pages** plus **2 payment integrations**:
+
+1. **Invoices List Page** (showing all invoices)
+2. **Invoice Details Page** (preview proforma with payment option)
+3. **Receipts List Page** (showing all payments made)
+4. **Payment Modal** (M-Pesa/Bank payment interface)
+5. **M-Pesa Integration** (Safaricom Daraja API)
+6. **Bank Integration** (Jenga API)
+
+---
+
+## **PAGE 1: INVOICES LIST**
+
+### **Navigation Tabs:**
+- Two tabs at top:
+  - "Invoices" (currently selected, dark green background)
+  - "Receipts" (unselected, lighter green)
+
+### **Page Header:**
+- Title: "Invoices" (left side, bold, 24px)
+- Right side summary boxes:
+  - **Total Balance:** KSH24,792.00 (bold, large)
+  - **Unallocated Balance:** KSH0.00 (smaller)
+
+### **Table with 7 columns:**
+
+**Headers:**
+1. # (row number)
+2. Item (subscription description)
+3. Period (date range)
+4. Invoiced Amount
+5. Balance (outstanding amount)
+6. Due Date
+7. Actions
+
+**Sample Data (5 rows shown):**
+
+**Row 1:**
+- #: 1
+- Item: Zeraki Analytics Annual Subscription
+- Period: 18/12/2024 - 09/11/2025
+- Invoiced Amount: KSH24,792.00
+- Balance: KSH24,792.00 (red/unpaid)
+- Due Date: 09/11/2025
+- Actions: "View Details" button (light blue/gray)
+
+**Row 2:**
+- #: 2
+- Item: Zeraki Analytics Annual Subscription
+- Period: 01/01/2024 - 20/10/2022
+- Invoiced Amount: KSH18,568.00
+- Balance: KSH0.00 (paid - green or regular)
+- Due Date: 20/10/2022
+- Actions: "View Details" button
+
+**Row 3:**
+- #: 3
+- Item: Zeraki Analytics Setup and First Year Subscription
+- Period: 01/01/2024 - 09/11/2021
+- Invoiced Amount: KSH35,000.00
+- Balance: KSH0.00 (paid)
+- Due Date: 09/11/2021
+- Actions: "View Details" button
+
+**Row 4:**
+- #: 4
+- Item: Zeraki Analytics Annual Subscription
+- Period: 21/11/2023 - 20/10/2024
+- Invoiced Amount: KSH24,792.00
+- Balance: KSH0.00 (paid)
+- Due Date: 20/10/2024
+- Actions: "View Details" button
+
+**Row 5:**
+- #: 5
+- Item: Zeraki Analytics Annual Subscription
+- Period: 05/01/2023 - 20/10/2023
+- Invoiced Amount: KSH18,568.00
+- Balance: KSH0.00 (paid)
+- Due Date: 20/10/2023
+- Actions: "View Details" button
+
+### **Table Styling:**
+- Alternating row colors (white/light gray)
+- Unpaid balance in red/orange color
+- Paid balance (0.00) in green or regular color
+- Due dates that are past should be highlighted in red
+- Border: 1px solid light gray
+- Box shadow on table
+
+---
+
+## **PAGE 2: INVOICE DETAILS / PREVIEW PROFORMA**
+
+### **Top Section:**
+- Text: "Preview Proforma" (left side)
+- Two buttons on right:
+  - "Pay Now" (green button #4CAF50)
+  - "Close" (gray button)
+
+### **Download Button:**
+- "Download Pdf" button (blue/gray, below header)
+
+### **Invoice Display (styled like the PDF):**
+
+**Header:**
+- Proforma number: P051523925C (large, bold)
+- Left side:
+  - To: Friends Kikai Boys High School
+- Right side:
+  - Date: 18/12/2024
+  - Due Date: 09/11/2025
+
+### **Line Items Table:**
+
+**Columns:**
+1. Number
+2. Description
+3. Net Amount
+4. VAT Rate
+5. VAT Amount
+6. Gross Amount
+
+**Data:**
+- Number: PRM151898/1 44103
+- Description: Zeraki Analytics Annual Subscription
+- Net Amount: KSH 21,372.41
+- VAT Rate: 16.0
+- VAT Amount: KSH 3,419.59
+- Gross Amount: KSH 24,792.00
+
+**Totals Section:**
+- Total: KSH 24,792.00
+- Invoice Total: KSH 24,792.00
+- Payment: KSH 0.00
+- Balance Due: KSH 24,792.00 (bold, red)
+
+### **Payment Schedule Section:**
+- Heading: "Payment Schedule: One Time Payment" (green text)
+- Table with 2 columns:
+  - Due Date: 09/11/2025
+  - Invoiced Amount: KSH 24,792.00
+
+### **Bank Details (at bottom of invoice):**
+- Pay to:
+- Account name: Litemore Limited
+- Account number: 1450278817144
+- Bank: Equity Bank
+
+---
+
+## **PAGE 3: PAYMENT MODAL (Zeraki Pay!)**
+
+This is the modal that opens when user clicks "Pay Now":
+
+### **Modal Design:**
+- White modal with rounded corners
+- Box shadow (prominent)
+- Centered on screen
+- Width: 500px max
+- Close X button top right
+
+### **Modal Header:**
+- Zeraki Pay! logo (green circular logo with mobile phone icon)
+- Some sparkle/shine effects around logo
+
+### **Form Fields:**
+
+**Field 1: Amount**
+- Label: "Amount *" (asterisk = required)
+- Input box: "Enter Amount"
+- Pre-filled with invoice amount: 24,792.00
+- Read-only or editable (your choice)
+- Border: 1px solid light gray
+- Padding: 12px
+- Border radius: 4px
+
+**Field 2: Phone Number**
+- Label: "Phone Number *"
+- Country code selector: Kenya flag + "+254"
+- Input box: "712 3## ###" (phone number format)
+- Placeholder shows format
+- Validates Kenyan phone numbers
+- Border: 1px solid light gray
+- Padding: 12px
+
+### **Bottom Buttons:**
+- Left: "Cancel" button (light gray #E0E0E0)
+- Right: "Pay Now" button (green #4CAF50)
+- Buttons side by side
+- Padding: 10px 24px each
+
+---
+
+## **PAGE 4: RECEIPTS LIST**
+
+### **Left Sidebar** (same as before):
+- Dashboard
+- Calendar
+- Classes
+- Subjects
+- Students
+- Teachers
+- BOM/PA
+- Staff
+- Exams
+- Attendance
+- Messages
+- Printouts
+- **Billing** (currently selected)
+- ZERAKI PRODUCTS: Learning
+- OTHERS: Opportunities
+
+### **Navigation Tabs:**
+- "Invoices" tab (unselected)
+- "Receipts" tab (selected, darker green)
+
+### **Page Header:**
+- Title: "Receipts" (bold, 24px)
+
+### **Table with 7 columns:**
+
+**Headers:**
+1. Receipt Number
+2. Date Paid
+3. Amount
+4. Item (what was paid for)
+5. Mode Of Payment
+6. Reference Number
+7. Actions
+
+**Sample Data (4 rows):**
+
+**Row 1:**
+- Receipt Number: (blank or auto-generated)
+- Date Paid: 29/09/2023
+- Amount: KSH18,568.00
+- Item: Zeraki Analytics Annual Subscription
+- Mode Of Payment: CHEQUE
+- Reference Number: (blank)
+- Actions: "View Details" button
+
+**Row 2:**
+- Receipt Number: 000642
+- Date Paid: 03/10/2024
+- Amount: KSH24,792.00
+- Item: Zeraki Analytics Annual Subscription
+- Mode Of Payment: CHEQUE
+- Reference Number: 000642
+- Actions: "View Details" button
+
+**Row 3:**
+- Receipt Number: (blank)
+- Date Paid: 17/10/2022
+- Amount: KSH18,568.00
+- Item: Zeraki Analytics Annual Subscription
+- Mode Of Payment: CHEQUE
+- Reference Number: (blank)
+- Actions: "View Details" button
+
+**Row 4:**
+- Receipt Number: (blank)
+- Date Paid: 02/11/2021
+- Amount: KSH35,000.00
+- Item: Zeraki Analytics Setup and First Year Subscription
+- Mode Of Payment: CHEQUE
+- Reference Number: (blank)
+- Actions: "View Details" button
+
+### **Table Styling:**
+- Alternating white/light gray rows
+- Clean borders
+- "View Details" buttons in light blue/gray
+
+---
+
+## **PAYMENT INTEGRATION 1: M-PESA (DARAJA API)**
+
+### **What is Daraja API:**
+- Safaricom's M-Pesa payment API for Kenya
+- Allows STK Push (customer receives payment prompt on phone)
+- Real-time payment processing
+- Official documentation: https://developer.safaricom.co.ke/
+
+### **Integration Steps:**
+
+**1. Setup Requirements:**
+- Register on Safaricom Daraja Portal
+- Get Consumer Key and Consumer Secret
+- Get Shortcode (Paybill or Till Number)
+- Get Passkey
+- Set callback URL for payment notifications
+
+**2. Authentication:**
+```javascript
+// Get OAuth token
+async function getAccessToken() {
+  const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
+  
+  const response = await fetch('https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials', {
+    headers: {
+      'Authorization': `Basic ${auth}`
+    }
+  });
+  
+  const data = await response.json();
+  return data.access_token;
+}
+```
+
+**3. STK Push Request:**
+```javascript
+async function initiateSTKPush(phoneNumber, amount, invoiceId) {
+  const token = await getAccessToken();
+  const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, -3);
+  const password = Buffer.from(`${shortcode}${passkey}${timestamp}`).toString('base64');
+  
+  const payload = {
+    BusinessShortCode: shortcode,
+    Password: password,
+    Timestamp: timestamp,
+    TransactionType: "CustomerPayBillOnline",
+    Amount: amount,
+    PartyA: phoneNumber, // Customer phone
+    PartyB: shortcode,
+    PhoneNumber: phoneNumber,
+    CallBackURL: "https://yourschool.com/api/mpesa/callback",
+    AccountReference: `Invoice-${invoiceId}`,
+    TransactionDesc: "Zeraki Analytics Subscription Payment"
+  };
+  
+  const response = await fetch('https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+  
+  return await response.json();
+}
+```
+
+**4. Handle Callback:**
+```javascript
+// Endpoint: POST /api/mpesa/callback
+async function handleMpesaCallback(req, res) {
+  const { Body } = req.body;
+  const { stkCallback } = Body;
+  
+  if (stkCallback.ResultCode === 0) {
+    // Payment successful
+    const { CallbackMetadata } = stkCallback;
+    const metadata = CallbackMetadata.Item;
+    
+    const amount = metadata.find(item => item.Name === 'Amount').Value;
+    const mpesaReceiptNumber = metadata.find(item => item.Name === 'MpesaReceiptNumber').Value;
+    const phoneNumber = metadata.find(item => item.Name === 'PhoneNumber').Value;
+    
+    // Save receipt to database
+    await createReceipt({
+      amount,
+      referenceNumber: mpesaReceiptNumber,
+      phoneNumber,
+      modeOfPayment: 'M-PESA',
+      status: 'COMPLETED'
+    });
+    
+    // Update invoice as paid
+    await updateInvoiceStatus(invoiceId, 'PAID');
+    
+  } else {
+    // Payment failed
+    console.log('Payment failed:', stkCallback.ResultDesc);
+  }
+  
+  res.json({ ResultCode: 0, ResultDesc: 'Accepted' });
+}
+```
+
+---
+
+## **PAYMENT INTEGRATION 2: BANK PAYMENT (JENGA API)**
+
+### **What is Jenga API:**
+- Equity Bank's API platform
+- Allows bank transfers, account validation, balance checks
+- Used for corporate payments
+- Documentation: https://developer.jengaapi.io/
+
+### **Integration Steps:**
+
+**1. Setup Requirements:**
+- Register on Jenga API Portal
+- Get API Key
+- Get Merchant Code
+- Get Private Key for signing requests
+- Whitelist your IPs
+
+**2. Authentication:**
+```javascript
+async function getJengaAccessToken() {
+  const apiKey = 'your_api_key';
+  const merchantCode = 'your_merchant_code';
+  
+  const response = await fetch('https://sandbox.jengahq.io/identity/v2/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: `username=${merchantCode}&password=${merchantPassword}&grant_type=password`
+  });
+  
+  const data = await response.json();
+  return data.access_token;
+}
+```
+
+**3. Request Signature:**
+```javascript
+function signRequest(payload, privateKey) {
+  const crypto = require('crypto');
+  const sign = crypto.createSign('SHA256');
+  sign.update(JSON.stringify(payload));
+  return sign.sign(privateKey, 'base64');
+}
+```
+
+**4. Initiate Bank Transfer:**
+```javascript
+async function initiateBankPayment(amount, invoiceId, customerAccount) {
+  const token = await getJengaAccessToken();
+  
+  const payload = {
+    source: {
+      accountNumber: customerAccount.accountNumber,
+      countryCode: "KE",
+      name: "Friends Kikai Boys High School"
+    },
+    destination: {
+      accountNumber: "1450278817144", // Litemore account
+      countryCode: "KE",
+      name: "Litemore Limited"
+    },
+    transfer: {
+      amount: amount.toString(),
+      currencyCode: "KES",
+      reference: `INV-${invoiceId}`,
+      date: new Date().toISOString().split('T')[0],
+      description: "Zeraki Analytics Subscription"
+    }
+  };
+  
+  const signature = signRequest(payload, privateKey);
+  
+  const response = await fetch('https://sandbox.jengahq.io/transaction/v2/remittance', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'signature': signature
+    },
+    body: JSON.stringify(payload)
+  });
+  
+  return await response.json();
+}
+```
+
+**5. Check Transaction Status:**
+```javascript
+async function checkPaymentStatus(transactionId) {
+  const token = await getJengaAccessToken();
+  
+  const response = await fetch(`https://sandbox.jengahq.io/transaction/v2/status/${transactionId}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  
+  return await response.json();
+}
+```
+
+---
+
+## **DATABASE SCHEMA:**
+
+### **Invoices Table:**
+```sql
+CREATE TABLE invoices (
+  id VARCHAR(50) PRIMARY KEY,
+  school_id VARCHAR(50) NOT NULL,
+  invoice_number VARCHAR(50) UNIQUE,
+  item_description TEXT,
+  period_start DATE,
+  period_end DATE,
+  net_amount DECIMAL(10,2),
+  vat_rate DECIMAL(5,2),
+  vat_amount DECIMAL(10,2),
+  gross_amount DECIMAL(10,2),
+  balance_due DECIMAL(10,2),
+  due_date DATE,
+  status ENUM('PENDING', 'PAID', 'OVERDUE', 'CANCELLED'),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+### **Receipts Table:**
+```sql
+CREATE TABLE receipts (
+  id VARCHAR(50) PRIMARY KEY,
+  invoice_id VARCHAR(50),
+  receipt_number VARCHAR(50) UNIQUE,
+  amount DECIMAL(10,2),
+  date_paid DATE,
+  mode_of_payment ENUM('M-PESA', 'BANK_TRANSFER', 'CHEQUE', 'CASH'),
+  reference_number VARCHAR(100),
+  phone_number VARCHAR(15),
+  transaction_id VARCHAR(100),
+  status ENUM('PENDING', 'COMPLETED', 'FAILED'),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (invoice_id) REFERENCES invoices(id)
+);
+```
+
+### **Subscription Table:**
+```sql
+CREATE TABLE subscriptions (
+  id VARCHAR(50) PRIMARY KEY,
+  school_id VARCHAR(50),
+  subscription_type VARCHAR(50), -- 'ANNUAL', 'MONTHLY'
+  start_date DATE,
+  end_date DATE,
+  amount DECIMAL(10,2),
+  status ENUM('ACTIVE', 'EXPIRED', 'CANCELLED'),
+  auto_renew BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP
+);
+```
+
+---
+
+## **PAYMENT FLOW:**
+
+**Step 1: User clicks "Pay Now" on invoice**
+- Opens payment modal
+- Shows invoice amount
+- Asks for phone number
+
+**Step 2: User enters M-Pesa phone number**
+- Format: 254712345678 (Kenyan format)
+- Validates number is correct
+- User clicks "Pay Now"
+
+**Step 3: Backend initiates STK Push**
+- Calls Daraja API
+- Sends payment request to user's phone
+- Shows loading state: "Payment request sent to your phone..."
+
+**Step 4: User receives M-Pesa prompt**
+- Pop-up on their phone
+- Shows amount and merchant name
+- User enters M-Pesa PIN
+- Confirms payment
+
+**Step 5: M-Pesa processes payment**
+- If successful: Sends callback to your server
+- If failed: Sends failure callback
+
+**Step 6: Your system receives callback**
+- Updates invoice status to PAID
+- Creates receipt record
+- Reduces balance to 0.00
+- Sends confirmation email/SMS
+
+**Step 7: User sees success message**
+- "Payment successful! Receipt: ABC123"
+- Modal closes
+- Invoice list updates automatically
+- Receipt appears in Receipts tab
+
+---
+
+## **YEARLY SUBSCRIPTION AUTO-RENEWAL:**
+
+### **Cron Job Setup:**
+
+```javascript
+// Run daily at 9 AM
+cron.schedule('0 9 * * *', async () => {
+  // Check for subscriptions expiring in 30 days
+  const expiringSubscriptions = await db.query(`
+    SELECT * FROM subscriptions 
+    WHERE end_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+    AND status = 'ACTIVE'
+    AND auto_renew = TRUE
+  `);
+  
+  for (const sub of expiringSubscriptions) {
+    // Generate new invoice
+    await createRenewalInvoice(sub);
+    
+    // Send reminder email
+    await sendRenewalReminder(sub.school_id);
+  }
+});
+```
+
+### **Auto-Renewal Process:**
+
+**30 days before expiry:**
+- Generate new invoice
+- Send email: "Your subscription expires on [date]. New invoice generated."
+- Show notification banner on dashboard
+
+**14 days before expiry:**
+- Send reminder email
+- Show prominent banner: "Subscription expires in 14 days"
+
+**7 days before expiry:**
+- Send urgent reminder
+- Red banner: "Subscription expires in 7 days"
+
+**On expiry date:**
+- If not paid: Change status to 'EXPIRED'
+- Restrict access to system
+- Show payment prompt on login
+
+---
+
+## **ADDITIONAL FEATURES:**
+
+### **1. Payment History Chart:**
+- Bar chart showing payments over time
+- Monthly/yearly view
+- Total spent per year
+
+### **2. Download Options:**
+- Invoice as PDF
+- Receipt as PDF
+- Payment history as Excel/CSV
+
+### **3. Email Notifications:**
+- Invoice generated
+- Payment received
+- Payment failed
+- Subscription expiring
+
+### **4. SMS Notifications:**
+- Payment confirmation
+- Receipt number
+- Balance updates
+
+### **5. Multi-Currency Support (future):**
+- Currently KES only
+- Add USD, GBP, EUR options
+
+---
+
+## **SECURITY REQUIREMENTS:**
+
+**1. API Keys Management:**
+- Store in environment variables
+- Never commit to code
+- Rotate regularly
+
+**2. Payment Data:**
+- Encrypt sensitive data
+- PCI DSS compliance
+- Use HTTPS only
+
+**3. Webhook Security:**
+- Verify M-Pesa signature
+- Check source IP addresses
+- Use HMAC validation
+
+**4. Access Control:**
+- Only school admins see billing
+- Teachers cannot access
+- Audit logs for all payments
+
+---
+
+## **ERROR HANDLING:**
+
+**M-Pesa Errors:**
+- Insufficient funds: Show clear message
+- Timeout: "Request timed out, please try again"
+- Wrong PIN: "Transaction cancelled by user"
+- Network issues: "Please check your connection"
+
+**Bank Transfer Errors:**
+- Invalid account: "Account number not found"
+- Insufficient funds: "Insufficient balance"
+- Daily limit exceeded: "Transaction exceeds daily limit"
+
+---
+
+## **TESTING:**
+
+**Use sandbox environments:**
+- M-Pesa Sandbox: https://sandbox.safaricom.co.ke
+- Jenga Sandbox: https://sandbox.jengahq.io
+- Test phone number: 254708374149
+- Test amounts: 1, 10, 100 (avoid production charges)
+
+**Test scenarios:**
+- Successful payment
+- Failed payment
+- Timeout
+- Duplicate payment
+- Partial payment
+
+---
+
+**Kilocode, build this billing system with:**
+1. Invoices page (list all invoices)
+2. Invoice details page (preview + pay button)
+3. Receipts page (payment history)
+4. Payment modal (M-Pesa phone input)
+5. M-Pesa Daraja integration (STK Push)
+6. Jenga bank integration (optional, for bank transfers)
+7. Auto-renewal system (cron jobs)
+8. Email/SMS notifications
+
+**Start with the UI pages first, then add payment integrations. Test thoroughly in sandbox before going live.**
+
+Do you understand the complete billing system requirements?
+
+
+
+Hey Kilocode, now I need you to build the **Teacher Management System**. This is a comprehensive module for managing all teachers in the school. Let me break down every component in detail:
+
+---
+
+## **PROJECT: Teacher Management System**
+
+### **SYSTEM OVERVIEW:**
+
+This module handles:
+1. **Teacher Profiles** - Personal info, contact details, subjects taught
+2. **Teacher Cards View** - Visual grid of all teachers
+3. **Teacher List View** - Detailed table with all teacher data
+4. **Subject Classes Assignment** - Which classes/subjects each teacher handles
+5. **Class Lists** - Students in each teacher's classes
+6. **Teacher Groups** - Departmental groupings (Humanities, Sciences, etc.)
+7. **Add New Teacher** - Registration form
+
+---
+
+## **PAGE 1: TEACHERS CARD VIEW**
+
+### **Top Navigation Tabs:**
+Three tabs in green bar:
+1. **⚙️ Manage Teachers** (currently selected, darker green)
+2. **+ Add New Teacher**
+3. **👥 Teachers' Groups**
+
+### **Page Header:**
+- Title: "Teachers" (left side, bold, 24px)
+- Search box: "Search" with magnifying glass icon (right side)
+- View toggle button: "≡ List view" (dark blue/navy button)
+
+### **Teacher Cards Layout:**
+
+**Grid display:** 4 cards per row, responsive
+
+**Each card contains:**
+
+**1. Profile Section:**
+- Large circular avatar (gray placeholder with silhouette)
+- Admin badge: Green ribbon in top-left corner saying "Admin" (only for admin teachers)
+- Deactivated badge: Dark gray/black ribbon saying "Deactivated" (for inactive teachers)
+
+**2. Action Buttons (3 circular icons below avatar):**
+- **Green pencil icon** ✏️ - Edit teacher details
+- **Blue person icon** 👤 - View/manage teacher assignments
+- **Orange chart icon** 📊 - View teacher statistics/analytics
+- **Red person-minus icon** 🚫 - Deactivate teacher (only for admins, replaces one button)
+
+**3. Teacher Name:**
+- Bold, 18px, dark text
+- Example: "Amira Amara", "Andrew Asiba", "Biketi Clerkson"
+
+**4. Contact Information:**
+- Email: teacher@kikaiboys (gray text, 14px)
+- Phone: +254726957273 (blue clickable text, 14px)
+
+### **Sample Teachers Shown:**
+
+**Row 1:**
+1. **Amira Amara** (Admin) - amiraamara@kikaiboys, +254726957273
+2. **Andrew Asiba** - andrewasiba@kikaiboys, +254726628317
+3. **Biketi Clerkson** (Admin with red deactivate icon) - biketiclerkson@kikaiboys, +254710447789
+4. **Charles B.wanyonyi** - charlesbwanyonyi@kikaiboys, +254714645091
+
+**Row 2:**
+5. **Machoka M. Simion** (Admin) - machokamsimion@kikaiboys, +254726593837
+6. **Masafu Wafula** (Deactivated) - masafuwafula@kikaiboys, +254725706899
+7. **Paul Ijendi Inyangala** (Admin) - paulinyangala@kikaiboys, +254114710909
+8. **Paul Wanjala Wanduyu** - paulwanduyu@kikaiboys, +254112834664
+
+**Row 3:**
+9. **Samuel Maina** - samuelmaina@kikaiboys
+10. **Saul Kituyi** (Admin) - saulkituyi@kikaiboys
+
+**Row 4:**
+11. **Christine Wekesa** - christinewekesa@kikaiboys, +254708836321
+12. **Fastine Wafula** (Admin) - fastinewafula@kikaiboys, +254768448735
+13. **Fastine Wanjala Wafula** - fastinewafula1@kikaiboys, +254768448735
+14. **Kevin Muchwangi Sakula** - kevinsakula@kikaiboys, +254792432938
+
+### **Card Styling:**
+- White background
+- Border: 1px solid light gray (#E0E0E0)
+- Border radius: 8px
+- Box shadow: 0 2px 4px rgba(0,0,0,0.1)
+- Padding: 20px
+- Hover effect: Slight elevation (shadow increases)
+- Gap between cards: 20px horizontal, 24px vertical
+
+---
+
+## **PAGE 2: TEACHERS LIST VIEW**
+
+Accessed by clicking "List view" button on cards page.
+
+### **Table with 10 columns:**
+
+**Headers:**
+1. # (row number)
+2. Surname
+3. First Name
+4. Other Names
+5. Username (email)
+6. Phone
+7. Gender
+8. TSC Number (Teacher Service Commission ID)
+9. National ID No.
+10. Actions
+
+### **Sample Data (from images):**
+
+**Row 1:**
+- #: 1
+- Surname: Amara
+- First Name: Amira
+- Other Names: (blank)
+- Username: amiraamara@kikaiboys
+- Phone: +254726957273
+- Gender: Male
+- TSC Number: 557280
+- National ID: (blank)
+- Actions: "View" button (blue)
+
+**Row 2:**
+- #: 2
+- Surname: Asiba
+- First Name: Andrew
+- Other Names: (blank)
+- Username: andrewasiba@kikaiboys
+- Phone: +254726628317
+- Gender: Male
+- TSC Number: 315040
+- Actions: "View"
+
+**Row 3:**
+- #: 3
+- Surname: Clerkson
+- First Name: Biketi
+- Username: biketiclerkson@kikaiboys
+- Phone: +254710447789
+- Gender: Male
+- Actions: "View"
+
+**Row 4:**
+- #: 4
+- Surname: B.wanyonyi
+- First Name: Charles
+- Username: charlesbwanyonyi@kikaiboys
+- Phone: +254714645091
+- Gender: Male
+- TSC Number: 792340
+- Actions: "View"
+
+**Row 5:**
+- #: 5
+- Surname: Wekesa
+- First Name: Christine
+- Username: christinewekesa@kikaiboys
+- Phone: +254708836321
+- Gender: Female
+- TSC Number: 647807
+- Actions: "View"
+
+**Row 6:**
+- #: 6
+- Surname: Wafula
+- First Name: Fastine
+- Username: fastinewafula@kikaiboys
+- Phone: +254768448735
+- Gender: Male
+- Actions: "View"
+
+**Row 7:**
+- #: 7
+- Surname: Wafula
+- First Name: Fastine
+- Other Names: Wanjala
+- Username: fastinewafula1@kikaiboys
+- Phone: +254768448735
+- Gender: Male
+- Actions: "View"
+
+**Row 8:**
+- #: 8
+- Surname: Sakula
+- First Name: Kevin
+- Other Names: Muchwangi1
+- Username: kevinsakula@kikaiboys
+- Phone: +254792432938
+- Gender: Male
+- TSC Number: 748175
+- Actions: "View"
+
+**Row 9:**
+- #: 9
+- Surname: Simion
+- First Name: Machoka
+- Other Names: M.
+- Username: machokamsimion@kikaiboys
+- Phone: +254726593837
+- Gender: Male
+- TSC Number: 682579
+- Actions: "View"
+
+**Row 10:**
+- #: 10
+- Surname: Wafula
+- First Name: Masafu
+- Username: masafuwafula@kikaiboys
+- Phone: +254725706899
+- Actions: "View"
+
+### **Table Styling:**
+- Alternating row colors (white/#FAFAFA)
+- Fixed header (sticky on scroll)
+- Horizontal scroll if needed
+- Sortable columns (click header to sort)
+- Border: 1px solid #E0E0E0
+- Clean, minimal design
+
+---
+
+## **PAGE 3: MY CLASSES (TEACHER'S SUBJECT ASSIGNMENTS)**
+
+This shows which classes a specific teacher teaches.
+
+### **Navigation Tabs:**
+1. **📊 My Classes** (selected)
+2. **⚙️ Manage Classes**
+3. **+ Add New Class**
+
+### **Page Heading:** "Subject Classes"
+
+### **Table with 3 columns:**
+
+**Headers:**
+1. # (row number)
+2. Name (Class - Subject)
+3. Actions (2 buttons)
+
+### **Sample Data:**
+
+**Row 1:**
+- #: 1
+- Name: Form 2 East - Geography
+- Actions: "⚙️ Manage" (gray button), "📋 Class list" (light blue button)
+
+**Row 2:**
+- #: 2
+- Name: Form 2 East - Computer Studies
+- Actions: "⚙️ Manage", "📋 Class list"
+
+**Row 3:**
+- #: 3
+- Name: Form 2 West - Geography
+- Actions: "⚙️ Manage", "📋 Class list"
+
+**Row 4:**
+- #: 4
+- Name: Form 2 West - Computer Studies
+- Actions: "⚙️ Manage", "📋 Class list"
+
+**Row 5:**
+- #: 5
+- Name: Form 3 E - Geography
+- Actions: "⚙️ Manage", "📋 Class list"
+
+**Row 6:**
+- #: 6
+- Name: Form 3 W - Geography
+- Actions: "⚙️ Manage", "📋 Class list"
+
+**Row 7:**
+- #: 7
+- Name: Form 4 E - Computer Studies
+- Actions: "⚙️ Manage", "📋 Class list"
+
+**Row 8:**
+- #: 8
+- Name: Form 4 W - Computer Studies
+- Actions: "⚙️ Manage", "📋 Class list"
+
+### **Button Functions:**
+- **Manage:** Edit class details, manage students, view analytics
+- **Class list:** View all students in this class with their attendance/performance
+
+---
+
+## **PAGE 4: CLASS LIST (STUDENTS IN A CLASS)**
+
+Shows all students when teacher clicks "Class list" button.
+
+### **Table with 5 columns:**
+
+**Headers:**
+1. ☑️ (checkbox - select all)
+2. Adm No. (admission number)
+3. Student Name
+4. Two percentage columns (possibly attendance %, performance %)
+5. **Actions** dropdown (green button with ▼)
+
+### **Sample Data (40+ students shown):**
+
+Examples:
+- 4421 - BRAVINE WEKESA - 0% - 0% - Actions
+- 4426 - ANTONY WANYAMA WALUBENHO - 0% - 0% - Actions
+- 4429 - ONESIMUS SIMIYU - 0% - 0% - Actions
+- 4431 - Stephen Wafula - 0% - 0% - Actions
+- 4433 - Victor Simiyu - 0% - 0% - Actions
+- 4437 - IAN SIMIYU - 0% - 0% - Actions
+- 4439 - STEWARD WANJALA - 0% - 0% - Actions
+- 4441 - IGNACIOUS KIPUTO RENDA - 0% - 0% - Actions
+- 4443 - Solomon Pepela - 0% - 0% - Actions
+- ... (continues for ~40 students)
+
+### **Actions Dropdown:**
+Click the green "Actions ▼" button to see options:
+- View student details
+- Edit student info
+- View performance
+- Send message
+- Mark attendance
+- Remove from class
+
+### **Checkboxes:**
+- Select individual students
+- Bulk actions available (message all, export list, etc.)
+
+---
+
+## **PAGE 5: ADD NEW TEACHER FORM**
+
+### **Radio Button Options at Top:**
+Two options for adding teachers:
+
+**Option 1 (selected):** ⦿ Key in teacher details
+**Option 2:** ○ Upload teachers from a spreadsheet
+
+### **Form Fields (Two-column layout):**
+
+**Left Column:**
+1. **Surname**
+   - Text input
+   - Placeholder: "Surname"
+
+2. **Other Names**
+   - Text input
+   - Placeholder: "Other Names"
+
+3. **Phone Number**
+   - Country code selector: Kenya flag + "+254"
+   - Input: "712 3## ###"
+
+4. **Gender**
+   - Dropdown: "Select Gender..."
+   - Options: Male, Female
+
+5. **Address**
+   - Text input
+   - Placeholder: "Address"
+
+6. **Group**
+   - Dropdown: "Select Group"
+   - Options: CLASS TEACHERS, HUMANITIES, LANGUAGES, MATHS, SCIENCE, TECHNICALS
+
+**Right Column:**
+1. **First Name ***
+   - Text input (required field)
+   - Placeholder: "First Name"
+
+2. **Initials**
+   - Text input
+   - Placeholder: "Initials"
+
+3. **TSC Number**
+   - Text input
+   - Placeholder: "TSC Number"
+   - (Teacher Service Commission registration number)
+
+4. **National ID No.**
+   - Text input
+   - Placeholder: "National ID No."
+
+5. **Employee Number**
+   - Text input
+   - Placeholder: "Employee Number"
+
+### **Duplicate Fields (appears twice in form):**
+The form shows Phone Number, Gender, TSC Number, National ID No. fields repeated (possibly for emergency contacts or next of kin).
+
+### **Bottom Buttons:**
+- **Save** (green button #4CAF50) - Saves and stays on form
+- **Save and Exit** (dark blue button #263238) - Saves and returns to teachers list
+
+---
+
+## **PAGE 6: TEACHER GROUPS**
+
+### **Navigation Tabs:**
+1. **⚙️ Manage Teachers**
+2. **+ Add New Teacher**
+3. **👥 Teachers' Groups** (selected)
+
+### **Page Heading:** "Teacher Groups"
+
+**Button:** "Add Teacher Group" (blue button, top right)
+
+### **Table with 3 columns:**
+
+**Headers:**
+1. # (row number)
+2. Name (group name)
+3. Action (edit/delete buttons)
+
+### **Data (6 groups):**
+
+**Row 1:**
+- #: 1
+- Name: CLASS TEACHERS
+- Actions: "✏️ Edit" (gray button), "🗑️ Delete" (red/orange button)
+
+**Row 2:**
+- #: 2
+- Name: HUMANITIES
+- Actions: "Edit", "Delete"
+
+**Row 3:**
+- #: 3
+- Name: LANGUAGES
+- Actions: "Edit", "Delete"
+
+**Row 4:**
+- #: 4
+- Name: MATHS
+- Actions: "Edit", "Delete"
+
+**Row 5:**
+- #: 5
+- Name: SCIENCE
+- Actions: "Edit", "Delete"
+
+**Row 6:**
+- #: 6
+- Name: TECHNICALS
+- Actions: "Edit", "Delete"
+
+### **Group Purpose:**
+- Organize teachers by department
+- Assign permissions by group
+- Schedule meetings by department
+- Send group notifications
+- Generate departmental reports
+
+---
+
+## **DATABASE SCHEMA:**
+
+### **Teachers Table:**
+```sql
+CREATE TABLE teachers (
+  id VARCHAR(50) PRIMARY KEY,
+  school_id VARCHAR(50) NOT NULL,
+  surname VARCHAR(100),
+  first_name VARCHAR(100) NOT NULL,
+  other_names VARCHAR(100),
+  initials VARCHAR(10),
+  username VARCHAR(100) UNIQUE, -- email
+  phone VARCHAR(20),
+  gender ENUM('Male', 'Female', 'Other'),
+  tsc_number VARCHAR(50), -- Teacher Service Commission ID
+  national_id VARCHAR(50),
+  employee_number VARCHAR(50),
+  address TEXT,
+  teacher_group_id VARCHAR(50),
+  is_admin BOOLEAN DEFAULT FALSE,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+### **Teacher Groups Table:**
+```sql
+CREATE TABLE teacher_groups (
+  id VARCHAR(50) PRIMARY KEY,
+  school_id VARCHAR(50),
+  name VARCHAR(100), -- HUMANITIES, MATHS, etc.
+  description TEXT,
+  created_at TIMESTAMP
+);
+```
+
+### **Teacher Subjects Table:**
+```sql
+CREATE TABLE teacher_subjects (
+  id VARCHAR(50) PRIMARY KEY,
+  teacher_id VARCHAR(50),
+  subject_id VARCHAR(50),
+  class_id VARCHAR(50),
+  academic_year VARCHAR(10),
+  is_class_teacher BOOLEAN DEFAULT FALSE,
+  FOREIGN KEY (teacher_id) REFERENCES teachers(id),
+  FOREIGN KEY (subject_id) REFERENCES subjects(id),
+  FOREIGN KEY (class_id) REFERENCES classes(id)
+);
+```
+
+---
+
+## **FUNCTIONALITY REQUIREMENTS:**
+
+### **1. Card View Features:**
+- Toggle between card and list view
+- Search teachers by name, email, phone
+- Filter by:
+  - Status (Active/Deactivated)
+  - Group (Humanities, Sciences, etc.)
+  - Admin/Non-admin
+- Sort by name, date added
+
+### **2. Admin Badge Logic:**
+- Green "Admin" ribbon for teachers with admin privileges
+- Admins can:
+  - Create exams
+  - Publish results
+  - Manage all teachers
+  - Access billing
+  - View all analytics
+
+### **3. Deactivate Feature:**
+- Only admins see red deactivate button
+- Confirmation dialog: "Are you sure you want to deactivate [Name]?"
+- Deactivated teachers:
+  - Cannot log in
+  - Show "Deactivated" badge
+  - Data retained for records
+  - Can be reactivated later
+
+### **4. Action Buttons:**
+- **Edit (green pencil):** Opens edit form
+- **Assign (blue person):** Manage subjects/classes
+- **Analytics (orange chart):** View teacher's class performance
+- **Deactivate (red X):** Disable account
+
+### **5. Add Teacher Flow:**
+- **Manual Entry:**
+  - Fill form with all fields
+  - Validate TSC number (unique)
+  - Validate phone format
+  - Auto-generate username from name
+  - Send welcome email with login credentials
+
+- **Spreadsheet Upload:**
+  - Download template
+  - Fill with teacher data
+  - Upload .xlsx file
+  - Validate all fields
+  - Bulk import teachers
+  - Send bulk welcome emails
+
+### **6. Teacher Groups:**
+- Pre-defined groups: CLASS TEACHERS, HUMANITIES, LANGUAGES, MATHS, SCIENCE, TECHNICALS
+- Custom groups can be added
+- Each teacher assigned to one primary group
+- Group determines:
+  - Dashboard access
+  - Report visibility
+  - Meeting schedules
+  - Resource access
+
+### **7. Subject Assignment:**
+- Teacher can teach multiple subjects
+- Subject can be taught to multiple classes
+- One teacher is "Class Teacher" (homeroom) per class
+- Class teachers have extra permissions:
+  - Publish results for their class
+  - View all subject performance
+  - Communicate with all parents
+
+---
+
+## **PERMISSIONS MATRIX:**
+
+**Regular Teacher:**
+- View: Own profile, own classes, own students
+- Edit: Own profile
+- Upload: Results for subjects they teach
+- Analyze: Only their subject performance
+- Cannot: Publish results, manage other teachers, access billing
+
+**Class Teacher:**
+- All regular teacher permissions PLUS:
+- View: All subjects for their class
+- Publish: Results for their class
+- Communicate: With all parents in class
+- Generate: Class reports
+
+**HOD (Head of Department):**
+- All class teacher permissions PLUS:
+- View: All teachers in their department
+- Manage: Teacher assignments in department
+- Analyze: Department-wide performance
+
+**Admin:**
+- Full system access
+- Manage: All teachers, all classes, all subjects
+- Create/Delete: Exams, grading systems
+- Access: Billing, system settings
+- Publish/Unpublish: Any results
+
+---
+
+## **USER EXPERIENCE FLOWS:**
+
+### **Flow 1: Teacher Logs In**
+1. Enters email + password
+2. System checks role (Teacher/Class Teacher/HOD/Admin)
+3. Redirects to appropriate dashboard
+4. Shows only classes/subjects they teach
+5. Displays pending tasks (exams to grade, results to upload)
+
+### **Flow 2: Admin Adds New Teacher**
+1. Clicks "+ Add New Teacher"
+2. Chooses manual entry or spreadsheet
+3. Fills form with teacher details
+4. Assigns to teacher group
+5. System auto-generates username
+6. System sends welcome email with credentials
+7. Teacher appears in teachers list
+8. Admin assigns subjects/classes
+
+### **Flow 3: Teacher Views Their Classes**
+1. Clicks "My Classes" in sidebar
+2. Sees list of all classes they teach
+3. Clicks "Class list" for a class
+4. Views all students with attendance/performance
+5. Can take actions: message, grade, mark attendance
+
+### **Flow 4: Admin Deactivates Teacher**
+1. Finds teacher in card/list view
+2. Clicks red deactivate icon
+3. Confirmation: "Deactivate [Name]? They will lose access immediately."
+4. Confirms
+5. Teacher status changes to "Deactivated"
+6. Teacher cannot log in
+7. Their classes are marked "needs reassignment"
+
+---
+
+## **ADDITIONAL FEATURES:**
+
+### **1. Teacher Dashboard (what teachers see when they log in):**
+- Upcoming classes today
+- Pending exams to grade
+- Recent student performance
+- Upcoming meetings
+- School announcements
+- Quick actions: Upload results, mark attendance
+
+### **2. Teacher Profile Page:**
+- Photo, name, contact
+- Subjects taught
+- Classes assigned
+- Teaching schedule
+- Performance metrics
+- Professional documents (certificates, CV)
+
+### **3. Communication:**
+- Send SMS/email to individual students
+- Bulk message to entire class
+- Message parents
+- Internal messaging with other teachers
+
+### **4. Reports:**
+- Teacher performance report
+- Class performance over time
+- Student progress reports
+- Attendance summaries
+- Exam analysis
+
+### **5. Attendance Module:**
+- Mark daily attendance per class
+- View attendance trends
+- Generate attendance reports
+- SMS alerts for absent students
+
+---
+
+## **STYLING SPECIFICATIONS:**
+
+**Colors:**
+- Primary green: #4CAF50
+- Admin badge green: #4CAF50
+- Deactivated badge: #37474F (dark gray)
+- Blue buttons: #2196F3
+- Red/orange delete: #FF5722
+- Gray edit: #9E9E9E
+- Background: #F5F5F5
+
+**Card Dimensions:**
+- Width: 280px
+- Height: 320px
+- Avatar diameter: 120px
+- Icon buttons: 40px diameter
+
+**Typography:**
+- Name: 18px, bold
+- Email: 14px, regular
+- Phone: 14px, regular
+- Headers: 24px, bold
+
+---
+
+**Kilocode, build this teacher management system with:**
+
+1. **Teachers Card View** - Grid of teacher cards with avatars, badges, action buttons
+2. **Teachers List View** - Comprehensive table with all teacher details
+3. **My Classes** - Shows which classes/subjects a teacher teaches
+4. **Class List** - Students in each class with checkboxes and actions
+5. **Add Teacher Form** - Manual entry or spreadsheet upload
+6. **Teacher Groups** - Department/category management
+7. **Role-based permissions** - Different views for Teacher/Class Teacher/HOD/Admin
+
+**Key functionality:**
+- Admin badge for privileged users
+- Deactivated badge for inactive teachers
+- 3 action buttons per card (edit, assign, analytics)
+- Toggle between card and list view
+- Search and filter teachers
+- Bulk upload via spreadsheet
+- Teacher group assignments
+
+**Start with the card view, then build the list view, then the forms. Test thoroughly with different user roles to ensure teachers only see their assigned classes and subjects.**
+
+Do you understand the complete teacher management system requirements?

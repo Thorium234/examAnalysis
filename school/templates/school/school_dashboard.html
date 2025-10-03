@@ -27,31 +27,35 @@
     <div class="dashboard-left">
       <!-- Statistics Cards -->
       <div class="stats-grid mb-4">
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-users"></i>
+        <a href="{% url 'school:departments_dashboard' %}" class="stat-card-link">
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">{{ teacher_count|default:14 }}</div>
+              <div class="stat-label">Teachers</div>
+            </div>
+            <div class="stat-arrow">
+              <i class="fas fa-arrow-right"></i>
+            </div>
           </div>
-          <div class="stat-content">
-            <div class="stat-number">{{ teacher_count|default:14 }}</div>
-            <div class="stat-label">Teachers</div>
-          </div>
-          <div class="stat-arrow">
-            <i class="fas fa-arrow-right"></i>
-          </div>
-        </div>
+        </a>
 
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-user-graduate"></i>
+        <a href="{% url 'school:forms_dashboard' %}" class="stat-card-link">
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-user-graduate"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">{{ student_count|default:254 }}</div>
+              <div class="stat-label">Students</div>
+            </div>
+            <div class="stat-arrow">
+              <i class="fas fa-arrow-right"></i>
+            </div>
           </div>
-          <div class="stat-content">
-            <div class="stat-number">{{ student_count|default:254 }}</div>
-            <div class="stat-label">Students</div>
-          </div>
-          <div class="stat-arrow">
-            <i class="fas fa-arrow-right"></i>
-          </div>
-        </div>
+        </a>
 
         <div class="stat-card">
           <div class="stat-icon">
@@ -66,135 +70,85 @@
           </div>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-building"></i>
+        <a href="{% url 'school:forms_dashboard' %}" class="stat-card-link">
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-building"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">{{ stream_count|default:6 }}</div>
+              <div class="stat-label">Streams</div>
+            </div>
+            <div class="stat-arrow">
+              <i class="fas fa-arrow-right"></i>
+            </div>
           </div>
-          <div class="stat-content">
-            <div class="stat-number">{{ stream_count|default:6 }}</div>
-            <div class="stat-label">Streams</div>
-          </div>
-          <div class="stat-arrow">
-            <i class="fas fa-arrow-right"></i>
-          </div>
-        </div>
+        </a>
       </div>
 
       <!-- Exam Results Cards -->
       <div class="exam-results">
+        {% for exam in exam_data %}
         <div class="exam-card">
           <div class="exam-header">
-            <h3>Form 2</h3>
-            <p>AVERAGE EXAM - (2025 TERM 2)</p>
+            <h3>Form {{ exam.form_level }}</h3>
+            <p>{{ exam.exam_name }}</p>
           </div>
           <div class="exam-metrics">
             <div class="metric-item">
               <span class="metric-label">Mean Points</span>
-              <span class="metric-value red">-0.810↓</span>
+              <span class="metric-value {% if exam.points_change < 0 %}red{% endif %}">
+                {% if exam.points_change != 0 %}
+                  {{ exam.points_change|floatformat:3 }}{% if exam.points_change < 0 %}↓{% else %}↑{% endif %}
+                {% else %}
+                  {{ exam.mean_points|floatformat:4 }}
+                {% endif %}
+              </span>
             </div>
             <div class="metric-item">
               <span class="metric-label">Mean Marks</span>
-              <span class="metric-value red">-13.770↓</span>
+              <span class="metric-value {% if exam.marks_change < 0 %}red{% endif %}">
+                {% if exam.marks_change != 0 %}
+                  {{ exam.marks_change|floatformat:2 }}{% if exam.marks_change < 0 %}↓{% else %}↑{% endif %}
+                {% else %}
+                  {{ exam.mean_marks|floatformat:2 }}
+                {% endif %}
+              </span>
             </div>
           </div>
           <div class="exam-numbers">
             <div class="number-item">
-              <div class="big-number">1.3333</div>
+              <div class="big-number">{{ exam.mean_points|floatformat:4 }}</div>
               <div class="number-label">Points</div>
             </div>
             <div class="number-item">
-              <div class="big-number">12.29%</div>
+              <div class="big-number">{{ exam.percentage|floatformat:2 }}%</div>
               <div class="number-label">Percentage</div>
             </div>
           </div>
           <div class="exam-footer">
             <div class="grade-info">
               <span class="grade-label">Mean Grade</span>
-              <span class="grade-value">E</span>
+              <span class="grade-value">{{ exam.mean_grade }}</span>
             </div>
             <div class="student-count">
               <span class="count-label">Students</span>
-              <span class="count-value">103</span>
+              <span class="count-value">{{ exam.student_count }}</span>
             </div>
           </div>
           <button class="view-analysis-btn">View Analysis</button>
         </div>
-
+        {% empty %}
         <div class="exam-card">
           <div class="exam-header">
-            <h3>Form 3</h3>
-            <p>AVERAGE EXAM - (2025 TERM 2)</p>
-          </div>
-          <div class="exam-metrics">
-            <div class="metric-item">
-              <span class="metric-label">Mean Points</span>
-              <span class="metric-value red">-0.080↓</span>
-            </div>
-            <div class="metric-item">
-              <span class="metric-label">Mean Marks</span>
-              <span class="metric-value red">-9.770↓</span>
-            </div>
-          </div>
-          <div class="exam-numbers">
-            <div class="number-item">
-              <div class="big-number">1.4091</div>
-              <div class="number-label">Points</div>
-            </div>
-            <div class="number-item">
-              <div class="big-number">13.1%</div>
-              <div class="number-label">Percentage</div>
-            </div>
+            <h3>No Exam Data</h3>
+            <p>No published exams found</p>
           </div>
           <div class="exam-footer">
-            <div class="grade-info">
-              <span class="grade-label">Mean Grade</span>
-              <span class="grade-value">E</span>
-            </div>
-            <div class="student-count">
-              <span class="count-label">Students</span>
-              <span class="count-value">58</span>
-            </div>
+            <p style="text-align: center; padding: 20px;">Exam results will appear here once exams are published.</p>
           </div>
-          <button class="view-analysis-btn">View Analysis</button>
         </div>
-
-        <div class="exam-card">
-          <div class="exam-header">
-            <h3>Form 4</h3>
-            <p>BUNGOMA WEST JOINT - (2025 TERM 2)</p>
-          </div>
-          <div class="exam-metrics">
-            <div class="metric-item">
-              <span class="metric-label">Mean Points</span>
-              <span class="metric-value red">-0.090↓</span>
-            </div>
-            <div class="metric-item">
-              <span class="metric-label">Mean Marks</span>
-              <span class="metric-value red">-0.680↓</span>
-            </div>
-          </div>
-          <div class="exam-numbers">
-            <div class="number-item">
-              <div class="big-number">1.6346</div>
-              <div class="number-label">Points</div>
-            </div>
-            <div class="number-item">
-              <div class="big-number">15.88%</div>
-              <div class="number-label">Percentage</div>
-            </div>
-          </div>
-          <div class="exam-footer">
-            <div class="grade-info">
-              <span class="grade-label">Mean Grade</span>
-              <span class="grade-value">D-</span>
-            </div>
-            <div class="student-count">
-              <span class="count-label">Students</span>
-              <span class="count-value">58</span>
-            </div>
-          </div>
-          <button class="view-analysis-btn">View Analysis</button>
-        </div>
+        {% endfor %}
       </div>
     </div>
 
@@ -207,17 +161,17 @@
             <button class="calendar-btn active">Month</button>
             <button class="calendar-btn">Week</button>
             <button class="calendar-btn">Day</button>
-            <button class="add-event-btn">
+            <a href="{% url 'events:create_event' %}" class="add-event-btn">
               <i class="fas fa-plus"></i> Add Event
-            </button>
+            </a>
           </div>
         </div>
         <div class="calendar-content">
           <div class="calendar-nav">
-            <button class="nav-btn"><</button>
-            <h4>September 2025</h4>
-            <button class="nav-btn">></button>
-          </div>
+            <button class="nav-btn" onclick="previousMonth()"><</button>
+            <h4>{{ month_name }} {{ year }}</h4>
+            <button class="nav-btn" onclick="nextMonth()">></button>
+          </div></search>
           <div class="calendar-grid">
             <div class="calendar-day-header">Mon</div>
             <div class="calendar-day-header">Tue</div>
@@ -226,10 +180,116 @@
             <div class="calendar-day-header">Fri</div>
             <div class="calendar-day-header">Sat</div>
             <div class="calendar-day-header">Sun</div>
-            <!-- Calendar days would be populated here -->
             {% for day in calendar_days %}
-            <div class="calendar-day{% if day.today %} today{% endif %}">{{ day.day }}</div>
+            <div class="calendar-day{% if day.today %} today{% endif %}">
+              {% if day.day %}{{ day.day }}{% endif %}
+            </div>
             {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Billing Status Section -->
+    {% if billing_info.status != 'ACTIVE' %}
+    <div class="billing-status mb-4">
+        <div class="card">
+            <div class="card-header {% if billing_info.status == 'ACTIVE' %}bg-success{% else %}bg-warning{% endif %} text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-{% if billing_info.status == 'ACTIVE' %}check-circle{% else %}exclamation-triangle{% endif %}"></i>
+                    Billing Status: {{ billing_info.status }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Subscription Details</h6>
+                        <p class="mb-1">Plan: <strong>{{ billing_info.subscription_type|title }} Subscription</strong></p>
+                        {% if billing_info.next_payment != 'N/A' %}
+                        <p class="mb-1">Next Payment: <strong>{{ billing_info.next_payment }}</strong></p>
+                        <p class="mb-0">Days Remaining:
+                            <strong class="{% if billing_info.days_remaining < 30 %}text-danger{% elif billing_info.days_remaining < 60 %}text-warning{% else %}text-success{% endif %}">
+                                {{ billing_info.days_remaining }} days
+                            </strong>
+                        </p>
+                        {% else %}
+                        <p class="mb-1">Status: <strong>{{ billing_info.status }}</strong></p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <a href="{% url 'billing:invoice_list' %}" class="btn btn-primary btn-sm">View Invoices</a>
+                        {% if billing_info.status != 'ACTIVE' %}
+                        <br><br>
+                        <button class="btn btn-success btn-sm">Make Payment</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions and Recent Activity -->
+    <div class="dashboard-bottom">
+      <div class="dashboard-left">
+        <!-- Quick Actions -->
+        <div class="quick-actions mb-4">
+          <h4>Quick Actions</h4>
+          <div class="action-buttons">
+            <a href="{% url 'exams:exam_form_levels' %}" class="action-btn">
+              <i class="fas fa-plus-circle"></i>
+              <span>Enter Results</span>
+            </a>
+            <a href="{% url 'students:student_list' %}" class="action-btn">
+              <i class="fas fa-users"></i>
+              <span>Manage Students</span>
+            </a>
+            <a href="{% url 'subjects:subject_list' %}" class="action-btn">
+              <i class="fas fa-book"></i>
+              <span>Manage Subjects</span>
+            </a>
+            <a href="{% url 'school:reports_and_analysis' %}" class="action-btn">
+              <i class="fas fa-chart-bar"></i>
+              <span>View Reports</span>
+            </a>
+            <a href="{% url 'events:calendar' %}" class="action-btn">
+              <i class="fas fa-calendar-alt"></i>
+              <span>Manage Events</span>
+            </a>
+            <a href="{% url 'accounts:teacher_dashboard' %}" class="action-btn">
+              <i class="fas fa-user-tie"></i>
+              <span>Teacher Portal</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-right">
+        <!-- Recent Activity -->
+        <div class="recent-activity">
+          <h4>Recent Activity</h4>
+          <div class="activity-list">
+            {% for event_day, events in events_by_day.items %}
+            {% for event in events %}
+            <div class="activity-item">
+              <div class="activity-icon">
+                <i class="fas fa-calendar-day"></i>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">{{ event.name }}</div>
+                <div class="activity-meta">{{ event.start_date|date:"M d, Y" }} at {{ event.start_date|time:"H:i" }}</div>
+              </div>
+            </div>
+            {% endfor %}
+            {% endfor %}
+
+            {% if not events_by_day %}
+            <div class="activity-item">
+              <div class="activity-content">
+                <div class="activity-title">No upcoming events</div>
+                <div class="activity-meta">Check back later for scheduled activities</div>
+              </div>
+            </div>
+            {% endif %}
           </div>
         </div>
       </div>
@@ -360,6 +420,11 @@
 .stat-arrow {
   font-size: 1.2rem;
   color: var(--gray-text);
+}
+
+.stat-card-link {
+  text-decoration: none;
+  color: inherit;
 }
 
 /* Exam Results Cards */
@@ -660,42 +725,32 @@
 </style>
 
 <script>
-// Simple calendar generation for September 2025
-document.addEventListener('DOMContentLoaded', function() {
-  const calendarGrid = document.querySelector('.calendar-grid');
-  const today = new Date();
-  const currentMonth = 8; // September (0-indexed)
-  const currentYear = 2025;
+function previousMonth() {
+  const currentMonth = {{ month }};
+  const currentYear = {{ year }};
+  let newMonth = currentMonth - 1;
+  let newYear = currentYear;
 
-  // Clear existing days (keep headers)
-  const headers = calendarGrid.querySelectorAll('.calendar-day-header');
-  calendarGrid.innerHTML = '';
-  headers.forEach(header => calendarGrid.appendChild(header));
-
-  // Generate calendar days
-  const firstDay = new Date(currentYear, currentMonth, 1);
-  const lastDay = new Date(currentYear, currentMonth + 1, 0);
-  const startDate = new Date(firstDay);
-  startDate.setDate(startDate.getDate() - firstDay.getDay());
-
-  for (let i = 0; i < 42; i++) {
-    const dayDiv = document.createElement('div');
-    dayDiv.className = 'calendar-day';
-
-    const dayDate = new Date(startDate);
-    dayDate.setDate(startDate.getDate() + i);
-
-    if (dayDate.getMonth() === currentMonth) {
-      dayDiv.textContent = dayDate.getDate();
-
-      // Mark today
-      if (dayDate.toDateString() === today.toDateString()) {
-        dayDiv.classList.add('today');
-      }
-    }
-
-    calendarGrid.appendChild(dayDiv);
+  if (newMonth < 1) {
+    newMonth = 12;
+    newYear -= 1;
   }
-});
+
+  window.location.href = `?year=${newYear}&month=${newMonth}`;
+}
+
+function nextMonth() {
+  const currentMonth = {{ month }};
+  const currentYear = {{ year }};
+  let newMonth = currentMonth + 1;
+  let newYear = currentYear;
+
+  if (newMonth > 12) {
+    newMonth = 1;
+    newYear += 1;
+  }
+
+  window.location.href = `?year=${newYear}&month=${newMonth}`;
+}
 </script>
 {% endblock %}

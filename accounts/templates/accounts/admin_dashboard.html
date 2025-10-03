@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3 mb-0 text-gray-800">Admin Dashboard</h1>
+            <p class="text-muted">Manage users and their roles</p>
+        </div>
+    </div>
+
+    {# Summary Cards #}
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Users
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_users }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# User Cards #}
+    <div class="row">
+        {% for user_data in school_users %}
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        {{ user_data.user.get_full_name|default:user_data.user.username }}
+                    </h6>
+                    {% if user_data.user.is_superuser %}
+                    <span class="badge badge-danger">Superuser</span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Email:</strong> {{ user_data.user.email|default:"Not set" }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Username:</strong> {{ user_data.user.username }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Roles:</strong>
+                        {% for role in user_data.roles %}
+                        <span class="badge badge-info mr-1">{{ role.name }}</span>
+                        {% empty %}
+                        <span class="text-muted">No roles assigned</span>
+                        {% endfor %}
+                    </div>
+
+                    {% if user_data.teacher_classes %}
+                    <div class="mb-3">
+                        <strong>Class Assignments:</strong>
+                        <ul class="list-unstyled">
+                            {% for teacher_class in user_data.teacher_classes %}
+                            <li>
+                                <small class="text-muted">
+                                    Form {{ teacher_class.form_level }} {{ teacher_class.stream }}
+                                    {% if teacher_class.is_class_teacher %}
+                                    <span class="badge badge-success">Class Teacher</span>
+                                    {% endif %}
+                                </small>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    {% if user_data.teacher_subjects %}
+                    <div class="mb-3">
+                        <strong>Subjects:</strong>
+                        {% for subject in user_data.teacher_subjects %}
+                        <span class="badge badge-secondary mr-1">{{ subject.name }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <a href="#" class="btn btn-primary btn-sm" onclick="manageUser({{ user_data.user.id }})">
+                        <i class="fas fa-edit"></i> Manage Roles
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{# Modal for managing user roles #}
+<div class="modal fade" id="manageUserModal" tabindex="-1" role="dialog" aria-labelledby="manageUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="manageUserModalLabel">Manage User Roles</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="manageUserForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="userId" name="user_id">
+                    <div class="form-group">
+                        <label for="roles">Select Roles:</label>
+                        <select multiple class="form-control" id="roles" name="roles">
+                            {% for role in all_roles %}
+                            <option value="{{ role.id }}">{{ role.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted">Hold Ctrl (Cmd on Mac) to select multiple roles.</small>
+                    </div>
+                    <div id="teacherOptions" style="display: none;">
+                        <hr>
+                        <h6>Class Assignments</h6>
+                        <div class="form-group">
+                            <label for="formLevel">Form Level:</label>
+                            <select class="form-control" id="formLevel" name="form_level">
+                                <option value="">Select Form</option>
+                                <option value="1">Form 1</option>
+                                <option value="2">Form 2</option>
+                                <option value="3">Form 3</option>
+                                <option value="4">Form 4</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="stream">Stream:</label>
+                            <select class="form-control" id="stream" name="stream">
+                                <option value="">Select Stream</option>
+                                <option value="East">East</option>
+                                <option value="West">West</option>
+                                <option value="North">North</option>
+                                <option value="South">South</option>
+                            </select>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="isClassTeacher" name="is_class_teacher">
+                            <label class="form-check-label" for="isClassTeacher">
+                                Class Teacher
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="saveUserRoles()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function manageUser(userId) {
+    // Fetch user data and populate modal
+    fetch(`/accounts/api/user/${userId}/`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('userId').value = userId;
+            document.getElementById('manageUserModalLabel').textContent = `Manage ${data.user.get_full_name || data.user.username}`;
+
+            // Populate roles
+            const rolesSelect = document.getElementById('roles');
+            Array.from(rolesSelect.options).forEach(option => {
+                option.selected = data.roles.includes(parseInt(option.value));
+            });
+
+            // Show/hide teacher options
+            const teacherOptions = document.getElementById('teacherOptions');
+            const hasTeacherRole = data.roles.some(role => ['Teacher', 'Class Teacher'].includes(role.name));
+            teacherOptions.style.display = hasTeacherRole ? 'block' : 'none';
+
+            $('#manageUserModal').modal('show');
+        });
+}
+
+function saveUserRoles() {
+    const form = document.getElementById('manageUserForm');
+    const formData = new FormData(form);
+
+    fetch('/accounts/api/user/manage/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            $('#manageUserModal').modal('hide');
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    });
+}
+
+// Show teacher options when teacher role is selected
+document.getElementById('roles').addEventListener('change', function() {
+    const selectedOptions = Array.from(this.selectedOptions);
+    const hasTeacherRole = selectedOptions.some(option => {
+        const roleText = option.textContent.toLowerCase();
+        return roleText.includes('teacher');
+    });
+    document.getElementById('teacherOptions').style.display = hasTeacherRole ? 'block' : 'none';
+});
+</script>
+{% endblock %}

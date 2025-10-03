@@ -31,6 +31,8 @@ urlpatterns = [
     path('subjects/', include('subjects.urls')), # New: Added subjects URL
     path('school/', include('school.urls')),     # New: Added school URL
     path('reports/', include('reports.urls')),   # New: Added reports URL
+    path('billing/', include('billing.urls')),   # New: Added billing URL
+    path('events/', include('events.urls')),     # New: Added events URL
 ]
 
 # Only serve media files in development mode

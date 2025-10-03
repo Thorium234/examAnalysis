@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+  Form {{ form_level }} {{ stream }} Students
+{% endblock %}
+{% block content %}
+  <div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+      <h1 class="h3 mb-0 text-gray-800">Form {{ form_level }} {{ stream }} Students</h1>
+      <div>
+        <a href="{% url 'students:form_dashboard' form_level %}" class="btn btn-secondary mr-2">
+          <i class="fas fa-arrow-left"></i> Back to Form {{ form_level }}
+        </a>
+        <button onclick="printStudentList()" class="btn btn-info mr-2">
+          <i class="fas fa-print"></i> Print List
+        </button>
+        {% if perms.students.add_student %}
+          <a href="{% url 'students:student_create' %}" class="d-none d-sm-inline-block btn btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Add New Student
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+          Form {{ form_level }} {{ stream }} Students ({{ student_count }} total)
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped table-hover" id="studentsTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Admission No.</th>
+                <th>Full Name</th>
+                <th>KCPE Marks</th>
+                <th>Phone Contact</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for student in students %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ student.admission_number }}</td>
+                  <td>
+                    <a href="#">{{ student.full_name }}</a>
+                  </td>
+                  <td>{{ student.kcpe_marks }}</td>
+                  <td>{{ student.phone_contact }}</td>
+                  <td>
+                    <a href="{% url 'students:update_student' student.pk %}" class="btn btn-sm btn-info">Edit</a>
+                    <a href="{% url 'students:delete_student' student.pk %}" class="btn btn-sm btn-danger">Delete</a>
+                    <a href="{% url 'students:enroll_student' student.pk %}" class="btn btn-sm btn-success">Enroll</a>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="6" class="text-center">No students found in Form {{ form_level }} {{ stream }}.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Print Template (Hidden) -->
+  <div id="printTemplate" style="display: none;">
+    <div style="text-align: center; margin-bottom: 20px;">
+      <h2>School Student List</h2>
+      <h3>Form {{ form_level }} {{ stream }}</h3>
+      <p>Total Students: {{ student_count }}</p>
+      <p>Date: <span id="printDate"></span></p>
+    </div>
+    <table style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr style="border-bottom: 2px solid #000;">
+          <th style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd;">#</th>
+          <th style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd;">Admission No.</th>
+          <th style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd;">Full Name</th>
+          <th style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd;">KCPE Marks</th>
+          <th style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd;">Phone Contact</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student in students %}
+          <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 8px;">{{ forloop.counter }}</td>
+            <td style="padding: 8px;">{{ student.admission_number }}</td>
+            <td style="padding: 8px;">{{ student.full_name }}</td>
+            <td style="padding: 8px;">{{ student.kcpe_marks }}</td>
+            <td style="padding: 8px;">{{ student.phone_contact }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    function printStudentList() {
+      // Get current date
+      const today = new Date();
+      const dateStr = today.toLocaleDateString();
+
+      // Create print content
+      const printContent = `
+        <html>
+        <head>
+          <title>Form {{ form_level }} {{ stream }} Student List</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 30px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+            th { background-color: #f8f9fa; font-weight: bold; }
+            .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>School Student List</h1>
+            <h2>Form {{ form_level }} {{ stream }}</h2>
+            <p><strong>Total Students:</strong> {{ student_count }}</p>
+            <p><strong>Date:</strong> ${dateStr}</p>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Admission No.</th>
+                <th>Full Name</th>
+                <th>KCPE Marks</th>
+                <th>Phone Contact</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for student in students %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ student.admission_number }}</td>
+                  <td>{{ student.full_name }}</td>
+                  <td>{{ student.kcpe_marks }}</td>
+                  <td>{{ student.phone_contact }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <div class="footer">
+            <p>Generated by School Management System</p>
+          </div>
+        </body>
+        </html>
+      `;
+
+      // Open print window
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  </script>
+{% endblock %}

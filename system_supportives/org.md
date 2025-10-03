@@ -4,7 +4,7 @@
 This is a Django-based examination analysis system similar to Zeraki, designed specifically for Friends Kikai Boys High School in Kenya. The system automates examination analysis, student performance tracking, and generates comprehensive reports using the Chinese technique of merit ranking.
 
 ## Architecture & Technology Stack
-- **Backend**: Django 5.2.6 with Python 3.11
+- **Backend**: Django  with Python 
 - **Database**: SQLite (for testing/development)
 - **Frontend**: Bootstrap 4 with responsive design
 - **PDF Generation**: ReportLab (for future implementation)
@@ -37,6 +37,7 @@ This is a Django-based examination analysis system similar to Zeraki, designed s
 - Tie-breaking using total points, then alphabetical order
 - Automated calculation via management command
 - Dynamic merit list generation with filtering options
+
 
 ### 4. Dashboard & Analytics
 - Summary statistics for administrators

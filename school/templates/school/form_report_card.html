@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %}Form {{ form_level }} Report Cards{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3">Form {{ form_level }} Report Cards</h1>
+            <p class="text-muted">Generate PDF report cards for the entire form or individual streams</p>
+        </div>
+    </div>
+
+    <!-- Whole Form Option -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-graduation-cap fa-3x text-primary mb-3"></i>
+                    <h4>Whole Form Report</h4>
+                    <p class="text-muted">Generate report cards for all {{ total_students }} students in Form {{ form_level }}</p>
+                    <button class="btn btn-primary btn-lg" onclick="generateFormReport()">
+                        <i class="fas fa-file-pdf mr-2"></i>Generate PDF Report
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Individual Streams -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h4 class="text-center mb-3">Individual Stream Reports</h4>
+                    <p class="text-muted text-center mb-3">Generate report cards for specific streams</p>
+                    <div class="stream-buttons">
+                        {% for stream in streams %}
+                        <button class="btn btn-outline-primary btn-block mb-2" onclick="generateStreamReport('{{ stream }}')">
+                            <i class="fas fa-users mr-2"></i>{{ stream }} Stream
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Individual Student Search -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Individual Student Report Card</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="admissionNumber">Admission Number</label>
+                                <input type="text" class="form-control" id="admissionNumber" placeholder="Enter admission number">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="studentName">Student Name</label>
+                                <input type="text" class="form-control" id="studentName" placeholder="Student name will appear here" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-success" onclick="generateIndividualReport()">
+                        <i class="fas fa-search mr-2"></i>Generate Individual Report Card
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function generateFormReport() {
+    // Generate PDF for entire form
+    alert('Generating PDF report for Form {{ form_level }}...');
+    // TODO: Implement PDF generation
+}
+
+function generateStreamReport(stream) {
+    // Generate PDF for specific stream
+    alert('Generating PDF report for ' + stream + ' stream...');
+    // TODO: Implement PDF generation
+}
+
+function generateIndividualReport() {
+    const admissionNumber = document.getElementById('admissionNumber').value;
+    if (!admissionNumber) {
+        alert('Please enter an admission number');
+        return;
+    }
+    alert('Generating individual report card for admission number: ' + admissionNumber);
+    // TODO: Implement individual PDF generation
+}
+
+// Auto-populate student name when admission number is entered
+document.getElementById('admissionNumber').addEventListener('input', function() {
+    const admissionNumber = this.value;
+    if (admissionNumber.length > 2) {
+        // TODO: AJAX call to get student name
+        document.getElementById('studentName').value = 'Loading...';
+    } else {
+        document.getElementById('studentName').value = '';
+    }
+});
+</script>
+
+<style>
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.stream-buttons .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+}
+</style>
+{% endblock %}

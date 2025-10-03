@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block title %}
+  {{ subject.name }} Teachers - {{ school.name }}
+{% endblock %}
+{% block content %}
+<div class="dashboard-container">
+  <div class="welcome-section mb-4">
+    <div class="welcome-card">
+      <div class="welcome-content">
+        <div class="welcome-text">
+          <h2 class="welcome-title">{{ subject.name }} Teachers</h2>
+          <p class="welcome-subtitle">Teachers assigned to {{ subject.name }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="teachers-list">
+    {% for teacher in teachers %}
+    <div class="teacher-card">
+      <div class="teacher-avatar">
+        <i class="fas fa-user"></i>
+      </div>
+      <div class="teacher-info">
+        <h3>{{ teacher.get_full_name|default:teacher.username }}</h3>
+        <p>{{ teacher.email }}</p>
+      </div>
+      <div class="teacher-actions">
+        <a href="{% url 'school:teacher_detail' teacher.id %}" class="btn btn-sm btn-outline-primary">View Details</a>
+        <a href="{% url 'school:remove_teacher_from_subject' subject.id teacher.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to remove this teacher from the subject?')">Remove</a>
+      </div>
+    </div>
+    {% empty %}
+    <div class="no-data">
+      <p>No teachers assigned to this subject</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="action-buttons">
+    <a href="{% url 'school:category_subjects' subject.category.id %}" class="btn btn-secondary">
+      <i class="fas fa-arrow-left"></i> Back to Subjects
+    </a>
+    <a href="{% url 'school:add_teacher_to_subject' subject.id %}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Add Teacher
+    </a>
+  </div>
+</div>
+
+<style>
+.teachers-list {
+  margin-top: 30px;
+}
+
+.teacher-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 15px;
+}
+
+.teacher-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: var(--light-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: var(--primary-green);
+}
+
+.teacher-info h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--dark-text);
+}
+
+.teacher-info p {
+  color: var(--gray-text);
+  margin: 0;
+}
+
+.teacher-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+}
+
+.action-buttons {
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.no-data {
+  text-align: center;
+  padding: 40px;
+  color: var(--gray-text);
+}
+</style>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Receipts - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3">Receipts</h1>
+            <p class="text-muted">View payment receipts for your school</p>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Receipts</h5>
+                    <h3 class="text-primary">{{ receipts|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Completed Payments</h5>
+                    <h3 class="text-success">{{ receipts|length }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Receipts Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Receipt List</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Receipt #</th>
+                            <th>Invoice #</th>
+                            <th>Amount</th>
+                            <th>Date Paid</th>
+                            <th>Mode of Payment</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for receipt in receipts %}
+                        <tr>
+                            <td>{{ receipt.receipt_number|default:"N/A" }}</td>
+                            <td>{{ receipt.invoice.invoice_number }}</td>
+                            <td>KSH {{ receipt.amount|floatformat:2 }}</td>
+                            <td>{{ receipt.date_paid|date:"M d, Y" }}</td>
+                            <td>{{ receipt.get_mode_of_payment_display }}</td>
+                            <td>
+                                <span class="badge {% if receipt.status == 'COMPLETED' %}badge-success{% elif receipt.status == 'PENDING' %}badge-warning{% else %}badge-danger{% endif %}">
+                                    {{ receipt.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'billing:invoice_detail' receipt.invoice.invoice_number %}" class="btn btn-sm btn-outline-primary">View Invoice</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">No receipts found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

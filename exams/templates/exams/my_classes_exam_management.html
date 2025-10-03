@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block title %}{% trans "My Classes - Exam Management" %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" style="background-color: #F5F5F5; min-height: 100vh;">
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4" style="background-color: #263238 !important;"></search>
+        <div class="container-fluid">
+            <div class="d-flex align-items-center">
+                <img src="{% static 'images/zeraki-logo.png' %}" alt="Zeraki" class="me-2" style="height: 30px;">
+                <span class="text-white fw-bold">Friends Kikai Boys High School</span>
+            </div>
+
+            <div class="d-flex align-items-center">
+                <span class="text-white me-3">{% trans "My Classes" %}</span>
+                <span class="text-white me-3">|</span>
+                <span class="text-white me-3">{% trans "Manage exams" %}</span>
+                <span class="text-white me-3">|</span>
+                <span class="text-white me-3">+ {% trans "Create Exam" %}</span>
+                <span class="text-white me-3">|</span>
+                <span class="text-white me-3">{% trans "Grading Systems" %}</span>
+                <span class="text-white me-3">|</span>
+                <span class="text-white me-3">{% trans "Subject Paper Ratios" %}</span>
+                <span class="text-white me-3">|</span>
+                <span class="text-white me-3">{% trans "More" %}</span>
+
+                <span class="text-white ms-4 me-2">{% trans "English" %}</span>
+                <i class="fas fa-search text-white me-3"></i>
+                <i class="fas fa-envelope text-white me-3 position-relative">
+                    <span class="badge bg-danger position-absolute top-0 start-100 translate-middle" style="font-size: 0.6em;">3</span>
+                </i>
+                <i class="fas fa-bell text-white me-3 position-relative">
+                    <span class="badge bg-danger position-absolute top-0 start-100 translate-middle" style="font-size: 0.6em;">4</span>
+                </i>
+                <div class="d-flex align-items-center text-white ms-3">
+                    <img src="{% static 'images/default-avatar.png' %}" alt="Profile" class="rounded-circle me-2" style="width: 32px; height: 32px;">
+                    <span>Paul Ijendi Inyangala</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 text-dark mb-4">{% trans "My Classes - Exam Management" %}</h1>
+        </div>
+    </div>
+
+    <!-- Exam Selector Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="exam-select" class="form-label fw-bold text-dark" style="font-size: 16px;">
+                                {% trans "Exam" %}
+                            </label>
+                            <select id="exam-select" class="form-select border" style="border-color: #E0E0E0; padding: 12px; border-radius: 4px;" onchange="changeExam(this.value)">
+                                {% for exam in available_exams %}
+                                    <option value="{{ exam.id }}" {% if exam.id == selected_exam.id %}selected{% endif %}>
+                                        {{ exam.name }} - Form {{ exam.form_level }} ({{ exam.get_term_display }} {{ exam.year }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subject Classes Table -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 pt-4">
+                    <h5 class="card-title mb-0 fw-bold text-dark" style="font-size: 20px;">
+                        {% trans "Subject Classes" %}
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead style="background-color: #F5F5F5;">
+                                <tr>
+                                    <th class="border-0 fw-bold text-dark px-4 py-3 text-center" style="width: 60px; font-size: 14px;">#</th>
+                                    <th class="border-0 fw-bold text-dark px-4 py-3 text-start" style="font-size: 14px;">{% trans "Name" %}</th>
+                                    <th class="border-0 fw-bold text-dark px-4 py-3 text-start" style="font-size: 14px;">{% trans "Status" %}</th>
+                                    <th class="border-0 fw-bold text-dark px-4 py-3 text-end" style="width: 150px; font-size: 14px;">{% trans "Action" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="subject-classes-tbody">
+                                {% for class_data in subject_classes %}
+                                    <tr style="{% if forloop.counter|divisibleby:2 %}background-color: #FAFAFA;{% endif %}">
+                                        <td class="px-4 py-3 text-center">{{ forloop.counter }}</td>
+                                        <td class="px-4 py-3 text-start fw-regular" style="font-size: 15px;">{{ class_data.name }}</td>
+                                        <td class="px-4 py-3 text-start">
+                                            {% if class_data.status == 'upload_needed' or class_data.status == 'uploaded' %}
+                                                <span class="text-pink fw-regular" style="color: #E91E63; font-size: 14px; cursor: pointer;" onclick="handleStatusClick('{{ class_data.status }}', '{{ class_data.id }}')">
+                                                    {{ class_data.status_text }}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-pink fw-regular" style="color: #E91E63; font-size: 14px; font-style: italic;">
+                                                    {{ class_data.status_text }}
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-4 py-3 text-end">
+                                            {% if class_data.action_button %}
+                                                <button class="btn {{ class_data.action_button.class }}" onclick="window.location.href='{{ class_data.action_button.url }}'">
+                                                    {% if class_data.action_button.icon %}{{ class_data.action_button.icon }}{% endif %}
+                                                    {{ class_data.action_button.text }}
+                                                </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="px-4 py-4 text-center text-muted">
+                                            {% trans "No subject classes assigned." %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Classes Supervised Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 pt-4">
+                    <h5 class="card-title mb-0 fw-bold text-dark" style="font-size: 20px;">
+                        {% trans "Classes Supervised" %}
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead style="background-color: #F5F5F5;">
+                                <tr>
+                                    <th class="border-0 fw-bold text-dark px-4 py-3 text-center" style="width: 60px; font-size: 14px;">#</th>
+                                    <th class="border-0 fw-bold text-dark px-4 py-3 text-start" style="font-size: 14px;">{% trans "Name" %}</th>
+                                    <th class="border-0 fw-bold text-dark px-4 py-3 text-start" style="font-size: 14px;">{% trans "Status" %}</th>
+                                    <th class="border-0 fw-bold text-dark px-4 py-3 text-end" style="width: 150px; font-size: 14px;">{% trans "Action" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="supervised-classes-tbody">
+                                {% for class_data in supervised_classes %}
+                                    <tr style="{% if forloop.counter|divisibleby:2 %}background-color: #FAFAFA;{% endif %}">
+                                        <td class="px-4 py-3 text-center">{{ forloop.counter }}</td>
+                                        <td class="px-4 py-3 text-start fw-regular" style="font-size: 15px;">{{ class_data.name }}</td>
+                                        <td class="px-4 py-3 text-start">
+                                            {% if class_data.status == 'upload_needed' or class_data.status == 'uploaded' %}
+                                                <span class="text-pink fw-regular" style="color: #E91E63; font-size: 14px; cursor: pointer;" onclick="handleStatusClick('{{ class_data.status }}', '{{ class_data.id }}')">
+                                                    {{ class_data.status_text }}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-pink fw-regular" style="color: #E91E63; font-size: 14px; font-style: italic;">
+                                                    {{ class_data.status_text }}
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-4 py-3 text-end">
+                                            {% if class_data.action_button %}
+                                                <button class="btn {{ class_data.action_button.class }}" onclick="window.location.href='{{ class_data.action_button.url }}'">
+                                                    {% if class_data.action_button.icon %}{{ class_data.action_button.icon }}{% endif %}
+                                                    {{ class_data.action_button.text }}
+                                                </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="px-4 py-4 text-center text-muted">
+                                            {% trans "No classes supervised." %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="mt-5 py-4 text-center text-muted" style="background-color: #F5F5F5;">
+    <div class="container">
+        <p class="mb-0">© 2025 Zeraki. {% trans "All Rights Reserved." %}</p>
+    </div>
+</footer>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function changeExam(examId) {
+    // Show loading state
+    const tbody1 = document.getElementById('subject-classes-tbody');
+    const tbody2 = document.getElementById('supervised-classes-tbody');
+
+    tbody1.innerHTML = '<tr><td colspan="4" class="text-center py-4"><div class="spinner-border spinner-border-sm" role="status"></div> {% trans "Loading..." %}</td></tr>';
+    tbody2.innerHTML = '<tr><td colspan="4" class="text-center py-4"><div class="spinner-border spinner-border-sm" role="status"></div> {% trans "Loading..." %}</td></tr>';
+
+    // Update URL without page reload
+    const url = new URL(window.location);
+    url.searchParams.set('exam', examId);
+    window.history.pushState({}, '', url);
+
+    // Make AJAX request
+    fetch('{% url "exams:update_exam_selection" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: 'exam_id=' + examId
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateTables(data.subject_classes, data.supervised_classes);
+        } else {
+            alert('Error: ' + (data.error || 'Unknown error'));
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('{% trans "An error occurred. Please try again." %}');
+        location.reload();
+    });
+}
+
+function updateTables(subjectClasses, supervisedClasses) {
+    const tbody1 = document.getElementById('subject-classes-tbody');
+    const tbody2 = document.getElementById('supervised-classes-tbody');
+
+    // Update subject classes table
+    tbody1.innerHTML = subjectClasses.map((cls, index) => `
+        <tr style="${index % 2 === 1 ? 'background-color: #FAFAFA;' : ''}">
+            <td class="px-4 py-3 text-center">${index + 1}</td>
+            <td class="px-4 py-3 text-start fw-regular" style="font-size: 15px;">${cls.name}</td>
+            <td class="px-4 py-3 text-start">
+                ${cls.status === 'not_sat' ?
+                    `<span class="text-pink fw-regular" style="color: #E91E63; font-size: 14px; font-style: italic;">${cls.status_text}</span>` :
+                    `<span class="text-pink fw-regular" style="color: #E91E63; font-size: 14px; cursor: pointer;" onclick="handleStatusClick('${cls.status}', '${cls.id}')">${cls.status_text}</span>`
+                }
+            </td>
+            <td class="px-4 py-3 text-end">
+                ${cls.action_button ?
+                    `<button class="btn ${cls.action_button.class}" onclick="window.location.href='${cls.action_button.url}'">
+                        ${cls.action_button.icon || ''} ${cls.action_button.text}
+                    </button>` :
+                    ''
+                }
+            </td>
+        </tr>
+    `).join('') || '<tr><td colspan="4" class="px-4 py-4 text-center text-muted">{% trans "No subject classes assigned." %}</td></tr>';
+
+    // Update supervised classes table
+    tbody2.innerHTML = supervisedClasses.map((cls, index) => `
+        <tr style="${index % 2 === 1 ? 'background-color: #FAFAFA;' : ''}">
+            <td class="px-4 py-3 text-center">${index + 1}</td>
+            <td class="px-4 py-3 text-start fw-regular" style="font-size: 15px;">${cls.name}</td>
+            <td class="px-4 py-3 text-start">
+                ${cls.status === 'not_sat' ?
+                    `<span class="text-pink fw-regular" style="color: #E91E63; font-size: 14px; font-style: italic;">${cls.status_text}</span>` :
+                    `<span class="text-pink fw-regular" style="color: #E91E63; font-size: 14px; cursor: pointer;" onclick="handleStatusClick('${cls.status}', '${cls.id}')">${cls.status_text}</span>`
+                }
+            </td>
+            <td class="px-4 py-3 text-end">
+                ${cls.action_button ?
+                    `<button class="btn ${cls.action_button.class}" onclick="window.location.href='${cls.action_button.url}'">
+                        ${cls.action_button.icon || ''} ${cls.action_button.text}
+                    </button>` :
+                    ''
+                }
+            </td>
+        </tr>
+    `).join('') || '<tr><td colspan="4" class="px-4 py-4 text-center text-muted">{% trans "No classes supervised." %}</td></tr>';
+}
+
+function handleStatusClick(status, classId) {
+    if (status === 'upload_needed') {
+        // Could trigger upload modal or redirect
+        console.log('Upload needed for:', classId);
+    } else if (status === 'uploaded') {
+        // Could open view modal or redirect
+        console.log('View results for:', classId);
+    }
+}
+
+// Handle browser back/forward navigation
+window.addEventListener('popstate', function(event) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const examId = urlParams.get('exam');
+    if (examId) {
+        document.getElementById('exam-select').value = examId;
+        changeExam(examId);
+    }
+});
+</script>
+{% endblock %}

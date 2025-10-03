@@ -1,27 +1,23 @@
 {% extends 'base.html' %}{% load static %}{% block title %}Teacher Dashboard{% endblock %}{% block content %}<div class="container-fluid"><div class="row mb-4"><div class="col"><h1 class="h3 mb-0 text-gray-800">Teacher Dashboard</h1><p class="text-muted">Welcome, {{ user.get_full_name|default:user.username }}</p></div></div>
 
-{# Assigned Classes Section #}
-{% if assigned_classes %}
+{# Assigned Forms Section #}
+{% if assigned_forms %}
 <div class="row mb-4">
     <div class="col-12">
         <div class="card shadow">
             <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Your Assigned Classes</h6>
+                <h6 class="m-0 font-weight-bold text-primary">Your Assigned Forms</h6>
             </div>
             <div class="card-body">
                 <div class="row">
-                    {% for class_assignment in assigned_classes %}
+                    {% for form_level in assigned_forms %}
                     <div class="col-md-3 mb-3">
-                        <div class="card border-left-{% if class_assignment.is_class_teacher %}success{% else %}info{% endif %}">
+                        <a href="{% url 'accounts:teacher_form_streams' form_level %}" class="card border-left-primary text-decoration-none">
                             <div class="card-body">
-                                <h5 class="card-title">{{ class_assignment.class_name }}</h5>
-                                {% if class_assignment.is_class_teacher %}
-                                <span class="badge badge-success">Class Teacher</span>
-                                {% else %}
-                                <span class="badge badge-info">Subject Teacher</span>
-                                {% endif %}
+                                <h5 class="card-title text-primary">Form {{ form_level }}</h5>
+                                <p class="card-text text-muted">Click to view streams</p>
                             </div>
-                        </div>
+                        </a>
                     </div>
                     {% endfor %}
                 </div>
@@ -31,168 +27,70 @@
 </div>
 {% endif %}
 
-<div class="row">
-    {# Card for Total Students #}
-    <div class="col-md-4 mb-4">
-        <div class="card border-left-primary shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                            Total Students
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_students }}</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-            <a href="{% url 'students:student_list' %}" class="stretched-link"></a>
-        </div>
-    </div>
-
-    {# Card for Subjects Taught #}
-    <div class="col-md-4 mb-4">
-        <div class="card border-left-success shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                            Subjects Taught
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ taught_subjects|length }}</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-book-open fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {# Card for Recent Exams #}
-    <div class="col-md-4 mb-4">
-        <div class="card border-left-info shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                            Recent Exams
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ recent_exams|length }}</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-            <a href="#exam-list" class="stretched-link"></a>
-        </div>
-    </div>
-</div>
-
-{# Subject Analytics Section #}
-{% if subject_analytics %}
+{# Exam Management Table #}
+{% if teacher_exams %}
 <div class="row mb-4">
     <div class="col-12">
         <div class="card shadow">
             <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Subject Analytics</h6>
+                <h6 class="m-0 font-weight-bold text-primary">Exam Management</h6>
             </div>
             <div class="card-body">
-                {% for analytics in subject_analytics %}
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <h5 class="text-primary">{{ analytics.subject.name }}</h5>
-                        <div class="row">
-                            <div class="col-md-3">
-                                <div class="card">
-                                    <div class="card-body text-center">
-                                        <h4 class="text-success">{{ analytics.student_count }}</h4>
-                                        <p class="text-muted">Students</p>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Form</th>
+                                <th>Stream</th>
+                                <th>Subject</th>
+                                <th>Exam</th>
+                                <th>Status</th>
+                                <th>Completion</th>
+                                <th>Paper Ratio</th>
+                                <th>Grading System</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exam_data in teacher_exams %}
+                            <tr>
+                                <td>Form {{ exam_data.form_level }}</td>
+                                <td>{{ exam_data.stream }}</td>
+                                <td>{{ exam_data.subject.name }}</td>
+                                <td>{{ exam_data.exam.name }}</td>
+                                <td>
+                                    <span class="badge badge-{% if exam_data.status == 'Published' %}success{% else %}warning{% endif %}">
+                                        {{ exam_data.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="progress" style="width: 100px;">
+                                        <div class="progress-bar" role="progressbar"
+                                             style="width: {{ exam_data.completion_percentage }}%"
+                                             aria-valuenow="{{ exam_data.completion_percentage }}"
+                                             aria-valuemin="0" aria-valuemax="100">
+                                            {{ exam_data.completion_percentage|floatformat:0 }}%
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card">
-                                    <div class="card-body text-center">
-                                        <h4 class="text-info">{{ analytics.avg_marks }}</h4>
-                                        <p class="text-muted">Avg Marks</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <h6>Top Students</h6>
-                                <ul class="list-group">
-                                    {% for student in analytics.top_students %}
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        {{ student.student.admission_number }} - {{ student.student.get_full_name }}
-                                        <span class="badge badge-primary badge-pill">{{ student.total_marks }}</span>
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                        </div>
-                        {% if analytics.deviations %}
-                        <div class="row mt-3">
-                            <div class="col-12">
-                                <h6>Recent Performance Deviations</h6>
-                                <div class="table-responsive">
-                                    <table class="table table-sm">
-                                        <thead>
-                                            <tr>
-                                                <th>Student</th>
-                                                <th>Marks</th>
-                                                <th>Deviation</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for dev in analytics.deviations %}
-                                            <tr>
-                                                <td>{{ dev.student.admission_number }} - {{ dev.student.get_full_name }}</td>
-                                                <td>{{ dev.marks }}</td>
-                                                <td class="{% if dev.deviation > 0 %}text-success{% else %}text-danger{% endif %}">
-                                                    {{ dev.deviation|floatformat:1 }}
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
+                                </td>
+                                <td>
+                                    <input type="checkbox" class="form-check-input" {% if exam_data.exam.use_paper_ratio %}checked{% endif %} disabled>
+                                </td>
+                                <td>{{ exam_data.exam.grading_system.name|default:"Default" }}</td>
+                                <td>
+                                    <a href="{% url 'school:exam_upload_streams' exam_data.form_level exam_data.exam.id %}" class="btn btn-sm btn-primary">Upload</a>
+                                    {% if user.is_superuser %}
+                                    <button class="btn btn-sm btn-success" onclick="publishExam({{ exam_data.exam.id }})">Publish</button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-                <hr>
-                {% endfor %}
             </div>
         </div>
     </div>
 </div>
 {% endif %}
-
-<div class="row" id="exam-list">
-    <div class="col-12">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Recent Exams</h6>
-            </div>
-            <div class="list-group list-group-flush">
-                {% for exam in recent_exams %}
-                    <a href="{% url 'exams:exam_detail' exam.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="mb-1">{{ exam.name }}</h5>
-                            <p class="mb-1 text-muted">Form: {{ exam.form_level }} | Subject: {{ exam.subject.name }}</p>
-                        </div>
-                        <small class="text-muted">{{ exam.date_conducted|date:"M d, Y" }}</small>
-                    </a>
-                {% empty %}
-                    <p class="list-group-item text-muted">No recent exams available.</p>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-</div>
 </div>{% endblock %}{% block scripts %}<script src="https://www.google.com/search?q=https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>{% endblock %}

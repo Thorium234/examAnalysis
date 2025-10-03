@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Invoices - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3">Invoices</h1>
+            <p class="text-muted">Manage your school's billing invoices</p>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Balance Due</h5>
+                    <h3 class="text-danger">KSH {{ total_balance|floatformat:2 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Unallocated Balance</h5>
+                    <h3 class="text-warning">KSH {{ unallocated_balance|floatformat:2 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Invoices</h5>
+                    <h3 class="text-primary">{{ invoices|length }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoices Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Invoice List</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Invoice #</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Balance Due</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for invoice in invoices %}
+                        <tr>
+                            <td>{{ invoice.invoice_number }}</td>
+                            <td>{{ invoice.item_description|truncatechars:50 }}</td>
+                            <td>KSH {{ invoice.gross_amount|floatformat:2 }}</td>
+                            <td>KSH {{ invoice.balance_due|floatformat:2 }}</td>
+                            <td>{{ invoice.due_date|date:"M d, Y" }}</td>
+                            <td>
+                                <span class="badge {% if invoice.status == 'PAID' %}badge-success{% elif invoice.status == 'PENDING' %}badge-warning{% else %}badge-danger{% endif %}">
+                                    {{ invoice.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'billing:invoice_detail' invoice.invoice_number %}" class="btn btn-sm btn-outline-primary">View</a>
+                                {% if invoice.balance_due > 0 %}
+                                <a href="{% url 'billing:pay_invoice' invoice.invoice_number %}" class="btn btn-sm btn-success">Pay</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">No invoices found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

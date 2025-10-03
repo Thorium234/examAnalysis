@@ -6,13 +6,13 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .models import Subject, SubjectPaper, SubjectCategory
 from school.models import School
 
-# Mixin to restrict views to school admins and HODs
+# Mixin to restrict views to school admins, HODs, and teachers
 class SchoolAdminOrHODRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self):
         user = self.request.user
         if user.is_superuser:
             return True
-        return user.profile.roles.filter(name__in=['School Admin', 'HOD']).exists()
+        return user.profile.roles.filter(name__in=['School Admin', 'HOD', 'Teacher']).exists()
 
 class SubjectListView(LoginRequiredMixin, ListView):
     model = Subject
