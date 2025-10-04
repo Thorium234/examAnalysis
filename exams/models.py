@@ -14,20 +14,31 @@ class GradingSystem(models.Model):
     school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='grading_systems')
     subject_category = models.ForeignKey(SubjectCategory, on_delete=models.CASCADE, related_name='grading_systems', null=True, blank=True)
     is_active = models.BooleanField(default=True)
+    is_positioning_system = models.BooleanField(default=False, help_text="If true, this system is used for student positioning/ranking based on position numbers")
     is_default = models.BooleanField(default=False)
     # Use settings.AUTH_USER_MODEL to refer to the custom user model
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def get_grade_and_points(self, marks):
+    def get_grade_and_points(self, value):
         """
-        Get the grade and points for given marks.
+        Get the grade and points for given value.
+        For regular systems: value = marks (0-100)
+        For positioning systems: value = position number (1, 2, 3, etc.)
         """
-        ranges = self.grading_ranges.filter(
-            min_marks__lte=marks,
-            max_marks__gte=marks
-        ).first()
+        if self.is_positioning_system:
+            # For positioning systems, match exact position or use range
+            ranges = self.grading_ranges.filter(
+                min_marks__lte=value,
+                max_marks__gte=value
+            ).first()
+        else:
+            # For regular grading systems, use marks-based logic
+            ranges = self.grading_ranges.filter(
+                min_marks__lte=value,
+                max_marks__gte=value
+            ).first()
 
         if ranges:
             return ranges.grade, ranges.points

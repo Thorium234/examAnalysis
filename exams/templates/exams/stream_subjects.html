@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Subjects - Form {{ form_level }}{{ stream }}{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">Form {{ form_level }}{{ stream }} Subjects</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'exams:exam_list' %}">Exam Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'exams:form_streams' form_level %}">Form {{ form_level }}</a></li>
+                    <li class="breadcrumb-item active">Stream {{ stream }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    {% for group_name, subjects in subject_groups.items %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">{{ group_name|title }}</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for subject in subjects %}
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        {{ subject.name }}
+                                    </div>
+                                    <div class="h6 mb-0 font-weight-bold text-gray-800">{{ subject.code|default:subject.name }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-book fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <a href="{% url 'exams:subject_entry_options' form_level stream subject.id %}" class="btn btn-success btn-sm btn-block">
+                                    <i class="fas fa-edit"></i> Enter Results
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> No subject groups found for this stream.
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -10,6 +10,12 @@ urlpatterns = [
     # New hierarchical result entry URLs
     path('results/form-levels/', views.exam_form_levels, name='exam_form_levels'),
     path('results/form/<int:form_level>/subjects/', views.exam_form_subjects, name='exam_form_subjects'),
+    path('form/<int:form_level>/streams/', views.form_streams, name='form_streams'),
+    path('form/<int:form_level>/stream/<str:stream>/subject/<int:subject_id>/entry/', views.subject_entry_options, name='subject_entry_options'),
+    path('form/<int:form_level>/stream/<str:stream>/subject/<int:subject_id>/results/', views.subject_results_list, name='subject_results_list'),
+    path('form/<int:form_level>/stream/<str:stream>/subject/<int:subject_id>/download-template/', views.download_subject_template, name='download_subject_template'),
+    path('form/<int:form_level>/stream/<str:stream>/subject/<int:subject_id>/upload/', views.upload_subject_results, name='upload_subject_results'),
+    path('form/<int:form_level>/stream/<str:stream>/subjects/', views.stream_subjects, name='stream_subjects'),
     path('results/form/<int:form_level>/subject/<int:subject_id>/entry/', views.exam_subject_results_entry, name='exam_subject_results_entry'),
     # Exam-related URLs
     path('create/', views.ExamCreateView.as_view(), name='exam_create'),
@@ -25,12 +31,15 @@ urlpatterns = [
     path('<int:exam_pk>/subject/<int:subject_pk>/results/', views.subject_results, name='subject_results'),
     path('<int:exam_pk>/stream/<int:form_level>/<str:stream>/results/', views.stream_results, name='stream_results'),
     path('<int:pk>/results/entry/', views.exam_results_entry, name='exam_results_entry'),
+    path('<int:pk>/results/view/', views.exam_results, name='exam_results'),
     # Grading System URLs
     path('grading-systems/create/', views.GradingSystemCreateView.as_view(), name='grading_system_create'),
     path('grading-systems/', views.GradingSystemListView.as_view(), name='gradingsystem_list'),
     path('grading-systems/<int:pk>/', views.GradingSystemDetailView.as_view(), name='grading_system_detail'),
     path('grading-systems/<int:pk>/edit/', views.GradingSystemUpdateView.as_view(), name='grading_system_edit'),
     path('grading-systems/<int:pk>/delete/', views.GradingSystemDeleteView.as_view(), name='grading_system_delete'),
+    # Positioning System URL
+    path('positioning-system/', views.positioning_system_detail, name='positioning_system_detail'),
 
     # Grading Range URLs
     path('grading-systems/<int:grading_system_pk>/ranges/create/', views.GradingRangeCreateView.as_view(), name='gradingrange_create'),

@@ -39,11 +39,10 @@ class SpreadsheetTemplate:
         # Get eligible students
         self.students = Student.objects.filter(
             form_level__in=self.exam.participating_forms.all(),
-            studentsubjectenrollment__subject=self.subject,
-            studentsubjectenrollment__is_enrolled=True
+            subjects=self.subject
         ).exclude(
             paperresult__exam=self.exam,
-            paperresult__subject=self.subject
+            paperresult__subject_paper__subject=self.subject
         ).order_by('admission_number')
 
         # Create paper sheets

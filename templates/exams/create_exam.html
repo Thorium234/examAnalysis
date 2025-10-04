@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load bootstrap4 %}
+
+{% block title %}Create Exam{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0 mt-5">
+                <div class="card-header bg-primary text-white py-4">
+                    <h4 class="mb-0 text-center">
+                        <i class="fas fa-plus-circle mr-2"></i>Create New Exam
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" action="{% url 'exams:create_exam' %}" class="needs-validation" novalidate>
+                        {% csrf_token %}
+
+                        {% for field in form %}
+                        <div class="form-group mb-4">
+                            <label for="{{ field.id_for_label }}" class="font-weight-bold">
+                                {{ field.label }}
+                                {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <small class="form-text text-muted">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+
+                        <div class="form-group text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save mr-2"></i>Create Exam
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Bootstrap form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
+
+<style>
+.card-header {
+    background: linear-gradient(135deg, #263238 0%, #37474F 100%) !important;
+}
+
+.btn-primary {
+    background-color: #263238;
+    border-color: #263238;
+}
+
+.btn-primary:hover {
+    background-color: #37474F;
+    border-color: #37474F;
+}
+
+.form-control:focus {
+    border-color: #263238;
+    box-shadow: 0 0 0 0.2rem rgba(38, 50, 56, 0.25);
+}
+</style>
+{% endblock %}
+

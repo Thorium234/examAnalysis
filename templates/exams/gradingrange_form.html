@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if form.instance.pk %}Edit Grading Range{% else %}Create Grading Range{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 text-gray-800">
+                <i class="fas fa-graduation-cap text-primary mr-2"></i>
+                {% if form.instance.pk %}Edit Grading Range{% else %}Create Grading Range{% endif %}
+            </h1>
+            <p class="text-muted mb-0">
+                {% if form.instance.pk %}Modify the grading range settings{% else %}Define a new grading range for your system{% endif %}
+            </p>
+        </div>
+        <a href="{% if form.instance.pk %}{% url 'exams:grading_system_detail' form.instance.grading_system.pk %}{% else %}{% url 'exams:grading_system_detail' grading_system_pk %}{% endif %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Grading System
+        </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white py-4">
+                    <h4 class="mb-0 text-center">
+                        <i class="fas fa-edit mr-2"></i>
+                        {% if form.instance.pk %}Edit Grading Range{% else %}Create New Grading Range{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+
+                        {% for field in form %}
+                        <div class="form-group mb-4">
+                            <label for="{{ field.id_for_label }}" class="font-weight-bold text-primary">
+                                <i class="fas fa-tag mr-2"></i>{{ field.label }}
+                                {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+
+                            {% if field.name == 'grade' %}
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-graduation-cap"></i>
+                                        </span>
+                                    </div>
+                                    {{ field }}
+                                </div>
+                            {% elif field.name == 'min_marks' %}
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-arrow-down"></i>
+                                        </span>
+                                    </div>
+                                    {{ field }}
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">marks</span>
+                                    </div>
+                                </div>
+                            {% elif field.name == 'max_marks' %}
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-arrow-up"></i>
+                                        </span>
+                                    </div>
+                                    {{ field }}
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">marks</span>
+                                    </div>
+                                </div>
+                            {% elif field.name == 'points' %}
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-trophy"></i>
+                                        </span>
+                                    </div>
+                                    {{ field }}
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">point{{ field.value|pluralize }}</span>
+                                    </div>
+                                </div>
+                            {% else %}
+                                {{ field }}
+                            {% endif %}
+
+                            {% if field.help_text %}
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle mr-1"></i>{{ field.help_text }}
+                                </small>
+                            {% endif %}
+
+                            {% for error in field.errors %}
+                                <div class="text-danger small">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>{{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+
+                        <!-- Form Actions -->
+                        <div class="form-group text-center mt-4">
+                            <a href="{% if form.instance.pk %}{% url 'exams:grading_system_detail' form.instance.grading_system.pk %}{% else %}{% url 'exams:grading_system_detail' grading_system_pk %}{% endif %}"
+                               class="btn btn-secondary btn-lg mr-3">
+                                <i class="fas fa-times mr-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save mr-2"></i>
+                                {% if form.instance.pk %}Update Range{% else %}Create Range{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="card mt-4 border-info">
+                <div class="card-body">
+                    <h6 class="card-title text-info">
+                        <i class="fas fa-lightbulb mr-2"></i>Grading Range Guidelines
+                    </h6>
+                    <ul class="mb-0 small text-muted">
+                        <li><strong>Grade:</strong> The letter grade (A, B, C, etc.)</li>
+                        <li><strong>Min/Max Marks:</strong> The mark range for this grade</li>
+                        <li><strong>Points:</strong> GPA points for grade calculation</li>
+                        <li><strong>Note:</strong> Ranges should not overlap and cover 0-100 marks</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Custom Styles for Professional Look */
+.bg-primary {
+    background: linear-gradient(135deg, #263238 0%, #37474F 100%) !important;
+}
+
+.btn-primary {
+    background-color: #263238;
+    border-color: #263238;
+}
+
+.btn-primary:hover {
+    background-color: #37474F;
+    border-color: #37474F;
+}
+
+.card {
+    border: none;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    color: #6c757d;
+}
+
+.form-control:focus {
+    border-color: #263238;
+    box-shadow: 0 0 0 0.2rem rgba(38, 50, 56, 0.25);
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .btn-group {
+        flex-direction: column;
+    }
+
+    .btn-group .btn {
+        margin: 2px 0;
+    }
+
+    .input-group {
+        flex-direction: column;
+    }
+
+    .input-group .input-group-prepend,
+    .input-group .input-group-append {
+        width: 100%;
+        text-align: center;
+    }
+}
+</style>
+
+<script>
+// Bootstrap form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Dynamic help text for points field
+document.addEventListener('DOMContentLoaded', function() {
+    const pointsField = document.querySelector('input[name="points"]');
+    const pointsHelp = pointsField ? pointsField.closest('.input-group').querySelector('.input-group-append .input-group-text') : null;
+
+    if (pointsField && pointsHelp) {
+        pointsField.addEventListener('input', function() {
+            const value = parseInt(this.value) || 0;
+            pointsHelp.textContent = value === 1 ? 'point' : 'points';
+        });
+    }
+});
+</script>
+{% endblock %}

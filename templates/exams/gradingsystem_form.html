@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if form.instance.pk %}Edit Grading System{% else %}Create Grading System{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 text-gray-800">
+                <i class="fas fa-graduation-cap text-primary mr-2"></i>
+                {% if form.instance.pk %}Edit Grading System{% else %}Create Grading System{% endif %}
+            </h1>
+            <p class="text-muted mb-0">
+                {% if form.instance.pk %}Modify the grading system settings{% else %}Set up a new grading system for subject evaluation{% endif %}
+            </p>
+        </div>
+        <a href="{% url 'exams:gradingsystem_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left mr-2"></i>Back to List
+        </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white py-4">
+                    <h4 class="mb-0 text-center">
+                        <i class="fas fa-plus-circle mr-2"></i>
+                        {% if form.instance.pk %}Edit Grading System{% else %}Create New Grading System{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+
+                        {% for field in form %}
+                        <div class="form-group mb-4">
+                            <label for="{{ field.id_for_label }}" class="font-weight-bold text-primary">
+                                <i class="fas fa-tag mr-2"></i>{{ field.label }}
+                                {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+
+                            {% if field.name == 'name' %}
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-graduation-cap"></i>
+                                        </span>
+                                    </div>
+                                    {{ field }}
+                                </div>
+                            {% elif field.name == 'subject_category' %}
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-layer-group"></i>
+                                        </span>
+                                    </div>
+                                    {{ field }}
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-info-circle" data-toggle="tooltip" title="Leave empty for universal grading system"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            {% elif field.name == 'is_default' %}
+                                <div class="custom-control custom-switch">
+                                    {{ field }}
+                                    <label class="custom-control-label font-weight-normal" for="{{ field.id_for_label }}">
+                                        <i class="fas fa-star mr-1 text-warning"></i> Set as default grading system
+                                    </label>
+                                </div>
+                            {% else %}
+                                {{ field }}
+                            {% endif %}
+
+                            {% if field.help_text and field.name != 'subject_category' %}
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle mr-1"></i>{{ field.help_text }}
+                                </small>
+                            {% endif %}
+
+                            {% for error in field.errors %}
+                                <div class="text-danger small">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>{{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+
+                        <!-- Form Actions -->
+                        <div class="form-group text-center mt-4">
+                            <a href="{% url 'exams:gradingsystem_list' %}"
+                               class="btn btn-secondary btn-lg mr-3">
+                                <i class="fas fa-times mr-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save mr-2"></i>
+                                {% if form.instance.pk %}Update System{% else %}Create System{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="card mt-4 border-info">
+                <div class="card-body">
+                    <h6 class="card-title text-info">
+                        <i class="fas fa-lightbulb mr-2"></i>Grading System Guidelines
+                    </h6>
+                    <ul class="mb-0 small text-muted">
+                        <li><strong>Name:</strong> Choose a descriptive name for your grading system</li>
+                        <li><strong>Subject Category:</strong> Optional - link to specific subject types, or leave empty for universal use</li>
+                        <li><strong>Default:</strong> Only one system can be default - used when no specific system matches</li>
+                        <li><strong>Ranges:</strong> After creation, define grade ranges (A, B, C, etc.) with mark thresholds</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Custom Styles for Professional Look */
+.bg-primary {
+    background: linear-gradient(135deg, #263238 0%, #37474F 100%) !important;
+}
+
+.btn-primary {
+    background-color: #263238;
+    border-color: #263238;
+}
+
+.btn-primary:hover {
+    background-color: #37474F;
+    border-color: #37474F;
+}
+
+.card {
+    border: none;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    color: #6c757d;
+}
+
+.form-control:focus {
+    border-color: #263238;
+    box-shadow: 0 0 0 0.2rem rgba(38, 50, 56, 0.25);
+}
+
+.custom-control-label {
+    cursor: pointer;
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .btn-group {
+        flex-direction: column;
+    }
+
+    .btn-group .btn {
+        margin: 2px 0;
+    }
+
+    .input-group {
+        flex-direction: column;
+    }
+
+    .input-group .input-group-prepend,
+    .input-group .input-group-append {
+        width: 100%;
+        text-align: center;
+    }
+}
+</style>
+
+<script>
+// Bootstrap form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Initialize tooltips
+$(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+});
+</script>
+{% endblock %}

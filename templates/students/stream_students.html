@@ -8,24 +8,43 @@
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
       <h1 class="h3 mb-0 text-gray-800">Form {{ form_level }} {{ stream }} Students</h1>
       <div>
-        <a href="{% url 'students:form_dashboard' form_level %}" class="btn btn-secondary mr-2">
+        <a href="{% url 'students:form_dashboard' form_level.pk %}" class="btn btn-secondary mr-2">
           <i class="fas fa-arrow-left"></i> Back to Form {{ form_level }}
         </a>
         <button onclick="printStudentList()" class="btn btn-info mr-2">
           <i class="fas fa-print"></i> Print List
         </button>
         {% if perms.students.add_student %}
-          <a href="{% url 'students:student_create' %}" class="d-none d-sm-inline-block btn btn-primary shadow-sm">
-            <i class="fas fa-plus fa-sm text-white-50"></i> Add New Student
+          <a href="{% url 'students:student_create' %}?form_level={{ form_level.pk }}&stream={{ stream }}" class="d-none d-sm-inline-block btn btn-success shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Add Student to {{ stream }}
           </a>
         {% endif %}
+      </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <form method="get" class="form-inline">
+          <div class="form-group mr-2">
+            <input type="text" name="search" class="form-control" placeholder="Search by name, admission number, or phone..." value="{{ search_query }}">
+          </div>
+          <button type="submit" class="btn btn-primary mr-2">
+            <i class="fas fa-search"></i> Search
+          </button>
+          {% if search_query %}
+            <a href="{% url 'students:stream_students' form_level.pk stream %}" class="btn btn-secondary">
+              <i class="fas fa-times"></i> Clear
+            </a>
+          {% endif %}
+        </form>
       </div>
     </div>
 
     <div class="card shadow mb-4">
       <div class="card-header py-3">
         <h6 class="m-0 font-weight-bold text-primary">
-          Form {{ form_level }} {{ stream }} Students ({{ student_count }} total)
+          Form {{ form_level }} {{ stream }} Students ({{ student_count }} total{% if search_query %}, filtered{% endif %})
         </h6>
       </div>
       <div class="card-body">
@@ -47,24 +66,63 @@
                   <td>{{ forloop.counter }}</td>
                   <td>{{ student.admission_number }}</td>
                   <td>
-                    <a href="#">{{ student.full_name }}</a>
+                    <a href="{% url 'students:student_detail' student.pk %}">{{ student.name }}</a>
                   </td>
                   <td>{{ student.kcpe_marks }}</td>
                   <td>{{ student.phone_contact }}</td>
                   <td>
                     <a href="{% url 'students:update_student' student.pk %}" class="btn btn-sm btn-info">Edit</a>
                     <a href="{% url 'students:delete_student' student.pk %}" class="btn btn-sm btn-danger">Delete</a>
-                    <a href="{% url 'students:enroll_student' student.pk %}" class="btn btn-sm btn-success">Enroll</a>
+                    <a href="{% url 'students:student_detail' student.pk %}" class="btn btn-sm btn-success">Dashboard</a>
                   </td>
                 </tr>
               {% empty %}
                 <tr>
-                  <td colspan="6" class="text-center">No students found in Form {{ form_level }} {{ stream }}.</td>
+                  <td colspan="6" class="text-center">
+                    {% if search_query %}
+                      No students found matching "{{ search_query }}".
+                    {% else %}
+                      No students found in Form {{ form_level }} {{ stream }}.
+                    {% endif %}
+                  </td>
                 </tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+          <div class="d-flex justify-content-center mt-3">
+            <nav>
+              <ul class="pagination">
+                {% if page_obj.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+                  </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                  {% if page_obj.number == num %}
+                    <li class="page-item active">
+                      <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}page={{ num }}">{{ num }}</a>
+                    </li>
+                  {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                      <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}page={{ num }}">{{ num }}</a>
+                    </li>
+                  {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+                  </li>
+                {% endif %}
+              </ul>
+            </nav>
+          </div>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -92,7 +150,7 @@
           <tr style="border-bottom: 1px solid #eee;">
             <td style="padding: 8px;">{{ forloop.counter }}</td>
             <td style="padding: 8px;">{{ student.admission_number }}</td>
-            <td style="padding: 8px;">{{ student.full_name }}</td>
+            <td style="padding: 8px;">{{ student.name }}</td>
             <td style="padding: 8px;">{{ student.kcpe_marks }}</td>
             <td style="padding: 8px;">{{ student.phone_contact }}</td>
           </tr>
@@ -143,7 +201,7 @@
                 <tr>
                   <td>{{ forloop.counter }}</td>
                   <td>{{ student.admission_number }}</td>
-                  <td>{{ student.full_name }}</td>
+                  <td>{{ student.name }}</td>
                   <td>{{ student.kcpe_marks }}</td>
                   <td>{{ student.phone_contact }}</td>
                 </tr>

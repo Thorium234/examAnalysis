@@ -57,8 +57,12 @@ urlpatterns = [
     # Exam Analysis URLs
     path('exam-analysis/<int:form_level>/<int:exam_id>/', views.exam_merit_list, name='exam_merit_list'),
     path('upload-exam/<int:form_level>/<int:exam_id>/<str:stream>/', views.exam_upload_subjects, name='exam_upload_subjects'),
+    path('upload-exam/<int:form_level>/<int:exam_id>/<str:stream>/<int:category_id>/', views.exam_upload_individual, name='exam_upload_individual'),
     path('upload-exam/<int:form_level>/<int:exam_id>/', views.exam_upload_streams, name='exam_upload_streams'),
     path('student-report-card/<int:form_level>/', views.form_report_card, name='form_report_card'),
+    path('student-report-card/<int:form_level>/', views.form_report_card, name='form_report_card'),
+    path('student-report-card/<int:form_level>/pdf/', views.generate_form_report_pdf, name='generate_form_report_pdf'),
+    path('student-report-card/<int:form_level>/<str:stream>/pdf/', views.generate_stream_report_pdf, name='generate_stream_report_pdf'),
 
     # Upload Exam URLs
     path('upload-exam/<int:form_level>/', views.form_upload_exam, name='form_upload_exam'),

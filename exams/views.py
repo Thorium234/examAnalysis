@@ -56,6 +56,18 @@ class ExamCreateView(TeacherRequiredMixin, CreateView):
             form.add_error(None, "You must be associated with a school to create an exam.")
             return self.form_invalid(form)
         form.instance.school = self.request.user.school
+
+        # Check for duplicate exam
+        if Exam.objects.filter(
+            school=self.request.user.school,
+            name=form.cleaned_data['name'],
+            form_level=form.cleaned_data['form_level'],
+            year=form.cleaned_data['year'],
+            term=form.cleaned_data['term']
+        ).exists():
+            form.add_error(None, "An exam with the same name, form level, year, and term already exists for your school.")
+            return self.form_invalid(form)
+
         return super().form_valid(form)
 
 class ExamUpdateView(TeacherRequiredMixin, UpdateView):
@@ -64,20 +76,39 @@ class ExamUpdateView(TeacherRequiredMixin, UpdateView):
     template_name = 'exams/exam_form.html'
     success_url = reverse_lazy('exam_list')
 
+    def form_valid(self, form):
+        # Check for duplicate exam, excluding current instance
+        if Exam.objects.filter(
+            school=self.request.user.school,
+            name=form.cleaned_data['name'],
+            form_level=form.cleaned_data['form_level'],
+            year=form.cleaned_data['year'],
+            term=form.cleaned_data['term']
+        ).exclude(pk=self.object.pk).exists():
+            form.add_error(None, "An exam with the same name, form level, year, and term already exists for your school.")
+            return self.form_invalid(form)
+
+        return super().form_valid(form)
+
 class ExamDeleteView(TeacherRequiredMixin, DeleteView):
     model = Exam
     template_name = 'exams/exam_confirm_delete.html'
     success_url = reverse_lazy('exam_list')
 
-class ExamListView(TeacherRequiredMixin, ListView):
-    model = Exam
-    template_name = 'exams/exam_list.html'
-    context_object_name = 'exams'
+class ExamListView(TeacherRequiredMixin, TemplateView):
+    template_name = 'exams/exam_dashboard.html'
 
-    def get_queryset(self):
-        if self.request.user.is_superuser:
-            return Exam.objects.all().order_by('-year', '-term')
-        return Exam.objects.filter(school=self.request.user.school).order_by('-year', '-term')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Show form levels 1-4
+        form_levels = [
+            {'number': 1, 'name': 'Form 1'},
+            {'number': 2, 'name': 'Form 2'},
+            {'number': 3, 'name': 'Form 3'},
+            {'number': 4, 'name': 'Form 4'},
+        ]
+        context['form_levels'] = form_levels
+        return context
 # New hierarchical navigation views for result entry
 @login_required
 def exam_form_levels(request):
@@ -128,9 +159,7 @@ def exam_form_subjects(request, form_level):
         'exams': exams,
     }
     return render(request, 'exams/exam_form_subjects.html', context)
-    context = {
-        'form_level': form_level,}
-    
+
 @login_required
 def exam_subject_results_entry(request, form_level, subject_id):
     """Improved result entry view that categorizes students by streams"""
@@ -153,10 +182,9 @@ def exam_subject_results_entry(request, form_level, subject_id):
     for stream in streams:
         students = Student.objects.filter(
             school=request.user.school if not request.user.is_superuser else None,
-            form_level=form_level,
+            form_level__number=form_level,
             stream=stream,
-            studentsubjectenrollment__subject=subject,
-            studentsubjectenrollment__is_enrolled=True
+            subjects=subject
         ).exclude(
             # Exclude students who already have results for this subject in active exams
             paperresult__exam__is_active=True,
@@ -250,7 +278,7 @@ def handle_bulk_result_entry(request, form_level, subject_id):
     if error_count > 0:
         messages.error(request, f"Failed to save {error_count} results due to errors.")
 
-    return redirect('exam_subject_results_entry', form_level=form_level, subject_id=subject_id)
+    return redirect('exam_subject_results_entry', form_level__number=form_level, subject_id=subject_id)
 
 class GradingSystemCreateView(TeacherRequiredMixin, CreateView):
     model = GradingSystem
@@ -290,6 +318,29 @@ class GradingSystemDetailView(TeacherRequiredMixin, DetailView):
         grading_system = self.object
         context['grading_ranges'] = GradingRange.objects.filter(grading_system=grading_system).order_by('-min_marks')
         return context
+
+@login_required
+def positioning_system_detail(request):
+    """View for the positioning grading system detail"""
+    if request.user.is_superuser:
+        positioning_system = GradingSystem.objects.filter(is_positioning_system=True).first()
+    else:
+        positioning_system = GradingSystem.objects.filter(
+            school=request.user.school,
+            is_positioning_system=True
+        ).first()
+
+    if not positioning_system:
+        messages.error(request, "Positioning grading system not found.")
+        return redirect('exams:gradingsystem_list')
+
+    # Use the same template and context as GradingSystemDetailView
+    context = {
+        'grading_system': positioning_system,
+        'grading_ranges': GradingRange.objects.filter(grading_system=positioning_system).order_by('-points')
+    }
+
+    return render(request, 'exams/gradingsystem_detail.html', context)
 
 class GradingSystemUpdateView(TeacherRequiredMixin, UpdateView):
     model = GradingSystem
@@ -472,6 +523,31 @@ def subject_results(request, exam_pk, subject_pk):
         'subject_results': subject_results,
         'subject_stats': subject_stats,
     }
+
+    return render(request, 'exams/subject_results.html', context)
+
+@login_required
+def subject_results_list(request, form_level, stream, subject_id):
+    """List subject results for a specific stream - redirects to subject_results for the latest exam"""
+    subject = get_object_or_404(Subject, pk=subject_id)
+
+    # Get active exams for this form level
+    if request.user.is_superuser:
+        exams = Exam.objects.filter(form_level=form_level, is_active=True).order_by('-year', '-term')
+    else:
+        exams = Exam.objects.filter(
+            form_level=form_level,
+            is_active=True,
+            school=request.user.school
+        ).order_by('-year', '-term')
+
+    if exams.exists():
+        exam = exams.first()
+        return redirect('exams:subject_results', exam_pk=exam.pk, subject_pk=subject_id)
+    else:
+        messages.error(request, "No active exams found for this form level.")
+        return redirect('exams:exam_form_levels')
+
 # Stream Results View
 #----------------------------------------------------------------------
 @login_required
@@ -485,7 +561,7 @@ def stream_results(request, exam_pk, form_level, stream):
     # Get students in this stream
     students = Student.objects.filter(
         school=request.user.school,
-        form_level=form_level,
+        form_level__number=form_level,
         stream=stream
     ).order_by('admission_number')
 
@@ -539,7 +615,7 @@ def stream_results(request, exam_pk, form_level, stream):
     class_teacher = None
     try:
         teacher_class = TeacherClass.objects.filter(
-            form_level=form_level,
+            form_level__number=form_level,
             stream=stream,
             is_class_teacher=True
         ).first()
@@ -830,6 +906,58 @@ def exam_results_summary(request, pk):
     return render(request, 'exams/exam_results_summary.html', context)
 
 @login_required
+@permission_required('exams.view_examresult', raise_exception=True)
+def exam_results(request, pk):
+    if request.user.is_superuser:
+        exam = get_object_or_404(Exam, pk=pk)
+    else:
+        exam = get_object_or_404(Exam, pk=pk, school=request.user.school)
+
+    # Get filter params
+    selected_student = request.GET.get('student')
+    selected_subject = request.GET.get('subject')
+    selected_stream = request.GET.get('stream')
+
+    # Get base queryset
+    results = ExamResult.objects.filter(exam=exam).select_related('student', 'subject')
+
+    if selected_student:
+        results = results.filter(student_id=selected_student)
+    if selected_subject:
+        results = results.filter(subject_id=selected_subject)
+    if selected_stream:
+        results = results.filter(student__stream=selected_stream)
+
+    # Get options for filters
+    students = Student.objects.filter(
+        school=request.user.school if not request.user.is_superuser else None,
+        form_level__in=exam.participating_forms.all()
+    ).order_by('name')
+
+    subjects = Subject.objects.filter(
+        school=request.user.school if not request.user.is_superuser else None,
+        form_levels__in=exam.participating_forms.all()
+    ).order_by('name')
+
+    streams = Student.objects.filter(
+        school=request.user.school if not request.user.is_superuser else None,
+        form_level__in=exam.participating_forms.all()
+    ).values_list('stream', flat=True).distinct().order_by('stream')
+
+    context = {
+        'exam': exam,
+        'results': results,
+        'students': students,
+        'subjects': subjects,
+        'streams': streams,
+        'selected_student': selected_student,
+        'selected_subject': selected_subject,
+        'selected_stream': selected_stream,
+    }
+
+    return render(request, 'exams/exam_results.html', context)
+
+@login_required
 def my_classes_exam_management(request):
     """View for teachers to manage exams for their classes"""
     if not request.user.is_superuser and not request.user.profile.roles.filter(name='Teacher').exists():
@@ -848,6 +976,7 @@ def my_classes_exam_management(request):
         try:
             selected_exam = available_exams.get(pk=selected_exam_id)
         except Exam.DoesNotExist:
+            selected_exam = available_exams.first()
             selected_exam = available_exams.first()
     else:
         selected_exam = available_exams.first()
@@ -1005,8 +1134,240 @@ def update_exam_selection(request):
             })
 
         except Exam.DoesNotExist:
-            return JsonResponse({'error': 'Invalid exam'}, status=400)
+            return JsonResponse({"error": "Invalid exam"}, status=400)
 
-    return JsonResponse({'error': 'Invalid request'}, status=400)
+    return JsonResponse({"error": "Invalid request"}, status=400)
 
-    return render(request, 'exams/exam_summary_report.html', context)
+@login_required
+def form_streams(request, form_level):
+    """List streams for a specific form level"""
+    if request.user.is_superuser:
+        streams = Student.objects.filter(form_level__number=form_level).values_list('stream', flat=True).distinct().order_by('stream')
+    else:
+        streams = Student.objects.filter(
+            school=request.user.school,
+            form_level__number=form_level
+        ).values_list('stream', flat=True).distinct().order_by('stream')
+
+    context = {
+        'form_level': form_level,
+        'streams': streams,
+    }
+    return render(request, 'exams/form_streams.html', context)
+
+@login_required
+def stream_subjects(request, form_level, stream):
+    """List subject groups for a specific stream"""
+    if request.user.is_superuser:
+        subjects = Subject.objects.filter(form_levels=form_level).order_by('name')
+    else:
+        subjects = Subject.objects.filter(
+            school=request.user.school,
+            form_levels=form_level
+        ).order_by('name')
+
+    # Group subjects by category
+    subject_groups = {}
+    for subject in subjects:
+        category_name = subject.category.name if subject.category else 'Other'
+        if category_name not in subject_groups:
+            subject_groups[category_name] = []
+        subject_groups[category_name].append(subject)
+
+    context = {
+        'form_level': form_level,
+        'stream': stream,
+        'subject_groups': subject_groups,
+    }
+@login_required
+def subject_entry_options(request, form_level, stream, subject_id):
+    """Subject entry options: excel upload/download, paper ratios, result entry"""
+    subject = get_object_or_404(Subject, pk=subject_id)
+
+    # Check if teacher is assigned to this subject and form level
+    if not request.user.is_superuser:
+        from accounts.models import TeacherSubject
+        if not TeacherSubject.objects.filter(teacher=request.user, subject=subject, form_level=form_level).exists():
+            messages.error(request, "You are not assigned to teach this subject.")
+            return redirect('exams:stream_subjects', form_level__number=form_level, stream=stream)
+
+    # Get students in this stream and form level enrolled in this subject
+    students = Student.objects.filter(
+        school=request.user.school if not request.user.is_superuser else None,
+        form_level__number=form_level,
+        stream=stream,
+        subjects=subject,
+        
+    ).order_by('admission_number')
+
+    # Get active exams for this form level
+    exams = Exam.objects.filter(
+        form_level=form_level,
+        is_active=True,
+        school=request.user.school if not request.user.is_superuser else None
+    ).order_by('-year', '-term')
+
+    # Check if paper ratios exist for this subject
+    paper_ratios_exist = SubjectPaperRatio.objects.filter(subject=subject).exists()
+
+    context = {
+        'form_level': form_level,
+        'stream': stream,
+        'subject': subject,
+        'students': students,
+        'exams': exams,
+        'paper_ratios_exist': paper_ratios_exist,
+    }
+
+    if request.method == 'POST':
+        return handle_subject_result_entry(request, form_level, stream, subject_id)
+
+    return render(request, 'exams/subject_entry_options.html', context)
+
+@login_required
+def download_subject_template(request, form_level, stream, subject_id):
+    """Download CSV template for subject results entry"""
+    subject = get_object_or_404(Subject, pk=subject_id)
+
+    # Check permissions
+    if not request.user.is_superuser:
+        from accounts.models import TeacherSubject
+        if not TeacherSubject.objects.filter(teacher=request.user, subject=subject, form_level=form_level).exists():
+            messages.error(request, "You are not assigned to teach this subject.")
+            return redirect('exams:stream_subjects', form_level__number=form_level, stream=stream)
+
+    # Get students in this stream and form level enrolled in this subject
+    students = Student.objects.filter(
+        school=request.user.school if not request.user.is_superuser else None,
+        form_level__number=form_level,
+        stream=stream,
+        subjects=subject,
+        
+    ).order_by('admission_number')
+
+    # Create CSV response
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{subject.name}_Form{form_level}_{stream}_results_template.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['admission_number', 'student_name', 'marks', 'status'])
+
+    # Write data for each student
+    for student in students:
+        writer.writerow([
+            student.admission_number,
+            student.name,
+            '',  # Empty marks
+            'P'  # Default to Present
+        ])
+
+    return response
+
+@login_required
+def upload_subject_results(request, form_level, stream, subject_id):
+    """Upload subject results from CSV"""
+    subject = get_object_or_404(Subject, pk=subject_id)
+
+    # Check permissions
+    if not request.user.is_superuser:
+        from accounts.models import TeacherSubject
+        if not TeacherSubject.objects.filter(teacher=request.user, subject=subject, form_level=form_level).exists():
+            messages.error(request, "You are not assigned to teach this subject.")
+            return redirect('exams:stream_subjects', form_level__number=form_level, stream=stream)
+
+    if request.method == 'POST' and request.FILES.get('csv_file'):
+        csv_file = request.FILES['csv_file']
+
+        if not csv_file.name.endswith('.csv'):
+            messages.error(request, 'Please upload a CSV file.')
+            return redirect('exams:subject_entry_options', form_level__number=form_level, stream=stream, subject_id=subject_id)
+
+        try:
+            decoded_file = csv_file.read().decode('utf-8')
+            csv_reader = csv.DictReader(decoded_file.splitlines())
+
+            success_count = 0
+            error_count = 0
+
+            # Get active exams for this form level
+            exams = Exam.objects.filter(
+                form_level=form_level,
+                is_active=True,
+                school=request.user.school if not request.user.is_superuser else None
+            )
+
+            if not exams.exists():
+                messages.error(request, "No active exams found for this form level.")
+                return redirect('exams:subject_entry_options', form_level__number=form_level, stream=stream, subject_id=subject_id)
+
+            exam = exams.first()  # Use the latest exam
+
+            for row in csv_reader:
+                try:
+                    admission_number = row.get('admission_number', '').strip()
+                    marks_str = row.get('marks', '').strip()
+                    status = row.get('status', 'P').strip().upper()
+
+                    if not admission_number:
+                        error_count += 1
+                        continue
+
+                    # Get student
+                    try:
+                        student = Student.objects.get(
+                            admission_number=admission_number,
+                            school=request.user.school if not request.user.is_superuser else None,
+                            form_level__number=form_level,
+                            stream=stream
+                        )
+                    except Student.DoesNotExist:
+                        error_count += 1
+                        continue
+
+                    # Process marks
+                    if status == 'P' and marks_str:
+                        try:
+                            marks = float(marks_str)
+                            if marks < 0 or marks > 100:
+                                error_count += 1
+                                continue
+                        except ValueError:
+                            error_count += 1
+                            continue
+                    else:
+                        marks = None
+
+                    # Get or create subject paper (assuming single paper for simplicity)
+                    paper, created = SubjectPaper.objects.get_or_create(
+                        subject=subject,
+                        name='Paper 1',
+                        defaults={'paper_number': 1, 'max_marks': 100}
+                    )
+
+                    # Save result
+                    PaperResult.objects.update_or_create(
+                        exam=exam,
+                        student=student,
+                        subject_paper=paper,
+                        defaults={
+                            'marks': marks,
+                            'status': status,
+                            'entered_by': request.user
+                        }
+                    )
+
+                    success_count += 1
+
+                except Exception as e:
+                    error_count += 1
+                    continue
+
+            messages.success(request, f'Successfully uploaded {success_count} results. {error_count} errors.')
+
+        except Exception as e:
+            messages.error(request, f'Error processing file: {str(e)}')
+
+        return redirect('exams:subject_entry_options', form_level__number=form_level, stream=stream, subject_id=subject_id)
+
+    return redirect('exams:subject_entry_options', form_level__number=form_level, stream=stream, subject_id=subject_id)
+    return render(request, 'exams/subject_entry_options.html', context)

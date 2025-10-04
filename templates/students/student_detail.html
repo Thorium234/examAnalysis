@@ -1,38 +1,134 @@
-{% extends 'base.html' %}{% load static %}{% block title %}{{ student.full_name }} Details{% endblock %}{% block content %}<div class="container-fluid"><div class="d-sm-flex align-items-center justify-content-between mb-4"><h1 class="h3 mb-0 text-gray-800">{{ student.full_name }}</h1><div><a href="{% url 'students:student_update' student.admission_number %}" class="d-none d-sm-inline-block btn btn-info shadow-sm"><i class="fas fa-edit fa-sm text-white-50"></i> Edit Student</a><a href="{% url 'students:student_delete' student.admission_number %}" class="d-none d-sm-inline-block btn btn-danger shadow-sm"><i class="fas fa-trash fa-sm text-white-50"></i> Delete Student</a></div></div><div class="row">
-    <div class="col-lg-6">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Student Information</h6>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ student.name }} Details{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ student.name }}</h1>
+        <div>
+            <a href="{% url 'students:stream_students' student.form_level.pk student.stream %}" class="btn btn-secondary mr-2">
+                <i class="fas fa-arrow-left"></i> Back to {{ student.stream }} Stream
+            </a>
+            {% if perms.students.change_student %}
+                <a href="{% url 'students:update_student' student.pk %}" class="d-none d-sm-inline-block btn btn-info shadow-sm mr-2">
+                    <i class="fas fa-edit fa-sm text-white-50"></i> Edit Student
+                </a>
+            {% endif %}
+            {% if perms.students.delete_student %}
+                <a href="{% url 'students:delete_student' student.pk %}" class="d-none d-sm-inline-block btn btn-danger shadow-sm">
+                    <i class="fas fa-trash fa-sm text-white-50"></i> Delete Student
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Student Information -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Student Information</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Admission Number:</strong> {{ student.admission_number }}</p>
+                    <p><strong>Form:</strong> {{ student.form_level }}</p>
+                    <p><strong>Stream:</strong> {{ student.stream }}</p>
+                    <p><strong>KCPE Marks:</strong> {{ student.kcpe_marks|default:"N/A" }}</p>
+                    <p><strong>Phone Contact:</strong> {{ student.phone_contact|default:"N/A" }}</p>
+                </div>
             </div>
-            <div class="card-body">
-                <p><strong>Admission Number:</strong> {{ student.admission_number }}</p>
-                <p><strong>Form:</strong> {{ student.form_level }}</p>
-                <p><strong>Stream:</strong> {{ student.stream }}</p>
-                <p><strong>KCPE Marks:</strong> {{ student.kcpe_marks|default:"N/A" }}</p>
-                <p><strong>Phone Contact:</strong> {{ student.phone_contact|default:"N/A" }}</p>
-                <p><strong>Status:</strong> {% if student.is_active %}Active{% else %}Inactive{% endif %}</p>
+        </div>
+
+        <!-- Subjects Enrolled -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Subjects Enrolled</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {% if available_subjects %}
+                            {% for subject in available_subjects %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="subjects" value="{{ subject.pk }}" id="subject{{ subject.pk }}" {% if subject in student_subjects %}checked{% endif %}>
+                                    <label class="form-check-label" for="subject{{ subject.pk }}">
+                                        {{ subject.name }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                            <button type="submit" class="btn btn-primary btn-sm mt-2">Update Subjects</button>
+                        {% else %}
+                            <p class="text-muted">No subjects available for this form level.</p>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Quick Stats</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Total Exams:</strong> {{ exam_results|length }}</p>
+                    {% if exam_results %}
+                        <p><strong>Latest Exam:</strong> {{ exam_results.0.exam.name }}</p>
+                        <p><strong>Average Grade:</strong>
+                            {% load exam_filters %}
+                            {% for result in exam_results %}
+                                {% if result.grade %}
+                                    {{ result.grade }}{% if not forloop.last %}, {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </p>
+                    {% else %}
+                        <p class="text-muted">No exam results yet.</p>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-lg-6">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Subjects Enrolled</h6>
-            </div>
-            <div class="card-body">
-                {% if enrolled_subjects %}
-                <ul class="list-group list-group-flush">
-                    {% for subject in enrolled_subjects %}
-                    <li class="list-group-item">{{ subject.name }} ({{ subject.code }})</li>
-                    {% endfor %}
-                </ul>
-                {% else %}
-                <p class="text-muted">This student is not yet enrolled in any subjects.
-                    <a href="{% url 'students:student_subjects' student.admission_number %}" class="btn btn-link p-0">Enroll now.</a>
-                </p>
-                {% endif %}
+
+    <!-- Exam Results -->
+    {% if exam_results %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Exam Results</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Exam</th>
+                                    <th>Subject</th>
+                                    <th>Marks</th>
+                                    <th>Grade</th>
+                                    <th>Points</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in exam_results %}
+                                    <tr>
+                                        <td>{{ result.exam.name }} ({{ result.exam.year }} Term {{ result.exam.term }})</td>
+                                        <td>{{ result.subject.name }}</td>
+                                        <td>{{ result.final_marks|default:"N/A" }}</td>
+                                        <td>{{ result.grade|default:"N/A" }}</td>
+                                        <td>{{ result.points|default:"N/A" }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+    {% endif %}
 </div>
-</div>{% endblock %}
+{% endblock %}

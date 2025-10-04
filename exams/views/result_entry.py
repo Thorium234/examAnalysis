@@ -34,11 +34,10 @@ class BulkPaperResultEntryView(LoginRequiredMixin, TemplateView):
             students = Student.objects.filter(
                 form_level__in=exam.participating_forms.all()
             ).filter(
-                studentsubjectenrollment__subject=subject,
-                studentsubjectenrollment__is_enrolled=True
+                subjects=subject
             ).exclude(
                 paperresult__exam=exam,
-                paperresult__subject=subject
+                paperresult__subject_paper__subject=subject
             ).order_by('admission_number')
             
             # Create formset for student results

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+    Form {{ form_level.number }} {{ stream }} Subject Selection
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Form {{ form_level.number }} {{ stream }} Subjects</h1>
+        <a href="{% url 'students:form_subject_selection' form_level.pk %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Streams
+        </a>
+    </div>
+
+    <p>Debug: Form Level: {{ form_level }}, Stream: {{ stream }}</p>
+    <p>Debug: Subjects by category: {{ subjects_by_category|length }} categories</p>
+
+    {% for category, subjects in subjects_by_category.items %}
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">{{ category }}</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for subject in subjects %}
+                        <div class="col-md-4 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="subject{{ subject.pk }}" checked>
+                                <label class="form-check-label" for="subject{{ subject.pk }}">
+                                    {{ subject.name }}
+                                </label>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

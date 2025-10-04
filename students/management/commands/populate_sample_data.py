@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model 
 from students.models import Student
 from subjects.models import (
-    Subject, ClassSubjectAvailability,
+    Subject,
     StudentSubjectEnrollment, SubjectPaper, SubjectPaperRatio
 )
 from exams.models import (
@@ -39,9 +39,6 @@ class Command(BaseCommand):
         
         # Create form 3 students (for merit list)
         self.create_form3_students()
-        
-        # Create class subjects
-        self.create_class_subjects()
         
         # Create exams
         self.create_exams()
@@ -320,21 +317,21 @@ class Command(BaseCommand):
             if created:
                 self.stdout.write(f'Created Form 3 student: {name} ({admission_no})')
 
-    def create_class_subjects(self):
-        # Create class subjects for Form 2 and Form 3
-        subjects = Subject.objects.all()
-        
-        for form_level in [2, 3]:
-            for stream in ['East', 'West', 'North', 'South']:
-                for subject in subjects:
-                    ClassSubjectAvailability.objects.get_or_create(
-                        form_level=form_level,
-                        stream=stream,
-                        subject=subject,
-                        defaults={'is_available': True}
-                    )
-        
-        self.stdout.write('Created class subjects for all forms and streams')
+    # def create_class_subjects(self):
+    #     # Create class subjects for Form 2 and Form 3
+    #     subjects = Subject.objects.all()
+    #
+    #     for form_level in [2, 3]:
+    #         for stream in ['East', 'West', 'North', 'South']:
+    #             for subject in subjects:
+    #                 ClassSubjectAvailability.objects.get_or_create(
+    #                     form_level=form_level,
+    #                     stream=stream,
+    #                     subject=subject,
+    #                     defaults={'is_available': True}
+    #                 )
+    #
+    #     self.stdout.write('Created class subjects for all forms and streams')
 
     def create_exams(self):
         # First ensure we have form levels

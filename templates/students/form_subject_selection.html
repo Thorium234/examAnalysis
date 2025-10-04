@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+    Form {{ form_level.number }} Subject Selection
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Form {{ form_level.number }} Streams</h1>
+        <a href="{% url 'students:subject_selection_dashboard' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <div class="row">
+        {% for stream in streams %}
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-info shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                    Stream {{ stream.name }}
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                    {{ stream.student_set.count }} Students
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-stream fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <a href="{% url 'students:stream_subject_selection' form_level.pk stream.name %}" class="btn btn-info btn-sm btn-block">
+                                Select Subjects for {{ stream.name }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+          <div class="col-12">
+            <div class="alert alert-info">
+              No streams found for Form {{ form_level.number }}.
+            </div>
+          </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

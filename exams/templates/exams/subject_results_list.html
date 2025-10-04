@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Results List - {{ subject.name }} (Form {{ form_level }}{{ stream }}){% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">{{ subject.name }} Results</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'exams:exam_list' %}">Exam Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'exams:form_streams' form_level %}">Form {{ form_level }}</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'exams:stream_subjects' form_level stream %}">Stream {{ stream }}</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'exams:subject_entry_options' form_level stream subject.id %}">{{ subject.name }}</a></li>
+                    <li class="breadcrumb-item active">Results List</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Exam Selector -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Select Exam</h6>
+        </div>
+        <div class="card-body">
+            <form method="get">
+                <div class="form-group">
+                    <select name="exam" class="form-control" onchange="this.form.submit()">
+                        {% for exam in exams %}
+                        <option value="{{ exam.id }}" {% if selected_exam and selected_exam.id == exam.id %}selected{% endif %}>
+                            {{ exam.name }} ({{ exam.year }} Term {{ exam.term }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-info">Subject Results</h6>
+        </div>
+        <div class="card-body">
+            {% if results %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Name</th>
+                                <th>Adm</th>
+                                <th>Marks</th>
+                                <th>Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in results %}
+                            <tr>
+                                <td>{{ result.no }}</td>
+                                <td>{{ result.name }}</td>
+                                <td>{{ result.adm }}</td>
+                                <td>{{ result.marks|default:"-" }}</td>
+                                <td>{{ result.grade|default:"-" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> No results found for the selected exam.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="row">
+        <div class="col-md-6">
+            <a href="{% url 'exams:subject_entry_options' form_level stream subject.id %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Entry Options
+            </a>
+        </div>
+        <div class="col-md-6 text-right">
+            <a href="{% url 'exams:stream_subjects' form_level stream %}" class="btn btn-primary">
+                <i class="fas fa-list"></i> Back to Subjects
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

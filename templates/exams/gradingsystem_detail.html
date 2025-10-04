@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Grading System: {{ grading_system.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 text-gray-800">
+                <i class="fas fa-graduation-cap text-primary mr-2"></i>{{ grading_system.name }}
+            </h1>
+            <p class="text-muted mb-0">Manage grading ranges and configurations</p>
+        </div>
+        <div class="btn-group" role="group">
+            <a href="{% url 'exams:grading_system_edit' pk=grading_system.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit mr-2"></i>Edit System
+            </a>
+            <a href="{% url 'exams:gradingsystem_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left mr-2"></i>Back to List
+            </a>
+        </div>
+    </div>
+
+    <!-- System Info Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Subject Category</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ grading_system.subject_category|title }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-book fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Grading Ranges</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ grading_ranges|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-list-ol fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Default Status</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% if grading_system.is_default %}Yes{% else %}No{% endif %}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            {% if grading_system.is_default %}
+                                <i class="fas fa-star fa-2x text-warning"></i>
+                            {% else %}
+                                <i class="fas fa-star-half-alt fa-2x text-gray-300"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grading Ranges Table -->
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-table mr-2"></i>Grading Ranges
+                </h6>
+                <a href="{% url 'exams:gradingrange_create' grading_system_pk=grading_system.pk %}" class="btn btn-light btn-sm">
+                    <i class="fas fa-plus-circle mr-2"></i>Add Range
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if grading_ranges %}
+            <div class="table-responsive">
+                <table class="table table-hover border-0" id="gradingRangesTable">
+                    <thead class="thead-light">
+                        <tr class="border-bottom border-primary">
+                            <th class="border-0 font-weight-bold text-primary">
+                                <i class="fas fa-graduation-cap mr-2"></i>Grade
+                            </th>
+                            <th class="border-0 font-weight-bold text-primary">
+                                <i class="fas fa-arrow-down mr-2"></i>Min. Marks
+                            </th>
+                            <th class="border-0 font-weight-bold text-primary">
+                                <i class="fas fa-arrow-up mr-2"></i>Max. Marks
+                            </th>
+                            <th class="border-0 font-weight-bold text-primary">
+                                <i class="fas fa-trophy mr-2"></i>Points
+                            </th>
+                            <th class="border-0 font-weight-bold text-primary text-center">
+                                <i class="fas fa-tools mr-2"></i>Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for range in grading_ranges %}
+                        <tr class="border-bottom border-light hover-shadow">
+                            <td class="align-middle">
+                                <div class="d-flex align-items-center">
+                                    <div class="grade-badge mr-3">
+                                        <span class="font-weight-bold">{{ range.grade }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="font-weight-bold text-gray-800">Grade {{ range.grade }}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="align-middle">
+                                <span class="badge badge-info badge-pill px-3 py-2">
+                                    <i class="fas fa-arrow-down mr-1"></i>{{ range.min_marks }} marks
+                                </span>
+                            </td>
+                            <td class="align-middle">
+                                <span class="badge badge-success badge-pill px-3 py-2">
+                                    <i class="fas fa-arrow-up mr-1"></i>{{ range.max_marks }} marks
+                                </span>
+                            </td>
+                            <td class="align-middle">
+                                <span class="badge badge-warning badge-pill px-3 py-2">
+                                    <i class="fas fa-trophy mr-1"></i>{{ range.points }} point{{ range.points|pluralize }}
+                                </span>
+                            </td>
+                            <td class="align-middle text-center">
+                                <div class="btn-group" role="group" aria-label="Actions">
+                                    <a href="{% url 'exams:gradingrange_update' pk=range.pk %}"
+                                       class="btn btn-outline-primary btn-sm"
+                                       data-toggle="tooltip"
+                                       title="Edit Range">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'exams:gradingrange_delete' pk=range.pk %}"
+                                       class="btn btn-outline-danger btn-sm"
+                                       data-toggle="tooltip"
+                                       title="Delete Range"
+                                       onclick="return confirm('Are you sure you want to delete this grading range?');">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Table Footer -->
+            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                <div class="text-muted">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Total ranges: {{ grading_ranges|length }}
+                </div>
+                <div class="text-muted small">
+                    Manage your grading scale configurations
+                </div>
+            </div>
+            {% else %}
+            <!-- Empty State -->
+            <div class="text-center py-5">
+                <div class="empty-state-icon mb-4">
+                    <i class="fas fa-list-ol fa-5x text-muted"></i>
+                </div>
+                <h4 class="text-muted mb-3">No Grading Ranges Found</h4>
+                <p class="text-muted mb-4 lead">Define grading ranges to complete this grading system setup.</p>
+                <a href="{% url 'exams:gradingrange_create' grading_system_pk=grading_system.pk %}" class="btn btn-primary btn-lg shadow-sm">
+                    <i class="fas fa-plus-circle mr-2"></i>Add Your First Grading Range
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+/* Custom Styles for Professional Look */
+.bg-primary {
+    background: linear-gradient(135deg, #263238 0%, #37474F 100%) !important;
+}
+
+.border-left-primary {
+    border-left: 0.25rem solid #263238 !important;
+}
+
+.border-left-info {
+    border-left: 0.25rem solid #17a2b8 !important;
+}
+
+.border-left-success {
+    border-left: 0.25rem solid #28a745 !important;
+}
+
+.grade-badge {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #263238 0%, #37474F 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.hover-shadow:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table td {
+    vertical-align: middle;
+    border: none;
+}
+
+.card {
+    border: none;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+}
+
+.btn-group .btn {
+    border-radius: 0.375rem !important;
+    margin: 0 1px;
+}
+
+.btn-group .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.empty-state-icon {
+    opacity: 0.5;
+}
+
+.badge-pill {
+    border-radius: 50rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .grade-badge {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+
+    .btn-group {
+        flex-direction: column;
+    }
+
+    .btn-group .btn {
+        margin: 1px 0;
+    }
+}
+</style>
+
+<script>
+// Initialize tooltips
+$(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+});
+</script>
+{% endblock %}

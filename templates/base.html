@@ -369,6 +369,7 @@
                     <div class="collapse collapse-menu" id="students-sub">
                         <a class="nav-link" href="{% url 'students:student_list' %}"><i class="fas fa-list"></i> Student List</a>
                         <a class="nav-link" href="{% url 'students:student_create' %}"><i class="fas fa-plus"></i> Add Student</a>
+                        <a class="nav-link" href="{% url 'students:subject_selection_dashboard' %}"><i class="fas fa-book"></i> Subject Selection</a>
                     </div>
                 </li>
 
@@ -382,6 +383,7 @@
                         <a class="nav-link" href="{% url 'exams:exam_create' %}"><i class="fas fa-plus"></i> Create Exam</a>
                         {% if user|is_teacher or user.is_superuser %}
                         <a class="nav-link" href="{% url 'exams:gradingsystem_list' %}"><i class="fas fa-cogs"></i> Grading Systems</a>
+                         <a class="nav-link" href="{% url 'exams:positioning_system_detail' %}"><i class="fas fa-trophy"></i> Positioning System</a>
                         {% endif %}
                         <a class="nav-link" href="{% url 'exams:paper_ratios_list' %}"><i class="fas fa-percentage"></i> Paper Ratios</a>
                     </div>

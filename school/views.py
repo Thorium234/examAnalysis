@@ -7,13 +7,24 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required, user_passes_test
 from accounts.models import CustomUser, Role, TeacherSubject, TeacherClass
 from django.contrib import messages
-from django.db.models import Q, Count, Avg, Max, Min
+from django.db.models import Q, Count, Avg, Max, Min, Sum
 from .models import School, FormLevel, Stream
 from .forms import UserCreationForm, FormLevelForm
 from students.models import Student
 from subjects.models import Subject, SubjectCategory
 from exams.models import Exam, ExamResult, StudentExamSummary
 import logging
+import logging
+
+# ReportLab imports for PDF generation
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -1188,4 +1199,236 @@ def teacher_detail(request, teacher_id):
         'total_students': total_students,
     }
     return render(request, 'school/teacher_detail.html', context)
-    return render(request, 'school/subject_teachers.html', context)
+
+@login_required
+def exam_upload_individual(request, form_level, exam_id, stream, category_id):
+    """
+    Exam upload - shows subjects in a specific category for upload.
+    """
+    school = request.user.school
+    exam = get_object_or_404(Exam, id=exam_id, school=school, is_active=True)
+    category = get_object_or_404(SubjectCategory, id=category_id, school=school)
+
+    # Get subjects in this category
+    subjects = Subject.objects.filter(
+        category=category,
+        school=school,
+        is_active=True
+    ).order_by('name')
+
+    subject_data = []
+    for subject in subjects:
+        # Check if results already exist for this subject, exam, form, stream
+        existing_results = ExamResult.objects.filter(
+            exam=exam,
+            subject=subject,
+            student__form_level__number=form_level,
+            student__stream=stream,
+            student__school=school
+        ).count()
+
+        total_students = Student.objects.filter(
+            school=school,
+            form_level__number=form_level,
+            stream=stream
+        ).count()
+
+        completion_percentage = (existing_results / total_students * 100) if total_students > 0 else 0
+
+        subject_data.append({
+            'subject': subject,
+            'existing_results': existing_results,
+            'total_students': total_students,
+            'completion_percentage': completion_percentage,
+        })
+
+# PDF Generation Views
+@login_required
+def generate_form_report_pdf(request, form_level):
+    """
+    Generate PDF report for entire form level.
+    """
+    from django.http import HttpResponse
+    from io import BytesIO
+
+    school = request.user.school
+
+    # Get all students in this form
+    students = Student.objects.filter(
+        school=school,
+        form_level__number=form_level
+    ).order_by('admission_number')
+
+    if not students.exists():
+        messages.error(request, f"No students found in Form {form_level}")
+        return redirect('school:form_report_card', form_level=form_level)
+
+    # Create PDF
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    elements = []
+
+    # Title
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=16,
+        spaceAfter=30,
+        alignment=TA_CENTER
+    )
+
+    title = Paragraph(f"{school.name}<br/>Form {form_level} Report Cards", title_style)
+    elements.append(title)
+
+    # Generate report for each student
+    for student in students:
+        # Student header
+        student_header = Paragraph(f"<br/><b>Student: {student.name}</b><br/>Admission No: {student.admission_number}", styles['Normal'])
+        elements.append(student_header)
+
+        # Get exam results for this student
+        exam_results = ExamResult.objects.filter(
+            student=student,
+            exam__is_active=True
+        ).select_related('exam', 'subject').order_by('exam__year', 'exam__term')
+
+        if exam_results.exists():
+            # Create table data
+            data = [['Exam', 'Subject', 'Marks', 'Grade']]
+            for result in exam_results:
+                data.append([
+                    f"{result.exam.name} ({result.exam.year} Term {result.exam.term})",
+                    result.subject.name,
+                    str(result.final_marks or 'N/A'),
+                    result.grade or 'N/A'
+                ])
+
+            # Create table
+            table = Table(data)
+            table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 14),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ]))
+            elements.append(table)
+        else:
+            no_results = Paragraph("No exam results found for this student.", styles['Normal'])
+            elements.append(no_results)
+
+        # Page break between students
+        elements.append(Paragraph("<br/><br/>", styles['Normal']))
+
+    # Build PDF
+    doc.build(elements)
+
+    # Return PDF response
+    buffer.seek(0)
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="Form_{form_level}_Report_Cards.pdf"'
+    return response
+
+@login_required
+def generate_stream_report_pdf(request, form_level, stream):
+    """
+    Generate PDF report for a specific stream.
+    """
+    from django.http import HttpResponse
+    from io import BytesIO
+
+    school = request.user.school
+
+    # Get students in this stream
+    students = Student.objects.filter(
+        school=school,
+        form_level__number=form_level,
+        stream=stream
+    ).order_by('admission_number')
+
+    if not students.exists():
+        messages.error(request, f"No students found in Form {form_level} {stream}")
+        return redirect('school:form_report_card', form_level=form_level)
+
+    # Create PDF
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    elements = []
+
+    # Title
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=16,
+        spaceAfter=30,
+        alignment=TA_CENTER
+    )
+
+    title = Paragraph(f"{school.name}<br/>Form {form_level} {stream} Report Cards", title_style)
+    elements.append(title)
+
+    # Generate report for each student
+    for student in students:
+        # Student header
+        student_header = Paragraph(f"<br/><b>Student: {student.name}</b><br/>Admission No: {student.admission_number}", styles['Normal'])
+        elements.append(student_header)
+
+        # Get exam results for this student
+        exam_results = ExamResult.objects.filter(
+            student=student,
+            exam__is_active=True
+        ).select_related('exam', 'subject').order_by('exam__year', 'exam__term')
+
+        if exam_results.exists():
+            # Create table data
+            data = [['Exam', 'Subject', 'Marks', 'Grade']]
+            for result in exam_results:
+                data.append([
+                    f"{result.exam.name} ({result.exam.year} Term {result.exam.term})",
+                    result.subject.name,
+                    str(result.final_marks or 'N/A'),
+                    result.grade or 'N/A'
+                ])
+
+            # Create table
+            table = Table(data)
+            table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 14),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ]))
+            elements.append(table)
+        else:
+            no_results = Paragraph("No exam results found for this student.", styles['Normal'])
+            elements.append(no_results)
+
+        # Page break between students
+        elements.append(Paragraph("<br/><br/>", styles['Normal']))
+
+    # Build PDF
+    doc.build(elements)
+
+    # Return PDF response
+    buffer.seek(0)
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="Form_{form_level}_{stream}_Report_Cards.pdf"'
+    return response
+
+    context = {
+        'exam': exam,
+        'form_level': form_level,
+        'stream': stream,
+        'category': category,
+        'subject_data': subject_data,
+    }
+    return render(request, 'school/exam_upload_individual.html', context)
